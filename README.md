@@ -1,158 +1,135 @@
-# Phaser Vite TypeScript Template
 
-This is a Phaser project template that uses Vite for bundling. It supports hot-reloading for quick development workflow, includes TypeScript support and scripts to generate production-ready builds.
+# 🏃‍♂️ SSAFY RUN: OvenBreak
 
-**[This Template is also available as a JavaScript version.](https://github.com/phaserjs/template-vite)**
+<div align="center">
 
-### Versions
+![SSAFY RUN Banner](https://capsule-render.vercel.app/api?type=waving&color=auto&height=220&section=header&text=SSAFY%20RUN&fontSize=70&fontAlignY=38&desc=지각%20위기!%209시%20입실%20전까지%20멀캠을%20향해%20질주하라!&descAlignY=58&descAlign=50)
 
-This template has been updated for:
+[![Phaser 3](https://img.shields.io/badge/Phaser-3.80+-E255A1?style=for-the-badge&logo=phaser&logoColor=white)](https://phaser.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-- [Phaser 4](https://github.com/phaserjs/phaser)
-- [Vite 6.3.1](https://github.com/vitejs/vite)
-- [TypeScript 5.7.2](https://github.com/microsoft/TypeScript)
+**싸피인을 위한 웹 기반 횡스크롤 러닝 액션 게임**  
+*PC 키보드 및 모바일 터치 완벽 지원 & 실시간 교육생 리더보드 연동*
 
-![screenshot](screenshot.png)
+[🎮 게임 플레이하기](https://strongsun806.github.io/ssafy-run/) · [🐛 버그 제보](https://github.com/strongsun806/ssafy-run/issues) · [💡 기능 제안](https://github.com/strongsun806/ssafy-run/issues)
 
-## Requirements
+</div>
 
-[Node.js](https://nodejs.org) is required to install dependencies and run scripts via `npm`.
+---
 
-## Available Commands
+## 📖 About The Project
 
-| Command | Description |
-|---------|-------------|
-| `npm install` | Install project dependencies |
-| `npm run dev` | Launch a development web server |
-| `npm run build` | Create a production build in the `dist` folder |
-| `npm run dev-nolog` | Launch a development web server without sending anonymous data (see "About log.js" below) |
-| `npm run build-nolog` | Create a production build in the `dist` folder without sending anonymous data (see "About log.js" below) |
+> **"출석 마감까지 남은 시간 단 10분... 엘리베이터는 만원이고 비상계단은 멀다!"**
 
-## Writing Code
+**SSAFY RUN**은 쿠키런 스타일의 캐주얼 러닝 게임입니다.  
+교육생들이 매일 마주하는 개발 에러와 빌드 실패를 점프와 슬라이드로 피하고, 잔디(커밋)와 입실 체크 QR을 모으며 멘탈을 유지해 살아남아야 합니다.
 
-After cloning the repo, run `npm install` from your project directory. Then, you can start the local development server by running `npm run dev`.
+### 🌟 Key Highlights
+- **반응형 게임 엔진**: 모바일/데스크톱 화면 비율에 최적화된 Canvas 렌더링
+- **경쾌한 조작감**: 2단 점프, 슬라이드 판정 및 즉각적인 물리 피드백
+- **싸피 맞춤형 이스터에그**: 입실 체크 QR, 1일 1커밋 잔디, 멘탈 회복 아메리카노
+- **실시간 리더보드**: 반별 / 캠퍼스별 최고 득점자 랭킹 시스템 연동 예정
 
-The local development server runs on `http://localhost:8080` by default. Please see the Vite documentation if you wish to change this, or add SSL support.
+---
 
-Once the server is running you can edit any of the files in the `src` folder. Vite will automatically recompile your code and then reload the browser.
+## 🎮 Game Controls
 
-## Template Project Structure
+| 동작 | PC (키보드) | 모바일 (화면 터치) |
+| :--- | :--- | :--- |
+| **1단 점프 / 2단 점프** | `Space` 또는 `↑` 키 | 화면 우측 하단 **JUMP** 버튼 |
+| **슬라이드 (숙이기)** | `↓` 키 (길게 누르기) | 화면 좌측 하단 **SLIDE** 버튼 |
 
-We have provided a default project structure to get you started. This is as follows:
+---
 
-## Template Project Structure
+## 🧩 In-Game Elements
 
-We have provided a default project structure to get you started:
+### 1. 아이템 & 젤리
+- 🌱 **커밋 잔디**: 1일 1커밋의 결실 (+100 Score)
+- 📱 **입실 체크 QR**: 8시 59분 세이프 보너스 (+300 Score)
+- ☕ **아이스 아메리카노**: 꺾이지 않는 개발자의 영혼 (+25 Mental HP 회복)
 
-| Path                         | Description                                                |
-|------------------------------|------------------------------------------------------------|
-| `index.html`                 | A basic HTML page to contain the game.                     |
-| `public/assets`              | Game sprites, audio, etc. Served directly at runtime.      |
-| `public/style.css`           | Global layout styles.                                      |
-| `src/main.ts`                | Application bootstrap.                                     |
-| `src/game`                   | Folder containing the game code.                           |
-| `src/game/main.ts`           | Game entry point: configures and starts the game.          |
-| `src/game/scenes`            | Folder with all Phaser game scenes.                        | 
+### 2. 장애물
+- ⚠️ **지상 장애물 (빨간 에러 블록)**: 점프로 뛰어넘어야 하는 런타임 에러
+- 🚧 **공중 장애물 (주황 경고 블록)**: 슬라이드로 회피해야 하는 머지 컨플릭트
 
+### 3. 시스템 규칙
+- **멘탈 게이지 (HP)**: 시간이 지날수록 초당 일정량 자연 감소
+- **피격 판정**: 장애물 충돌 시 멘탈 대폭 감소 & 1초간 깜빡임 무적
+- **게임 오버**: 멘탈이 0이 되면 게임 종료 후 최종 스코어 기록
 
-## Handling Assets
+---
 
-Vite supports loading assets via JavaScript module `import` statements.
+## 🛠 Tech Stack
 
-This template provides support for both embedding assets and also loading them from a static folder. To embed an asset, you can import it at the top of the JavaScript file you are using it in:
+- **Core**: Phaser 3 (Arcade Physics Engine)
+- **Language**: TypeScript
+- **Bundler**: Vite
+- **Deployment**: GitHub Pages / Netlify
 
-```js
-import logoImg from './assets/logo.png'
-```
+---
 
-To load static files such as audio files, videos, etc place them into the `public/assets` folder. Then you can use this path in the Loader calls within Phaser:
-
-```js
-preload ()
-{
-    //  This is an example of an imported bundled image.
-    //  Remember to import it at the top of this file
-    this.load.image('logo', logoImg);
-
-    //  This is an example of loading a static image
-    //  from the public/assets folder:
-    this.load.image('background', 'assets/bg.png');
-}
-```
-
-When you issue the `npm run build` command, all static assets are automatically copied to the `dist/assets` folder.
-
-## Deploying to Production
-
-After you run the `npm run build` command, your code will be built into a single bundle and saved to the `dist` folder, along with any other assets your project imported, or stored in the public assets folder.
-
-In order to deploy your game, you will need to upload *all* of the contents of the `dist` folder to a public facing web server.
-
-## Customizing the Template
-
-### Vite
-
-If you want to customize your build, such as adding plugin (i.e. for loading CSS or fonts), you can modify the `vite/config.*.mjs` file for cross-project changes, or you can modify and/or create new configuration files and target them in specific npm tasks inside of `package.json`. Please see the [Vite documentation](https://vitejs.dev/) for more information.
-
-## About log.js
-
-If you inspect our node scripts you will see there is a file called `log.js`. This file makes a single silent API call to a domain called `gryzor.co`. This domain is owned by Phaser Studio Inc. The domain name is a homage to one of our favorite retro games.
-
-We send the following 3 pieces of data to this API: The name of the template being used (vue, react, etc). If the build was 'dev' or 'prod' and finally the version of Phaser being used.
-
-At no point is any personal data collected or sent. We don't know about your project files, device, browser or anything else. Feel free to inspect the `log.js` file to confirm this.
-
-Why do we do this? Because being open source means we have no visible metrics about which of our templates are being used. We work hard to maintain a large and diverse set of templates for Phaser developers and this is our small anonymous way to determine if that work is actually paying off, or not. In short, it helps us ensure we're building the tools for you.
-
-However, if you don't want to send any data, you can use these commands instead:
-
-Dev:
+## 📂 Project Structure
 
 ```bash
-npm run dev-nolog
+ssafy-run/
+├── public/                 # 정적 에셋 (이미지, 사운드 등)
+├── src/
+│   ├── game/
+│   │   ├── objects/        # 독립 게임 객체 (Player, Obstacle 등)
+│   │   │   └── Player.ts
+│   │   ├── scenes/         # Phaser 게임 씬 관리
+│   │   │   ├── Boot.ts
+│   │   │   ├── Preloader.ts
+│   │   │   ├── MainMenu.ts
+│   │   │   ├── Game.ts     # 핵심 인게임 플레이 씬
+│   │   │   └── GameOver.ts # 결과 및 랭킹 등록 씬
+│   │   └── main.ts         # Phaser Game 인스턴스 설정
+│   ├── index.html
+│   └── main.ts             # 엔트리포인트
+├── package.json
+└── tsconfig.json
+
 ```
 
-Build:
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+* Node.js 18.x 이상
+* npm 또는 pnpm
+
+### Installation
 
 ```bash
-npm run build-nolog
+# 레포지토리 클론
+git clone [https://github.com/strongsun806/ssafy-run.git](https://github.com/strongsun806/ssafy-run.git)
+
+# 프로젝트 디렉토리 이동
+cd ssafy-run
+
+# 의존성 설치
+npm install
+
+# 로컬 개발 서버 실행
+npm run dev
+
 ```
 
-Or, to disable the log entirely, simply delete the file `log.js` and remove the call to it in the `scripts` section of `package.json`:
+브라우저에서 `http://localhost:8080/`으로 접속하여 플레이할 수 있습니다.
 
-Before:
+---
 
-```json
-"scripts": {
-    "dev": "node log.js dev & dev-template-script",
-    "build": "node log.js build & build-template-script"
-},
-```
+## 🗺 Roadmap
 
-After:
+* [x] 기본 물리 엔진 및 2단 점프 / 슬라이드 구현
+* [x] 커밋 젤리 수집 및 점수 시스템
+* [x] 멘탈 게이지 및 아메리카노 회복 아이템
+* [ ] 멀티 레이어 패럴랙스 배경 (교실/빌딩 뷰)
+* [ ] 모바일 전용 온스크린 터치 컨트롤
+* [ ] SSAFY 교육생 실시간 랭킹 시스템 (Supabase / Firebase 연동)
 
-```json
-"scripts": {
-    "dev": "dev-template-script",
-    "build": "build-template-script"
-},
-```
-
-Either of these will stop `log.js` from running. If you do decide to do this, please could you at least join our Discord and tell us which template you're using! Or send us a quick email. Either will be super-helpful, thank you.
-
-## Join the Phaser Community!
-
-We love to see what developers like you create with Phaser! It really motivates us to keep improving. So please join our community and show-off your work 😄
-
-**Visit:** The [Phaser website](https://phaser.io) and follow on [Phaser Twitter](https://twitter.com/phaser_)<br />
-**Play:** Some of the amazing games [#madewithphaser](https://twitter.com/search?q=%23madewithphaser&src=typed_query&f=live)<br />
-**Learn:** [API Docs](https://newdocs.phaser.io), [Support Forum](https://phaser.discourse.group/) and [StackOverflow](https://stackoverflow.com/questions/tagged/phaser-framework)<br />
-**Discord:** Join us on [Discord](https://discord.gg/phaser)<br />
-**Code:** 2000+ [Examples](https://labs.phaser.io)<br />
-**Read:** The [Phaser World](https://phaser.io/community/newsletter) Newsletter<br />
-
-Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, pixels and love.
-
-The Phaser logo and characters are &copy; 2011 - 2025 Phaser Studio Inc.
-
-All rights reserved.
+---
