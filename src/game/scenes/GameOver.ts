@@ -38,17 +38,17 @@ export class GameOver extends Scene {
         const { width, height } = this.scale;
         this.cameras.main.fadeIn(400, 10, 14, 26);
 
-        // Background
+        // Calm navy background
         const bg = this.add.graphics();
         bg.fillGradientStyle(0x0a0e1a, 0x0a0e1a, 0x1e1b4b, 0x2e1022, 1);
         bg.fillRect(0, 0, width, height);
 
         if (this.textures.exists('bg_skyline_far')) {
-            this.add.image(width / 2, height - 250, 'bg_skyline_far').setAlpha(0.35);
+            this.add.image(width / 2, height - 250, 'bg_skyline_far').setAlpha(0.3);
         }
 
-        // Header
-        const headerTitle = this.add.text(width / 2, 65, 'GAME OVER', {
+        // Header Title
+        const headerTitle = this.add.text(width / 2, 60, 'GAME OVER', {
             fontFamily: 'Arial Black',
             fontSize: '52px',
             color: '#ef4444',
@@ -58,35 +58,35 @@ export class GameOver extends Scene {
 
         this.tweens.add({
             targets: headerTitle,
-            scale: 1.05,
+            scale: 1.04,
             duration: 800,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
 
-        // Evaluation Rank Title
+        // Evaluation Rank
         const evalRank = this.getEvaluationRank(this.score);
-        this.add.text(width / 2, 120, evalRank, {
+        this.add.text(width / 2, 115, evalRank, {
             fontFamily: 'Arial Black',
             fontSize: '20px',
             color: '#facc15'
         }).setOrigin(0.5);
 
-        // Result Card
-        const cardW = 680;
+        // Result Card Container
+        const cardW = 700;
         const cardH = 350;
         const cx = (width - cardW) / 2;
-        const cy = 150;
+        const cy = 145;
 
         const card = this.add.graphics();
-        card.fillStyle(0x0f172a, 0.95);
-        card.lineStyle(2, this.isNewRecord ? 0xfacc15 : 0x38bdf8);
+        card.fillStyle(0x0f172a, 0.96);
+        card.lineStyle(2.5, this.isNewRecord ? 0xfacc15 : 0x38bdf8, 0.9);
         card.fillRoundedRect(cx, cy, cardW, cardH, 16);
         card.strokeRoundedRect(cx, cy, cardW, cardH, 16);
 
         if (this.isNewRecord) {
-            const newRec = this.add.text(width / 2, cy + 24, '★ NEW RECORD! 최고 기록 달성! ★', {
+            const newRec = this.add.text(width / 2, cy + 24, '★ NEW RECORD! 내 최고 기록 달성! ★', {
                 fontFamily: 'Arial Black',
                 fontSize: '18px',
                 color: '#facc15'
@@ -101,35 +101,36 @@ export class GameOver extends Scene {
             });
         }
 
+        // Final Score
         this.add.text(width / 2, cy + 62, 'FINAL SCORE', {
             fontFamily: 'Arial Black',
             fontSize: '15px',
             color: '#94a3b8'
         }).setOrigin(0.5);
 
-        this.add.text(width / 2, cy + 102, this.score.toLocaleString(), {
+        this.add.text(width / 2, cy + 104, this.score.toLocaleString(), {
             fontFamily: 'Arial Black',
-            fontSize: '48px',
+            fontSize: '50px',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Stats grid
-        const statY = cy + 170;
-        this.createStatItem(cx + 80, statY, '🏃 달린 거리', `${this.distance}m`);
-        this.createStatItem(cx + 225, statY, '🌱 커밋 잔디', `${this.commits}개`);
-        this.createStatItem(cx + 370, statY, '📱 출석 QR', `${this.qrs}개`);
-        this.createStatItem(cx + 515, statY, '☕ 아메리카노', `${this.coffees}잔`);
+        // Stats Grid
+        const statY = cy + 175;
+        this.createStatItem(cx + 85, statY, '🏃 달린 거리', `${this.distance}m`);
+        this.createStatItem(cx + 235, statY, '🌱 커밋 잔디', `${this.commits}개`);
+        this.createStatItem(cx + 385, statY, '📱 출석 QR', `${this.qrs}개`);
+        this.createStatItem(cx + 535, statY, '☕ 아메리카노', `${this.coffees}잔`);
 
-        // Realtime Leaderboard registration
-        const savePrompt = this.add.text(width / 2, cy + 260, '🌐 실시간 전국 교육생 랭킹에 내 기록을 등록하시겠습니까?', {
-            fontFamily: 'Arial',
+        // Prominent Leaderboard Register Section
+        const savePrompt = this.add.text(width / 2, cy + 258, '🏆 전국 명예의 전당(실시간 랭킹)에 내 닉네임을 등록하세요!', {
+            fontFamily: 'Arial Black',
             fontSize: '16px',
-            color: '#cbd5e1'
+            color: '#facc15'
         }).setOrigin(0.5);
 
-        const regBtn = this.createButton(width / 2, cy + 300, '닉네임 등록 (REGISTER)', 0x0284c7, 0x0369a1, () => {
+        const regBtn = this.createButton(width / 2, cy + 300, '✨ 내 닉네임 등록 (REGISTER)', 0x0284c7, 0x0369a1, () => {
             this.promptRegisterLeaderboard(savePrompt, regBtn);
-        }, 240, 38, '14px');
+        }, 260, 42, '15px');
 
         // Action Buttons
         const btnY = cy + cardH + 45;
@@ -155,11 +156,11 @@ export class GameOver extends Scene {
 
     private async promptRegisterLeaderboard(promptText: Phaser.GameObjects.Text, regBtn: Phaser.GameObjects.Container) {
         const defaultName = `싸피인_${Math.floor(Math.random() * 900 + 100)}`;
-        const name = window.prompt('실시간 랭킹에 등록할 닉네임을 입력하세요 (최대 10자):', defaultName);
+        const name = window.prompt('전국 명예의 전당에 등록할 닉네임을 입력하세요 (최대 10자):', defaultName);
 
         if (name && name.trim().length > 0) {
             const trimmed = name.trim().slice(0, 10);
-            promptText.setText('📡 실시간 랭킹 서버로 전송 중...');
+            promptText.setText('📡 실시간 클라우드 랭킹 서버로 전송 중...');
             promptText.setColor('#38bdf8');
             regBtn.setVisible(false);
 
@@ -174,7 +175,7 @@ export class GameOver extends Scene {
             });
 
             if (isOnline) {
-                promptText.setText(`✅ [${trimmed}] 님의 점수가 실시간 온라인 랭킹에 등록되었습니다!`);
+                promptText.setText(`✅ [${trimmed}] 님의 기록이 전국 명예의 전당에 실시간 반영되었습니다!`);
             } else {
                 promptText.setText(`✅ [${trimmed}] 님의 기록이 명예의 전당에 등록되었습니다!`);
             }

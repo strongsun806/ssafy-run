@@ -12,47 +12,20 @@ export class TextureGenerator {
     }
 
     private static generatePlayerTextures(scene: Phaser.Scene) {
-        // Player Run Frame 1 (Right leg forward)
-        if (!scene.textures.exists('player_run_1')) {
-            const canvas = scene.textures.createCanvas('player_run_1', 64, 80);
-            if (canvas) {
-                const ctx = canvas.getContext();
-                this.drawTrainee(ctx, 1);
-                canvas.refresh();
+        // Player Run 1-4 with crisp bright colors & white outline for maximum contrast
+        for (let f = 1; f <= 4; f++) {
+            const key = `player_run_${f}`;
+            if (!scene.textures.exists(key)) {
+                const canvas = scene.textures.createCanvas(key, 64, 80);
+                if (canvas) {
+                    const ctx = canvas.getContext();
+                    this.drawTrainee(ctx, f);
+                    canvas.refresh();
+                }
             }
         }
 
-        // Player Run Frame 2 (Passing)
-        if (!scene.textures.exists('player_run_2')) {
-            const canvas = scene.textures.createCanvas('player_run_2', 64, 80);
-            if (canvas) {
-                const ctx = canvas.getContext();
-                this.drawTrainee(ctx, 2);
-                canvas.refresh();
-            }
-        }
-
-        // Player Run Frame 3 (Left leg forward)
-        if (!scene.textures.exists('player_run_3')) {
-            const canvas = scene.textures.createCanvas('player_run_3', 64, 80);
-            if (canvas) {
-                const ctx = canvas.getContext();
-                this.drawTrainee(ctx, 3);
-                canvas.refresh();
-            }
-        }
-
-        // Player Run Frame 4 (Passing 2)
-        if (!scene.textures.exists('player_run_4')) {
-            const canvas = scene.textures.createCanvas('player_run_4', 64, 80);
-            if (canvas) {
-                const ctx = canvas.getContext();
-                this.drawTrainee(ctx, 4);
-                canvas.refresh();
-            }
-        }
-
-        // Player Jump
+        // Jump
         if (!scene.textures.exists('player_jump')) {
             const canvas = scene.textures.createCanvas('player_jump', 64, 80);
             if (canvas) {
@@ -62,7 +35,7 @@ export class TextureGenerator {
             }
         }
 
-        // Player Slide
+        // Slide
         if (!scene.textures.exists('player_slide')) {
             const canvas = scene.textures.createCanvas('player_slide', 80, 48);
             if (canvas) {
@@ -76,12 +49,11 @@ export class TextureGenerator {
     private static drawTrainee(ctx: CanvasRenderingContext2D, frame: number) {
         ctx.clearRect(0, 0, 64, 80);
 
-        // Body center offset based on bounce
         const bounce = (frame === 1 || frame === 3) ? -2 : 0;
         const cy = 38 + bounce;
 
-        // Backpack behind
-        ctx.fillStyle = '#1e293b';
+        // Dark navy backpack
+        ctx.fillStyle = '#0f172a';
         ctx.beginPath();
         ctx.roundRect(14, cy - 14, 12, 22, 4);
         ctx.fill();
@@ -96,57 +68,72 @@ export class TextureGenerator {
         }
         ctx.fill();
 
-        // Legs (Running cycle)
-        ctx.fillStyle = '#0f172a'; // Pants
+        // Running Legs with bright white socks & red sneakers
+        ctx.fillStyle = '#1e293b'; // Pants
         if (frame === 1) {
-            // Right leg forward
             ctx.fillRect(32, cy + 12, 8, 16);
+            ctx.fillStyle = '#ffffff'; // Sock
+            ctx.fillRect(32, cy + 24, 8, 4);
             ctx.fillStyle = '#ef4444'; // Red sneaker
-            ctx.fillRect(34, cy + 26, 14, 7);
+            ctx.fillRect(34, cy + 28, 14, 8);
 
-            // Left leg back
-            ctx.fillStyle = '#0f172a';
+            ctx.fillStyle = '#1e293b';
             ctx.fillRect(20, cy + 10, 8, 14);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(20, cy + 20, 8, 4);
             ctx.fillStyle = '#ef4444';
-            ctx.fillRect(16, cy + 22, 12, 7);
+            ctx.fillRect(16, cy + 24, 12, 8);
         } else if (frame === 2) {
             ctx.fillRect(28, cy + 12, 8, 18);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(28, cy + 26, 8, 4);
             ctx.fillStyle = '#ef4444';
-            ctx.fillRect(28, cy + 28, 13, 7);
+            ctx.fillRect(28, cy + 30, 13, 8);
 
-            ctx.fillStyle = '#0f172a';
+            ctx.fillStyle = '#1e293b';
             ctx.fillRect(24, cy + 10, 8, 16);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(24, cy + 22, 8, 4);
             ctx.fillStyle = '#ef4444';
-            ctx.fillRect(22, cy + 24, 12, 7);
+            ctx.fillRect(22, cy + 26, 12, 8);
         } else if (frame === 3) {
-            // Left leg forward
             ctx.fillRect(20, cy + 12, 8, 16);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(20, cy + 24, 8, 4);
             ctx.fillStyle = '#ef4444';
-            ctx.fillRect(16, cy + 26, 14, 7);
+            ctx.fillRect(16, cy + 28, 14, 8);
 
-            // Right leg back
-            ctx.fillStyle = '#0f172a';
+            ctx.fillStyle = '#1e293b';
             ctx.fillRect(32, cy + 10, 8, 14);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(32, cy + 20, 8, 4);
             ctx.fillStyle = '#ef4444';
-            ctx.fillRect(34, cy + 22, 12, 7);
+            ctx.fillRect(34, cy + 24, 12, 8);
         } else {
             ctx.fillRect(26, cy + 12, 8, 18);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(26, cy + 26, 8, 4);
             ctx.fillStyle = '#ef4444';
-            ctx.fillRect(26, cy + 28, 13, 7);
+            ctx.fillRect(26, cy + 30, 13, 8);
 
-            ctx.fillStyle = '#0f172a';
+            ctx.fillStyle = '#1e293b';
             ctx.fillRect(22, cy + 10, 8, 16);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(22, cy + 22, 8, 4);
             ctx.fillStyle = '#ef4444';
-            ctx.fillRect(20, cy + 24, 12, 7);
+            ctx.fillRect(20, cy + 26, 12, 8);
         }
 
-        // Torso - SSAFY Blue Hoodie
+        // Torso - Vibrant SSAFY Blue Hoodie with crisp white trim
         ctx.fillStyle = '#2563eb';
         ctx.beginPath();
         ctx.roundRect(22, cy - 14, 22, 28, 6);
         ctx.fill();
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
-        // SSAFY Lanyard (Orange ribbon with white badge)
+        // Lanyard (Orange ribbon with white badge)
         ctx.strokeStyle = '#f97316';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
@@ -155,7 +142,6 @@ export class TextureGenerator {
         ctx.lineTo(39, cy - 12);
         ctx.stroke();
 
-        // Trainee Card Badge
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(30, cy + 4, 8, 10);
         ctx.fillStyle = '#2563eb';
@@ -167,8 +153,8 @@ export class TextureGenerator {
         ctx.arc(34, cy - 23, 11, 0, Math.PI * 2);
         ctx.fill();
 
-        // Hair (Stylish dark anime hair)
-        ctx.fillStyle = '#1e1b4b';
+        // Hair
+        ctx.fillStyle = '#0f172a';
         ctx.beginPath();
         ctx.arc(33, cy - 25, 12, Math.PI * 0.9, Math.PI * 2.1);
         ctx.lineTo(44, cy - 24);
@@ -178,17 +164,16 @@ export class TextureGenerator {
         // Determined Eye
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(37, cy - 24, 3, 3);
-        // Eyebrow
-        ctx.fillStyle = '#1e1b4b';
-        ctx.fillRect(36, cy - 28, 5, 2);
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(38, cy - 23, 2, 2);
 
-        // Sweat droplet (hurrying!)
+        // Sweat drop (hurrying!)
         ctx.fillStyle = '#38bdf8';
         ctx.beginPath();
         ctx.arc(43, cy - 26, 2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Right Arm (front)
+        // Front Arm
         ctx.fillStyle = '#3b82f6';
         ctx.beginPath();
         if (frame === 1) {
@@ -204,17 +189,19 @@ export class TextureGenerator {
         const cy = 34;
 
         // Backpack
-        ctx.fillStyle = '#1e293b';
+        ctx.fillStyle = '#0f172a';
         ctx.beginPath();
         ctx.roundRect(14, cy - 12, 12, 22, 4);
         ctx.fill();
 
-        // Tucked Legs for Jump
-        ctx.fillStyle = '#0f172a';
+        // Tucked Legs
+        ctx.fillStyle = '#1e293b';
         ctx.fillRect(20, cy + 12, 16, 8);
         ctx.fillRect(28, cy + 18, 14, 8);
-        ctx.fillStyle = '#ef4444'; // Red sneakers
-        ctx.fillRect(38, cy + 20, 12, 8);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(36, cy + 18, 8, 4);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(38, cy + 22, 12, 8);
         ctx.fillRect(20, cy + 18, 12, 8);
 
         // Torso
@@ -222,6 +209,9 @@ export class TextureGenerator {
         ctx.beginPath();
         ctx.roundRect(22, cy - 14, 22, 28, 6);
         ctx.fill();
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
         // Lanyard floating
         ctx.strokeStyle = '#f97316';
@@ -241,14 +231,14 @@ export class TextureGenerator {
         ctx.arc(34, cy - 23, 11, 0, Math.PI * 2);
         ctx.fill();
 
-        // Hair fluttering up
-        ctx.fillStyle = '#1e1b4b';
+        // Fluttering hair
+        ctx.fillStyle = '#0f172a';
         ctx.beginPath();
         ctx.arc(33, cy - 25, 12, Math.PI * 0.8, Math.PI * 2.2);
         ctx.lineTo(45, cy - 28);
         ctx.fill();
 
-        // Eyes (excited/jump)
+        // Eye
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(38, cy - 24, 3, 3);
 
@@ -262,39 +252,41 @@ export class TextureGenerator {
     private static drawTraineeSlide(ctx: CanvasRenderingContext2D) {
         ctx.clearRect(0, 0, 80, 48);
 
-        // Sliding horizontally
-        // Speed lines / friction sparks
+        // Sparks
         ctx.fillStyle = '#f59e0b';
         ctx.fillRect(2, 42, 20, 3);
         ctx.fillStyle = '#ef4444';
         ctx.fillRect(10, 44, 25, 2);
 
-        // Legs stretched back
-        ctx.fillStyle = '#0f172a';
+        // Legs back
+        ctx.fillStyle = '#1e293b';
         ctx.fillRect(12, 24, 28, 10);
         ctx.fillStyle = '#ef4444';
         ctx.fillRect(8, 26, 14, 8);
 
-        // Torso low
+        // Torso
         ctx.fillStyle = '#2563eb';
         ctx.beginPath();
         ctx.roundRect(32, 16, 26, 18, 4);
         ctx.fill();
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
-        // Head low forward
+        // Head
         ctx.fillStyle = '#fed7aa';
         ctx.beginPath();
         ctx.arc(62, 22, 10, 0, Math.PI * 2);
         ctx.fill();
 
-        // Hair back
-        ctx.fillStyle = '#1e1b4b';
+        // Hair
+        ctx.fillStyle = '#0f172a';
         ctx.beginPath();
         ctx.arc(60, 20, 11, Math.PI * 0.9, Math.PI * 2.1);
         ctx.lineTo(48, 16);
         ctx.fill();
 
-        // Focused eye
+        // Eye
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(65, 21, 3, 3);
 
@@ -310,118 +302,91 @@ export class TextureGenerator {
         if (!canvas) return;
         const ctx = canvas.getContext();
 
-        // Main pavement base
+        // Deep calm navy pavement (no eye fatigue)
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(0, 0, 128, 60);
 
-        // Cyber top neon line
-        const grad = ctx.createLinearGradient(0, 0, 128, 0);
-        grad.addColorStop(0, '#38bdf8');
-        grad.addColorStop(0.5, '#818cf8');
-        grad.addColorStop(1, '#38bdf8');
-        ctx.fillStyle = grad;
+        // Clean glowing cyan top guide line
+        ctx.fillStyle = '#38bdf8';
         ctx.fillRect(0, 0, 128, 4);
 
-        // Hazard diagonal stripes for tech runner feel
+        // Gentle tech road markings
         ctx.fillStyle = '#1e293b';
-        ctx.fillRect(0, 4, 128, 8);
-        ctx.fillStyle = '#f59e0b';
-        for (let i = 0; i < 128; i += 24) {
-            ctx.beginPath();
-            ctx.moveTo(i, 4);
-            ctx.lineTo(i + 12, 12);
-            ctx.lineTo(i + 6, 12);
-            ctx.lineTo(i - 6, 4);
-            ctx.fill();
-        }
+        ctx.fillRect(0, 4, 128, 12);
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(10, 8, 40, 4);
+        ctx.fillRect(74, 8, 40, 4);
 
-        // Subsurface cyber circuit patterns
+        // Subtle road lines
         ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(10, 24);
-        ctx.lineTo(60, 24);
-        ctx.lineTo(75, 42);
-        ctx.lineTo(120, 42);
+        ctx.moveTo(0, 30);
+        ctx.lineTo(128, 30);
         ctx.stroke();
-
-        ctx.fillStyle = '#0ea5e9';
-        ctx.fillRect(60, 22, 4, 4);
-        ctx.fillRect(120, 40, 4, 4);
 
         canvas.refresh();
     }
 
     private static generateBackgroundTextures(scene: Phaser.Scene) {
-        // Far skyline (City skyscrapers in early morning fog)
+        // Far skyline: Soft, low-contrast calm silhouettes (no flickering grids to prevent dizziness!)
         if (!scene.textures.exists('bg_skyline_far')) {
             const canvas = scene.textures.createCanvas('bg_skyline_far', 1280, 400);
             if (canvas) {
                 const ctx = canvas.getContext();
-                ctx.fillStyle = '#141829';
+                ctx.fillStyle = '#111827';
 
-                // Random skyline silhouettes
                 const buildings = [
-                    { x: 0, w: 90, h: 220 }, { x: 100, w: 120, h: 280 }, { x: 230, w: 80, h: 180 },
-                    { x: 320, w: 140, h: 320 }, { x: 470, w: 100, h: 240 }, { x: 580, w: 110, h: 300 },
-                    { x: 700, w: 90, h: 200 }, { x: 800, w: 130, h: 290 }, { x: 940, w: 110, h: 230 },
-                    { x: 1060, w: 120, h: 330 }, { x: 1190, w: 90, h: 210 }
+                    { x: 0, w: 100, h: 220 }, { x: 110, w: 130, h: 270 }, { x: 250, w: 90, h: 180 },
+                    { x: 350, w: 150, h: 300 }, { x: 510, w: 110, h: 230 }, { x: 630, w: 120, h: 280 },
+                    { x: 760, w: 100, h: 190 }, { x: 870, w: 140, h: 270 }, { x: 1020, w: 120, h: 220 },
+                    { x: 1150, w: 130, h: 310 }
                 ];
 
                 buildings.forEach(b => {
                     ctx.fillRect(b.x, 400 - b.h, b.w, b.h);
-
-                    // Distant window lights
-                    ctx.fillStyle = '#ffedd5';
-                    for (let wy = 400 - b.h + 20; wy < 380; wy += 28) {
-                        for (let wx = b.x + 12; wx < b.x + b.w - 12; wx += 20) {
-                            if (Math.sin(wx * wy) > 0.1) {
-                                ctx.fillRect(wx, wy, 6, 10);
-                            }
-                        }
-                    }
-                    ctx.fillStyle = '#141829';
+                    // Soft warm glow at roof
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+                    ctx.fillRect(b.x, 400 - b.h, b.w, 4);
+                    ctx.fillStyle = '#111827';
                 });
 
                 canvas.refresh();
             }
         }
 
-        // Near skyline (Closer buildings & SSAFY Campus)
+        // Near skyline: SSAFY campus landmarks with warm clean glow
         if (!scene.textures.exists('bg_skyline_near')) {
             const canvas = scene.textures.createCanvas('bg_skyline_near', 1280, 280);
             if (canvas) {
                 const ctx = canvas.getContext();
-                ctx.fillStyle = '#1e243b';
+                ctx.fillStyle = '#1e293b';
 
                 const blocks = [
-                    { x: 20, w: 160, h: 220, label: 'SSAFY' },
-                    { x: 200, w: 120, h: 160, label: '9:00 AM' },
-                    { x: 340, w: 200, h: 250, label: 'MULTICAMPUS' },
-                    { x: 560, w: 140, h: 190, label: 'COMMIT' },
-                    { x: 720, w: 180, h: 230, label: 'SEOUL' },
-                    { x: 920, w: 130, h: 170, label: 'PASS' },
-                    { x: 1070, w: 190, h: 240, label: 'MULTICAMPUS' }
+                    { x: 30, w: 180, h: 220, label: 'SSAFY' },
+                    { x: 240, w: 140, h: 170, label: '9:00 AM' },
+                    { x: 410, w: 220, h: 240, label: 'MULTICAMPUS' },
+                    { x: 660, w: 150, h: 190, label: 'SEOUL' },
+                    { x: 840, w: 200, h: 230, label: 'COMMIT' },
+                    { x: 1070, w: 180, h: 220, label: 'MULTICAMPUS' }
                 ];
 
                 blocks.forEach(b => {
                     ctx.fillRect(b.x, 280 - b.h, b.w, b.h);
 
-                    // Neon Sign
+                    // Clean neon signs
                     ctx.fillStyle = '#38bdf8';
-                    ctx.font = 'bold 16px monospace';
-                    ctx.fillText(b.label, b.x + 16, 280 - b.h + 30);
+                    ctx.font = 'bold 15px sans-serif';
+                    ctx.fillText(b.label, b.x + 20, 280 - b.h + 28);
 
-                    // Neon windows
-                    ctx.fillStyle = '#3b82f6';
-                    for (let wy = 280 - b.h + 50; wy < 260; wy += 24) {
-                        for (let wx = b.x + 16; wx < b.x + b.w - 16; wx += 22) {
-                            if (Math.cos(wx + wy) > 0.05) {
-                                ctx.fillRect(wx, wy, 10, 12);
-                            }
+                    // Soft warm window accents
+                    ctx.fillStyle = 'rgba(254, 240, 138, 0.3)';
+                    for (let wy = 280 - b.h + 50; wy < 260; wy += 35) {
+                        for (let wx = b.x + 20; wx < b.x + b.w - 20; wx += 30) {
+                            ctx.fillRect(wx, wy, 12, 14);
                         }
                     }
-                    ctx.fillStyle = '#1e243b';
+                    ctx.fillStyle = '#1e293b';
                 });
 
                 canvas.refresh();
@@ -430,77 +395,78 @@ export class TextureGenerator {
     }
 
     private static generateItemTextures(scene: Phaser.Scene) {
-        // 1. Commit Grass (32x32)
+        // 1. Commit Grass: Bright emerald green git commit square with glowing pulse border (36x36)
         if (!scene.textures.exists('jelly_grass')) {
-            const canvas = scene.textures.createCanvas('jelly_grass', 32, 32);
+            const canvas = scene.textures.createCanvas('jelly_grass', 36, 36);
             if (canvas) {
                 const ctx = canvas.getContext();
-                // Outer glow border
-                ctx.fillStyle = '#4ade80';
+
+                // Outer bright glow
+                ctx.fillStyle = 'rgba(74, 222, 128, 0.4)';
                 ctx.beginPath();
-                ctx.roundRect(1, 1, 30, 30, 8);
+                ctx.roundRect(0, 0, 36, 36, 10);
                 ctx.fill();
 
-                // Inner GitHub Green
-                const grad = ctx.createLinearGradient(0, 0, 32, 32);
-                grad.addColorStop(0, '#22c55e');
-                grad.addColorStop(1, '#15803d');
+                // Bright Green Body
+                const grad = ctx.createLinearGradient(0, 0, 36, 36);
+                grad.addColorStop(0, '#4ade80');
+                grad.addColorStop(1, '#16a34a');
                 ctx.fillStyle = grad;
                 ctx.beginPath();
-                ctx.roundRect(4, 4, 24, 24, 6);
+                ctx.roundRect(3, 3, 30, 30, 8);
                 ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
 
-                // Git Commit node icon
+                // Commit node icon
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2.5;
                 ctx.beginPath();
-                ctx.arc(16, 16, 5, 0, Math.PI * 2);
+                ctx.arc(18, 18, 5, 0, Math.PI * 2);
                 ctx.stroke();
 
                 ctx.beginPath();
-                ctx.moveTo(8, 16);
-                ctx.lineTo(11, 16);
-                ctx.moveTo(21, 16);
-                ctx.lineTo(24, 16);
+                ctx.moveTo(9, 18); ctx.lineTo(13, 18);
+                ctx.moveTo(23, 18); ctx.lineTo(27, 18);
                 ctx.stroke();
 
                 canvas.refresh();
             }
         }
 
-        // 2. SSAFY QR Code Phone Badge (36x44)
+        // 2. SSAFY QR Code Phone Badge (38x46)
         if (!scene.textures.exists('jelly_qr')) {
-            const canvas = scene.textures.createCanvas('jelly_qr', 36, 44);
+            const canvas = scene.textures.createCanvas('jelly_qr', 38, 46);
             if (canvas) {
                 const ctx = canvas.getContext();
+
+                // Glow
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+                ctx.beginPath();
+                ctx.roundRect(0, 0, 38, 46, 8);
+                ctx.fill();
+
                 // Phone Body
                 ctx.fillStyle = '#0f172a';
                 ctx.beginPath();
-                ctx.roundRect(2, 2, 32, 40, 6);
+                ctx.roundRect(3, 3, 32, 40, 6);
                 ctx.fill();
-
-                // Cyan border
                 ctx.strokeStyle = '#38bdf8';
                 ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.roundRect(2, 2, 32, 40, 6);
                 ctx.stroke();
 
                 // Screen
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(6, 6, 24, 28);
+                ctx.fillRect(7, 7, 24, 28);
 
-                // QR pattern
+                // QR matrix
                 ctx.fillStyle = '#0f172a';
-                ctx.fillRect(8, 8, 7, 7);
-                ctx.fillRect(21, 8, 7, 7);
-                ctx.fillRect(8, 21, 7, 7);
-                ctx.fillRect(17, 17, 4, 4);
-                ctx.fillRect(22, 22, 5, 5);
-
-                // Home indicator
-                ctx.fillStyle = '#94a3b8';
-                ctx.fillRect(13, 38, 10, 2);
+                ctx.fillRect(9, 9, 7, 7);
+                ctx.fillRect(22, 9, 7, 7);
+                ctx.fillRect(9, 22, 7, 7);
+                ctx.fillRect(18, 18, 4, 4);
+                ctx.fillRect(23, 23, 5, 5);
 
                 canvas.refresh();
             }
@@ -511,74 +477,72 @@ export class TextureGenerator {
             const canvas = scene.textures.createCanvas('item_coffee', 36, 44);
             if (canvas) {
                 const ctx = canvas.getContext();
-                // Cup outline
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+
+                // Glow
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.3)';
                 ctx.beginPath();
-                ctx.moveTo(6, 12);
-                ctx.lineTo(10, 40);
-                ctx.lineTo(26, 40);
-                ctx.lineTo(30, 12);
+                ctx.roundRect(2, 6, 32, 38, 6);
+                ctx.fill();
+
+                // Cup Body
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.beginPath();
+                ctx.moveTo(6, 12); ctx.lineTo(10, 40); ctx.lineTo(26, 40); ctx.lineTo(30, 12);
                 ctx.closePath();
                 ctx.fill();
 
                 // Coffee liquid
-                ctx.fillStyle = '#3f1a04';
+                ctx.fillStyle = '#451a03';
                 ctx.beginPath();
-                ctx.moveTo(8, 18);
-                ctx.lineTo(11, 38);
-                ctx.lineTo(25, 38);
-                ctx.lineTo(28, 18);
+                ctx.moveTo(8, 18); ctx.lineTo(11, 38); ctx.lineTo(25, 38); ctx.lineTo(28, 18);
                 ctx.closePath();
                 ctx.fill();
 
                 // Ice cubes
-                ctx.fillStyle = 'rgba(186, 230, 253, 0.7)';
+                ctx.fillStyle = '#bae6fd';
                 ctx.fillRect(12, 20, 6, 6);
                 ctx.fillRect(20, 22, 6, 6);
-                ctx.fillRect(15, 28, 6, 6);
 
-                // Cup Rim / Dome lid
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.beginPath();
-                ctx.roundRect(4, 9, 28, 4, 2);
-                ctx.fill();
-
-                // Red Straw
+                // Lid & Red Straw
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(4, 9, 28, 4);
                 ctx.fillStyle = '#ef4444';
-                ctx.save();
-                ctx.translate(22, 2);
-                ctx.rotate(0.2);
-                ctx.fillRect(-2, 0, 4, 22);
-                ctx.restore();
+                ctx.fillRect(20, 0, 4, 18);
 
                 canvas.refresh();
             }
         }
 
-        // 4. Fever / RedBull Energy Drink (30x42)
+        // 4. Booster Drink (32x44)
         if (!scene.textures.exists('item_fever')) {
-            const canvas = scene.textures.createCanvas('item_fever', 30, 42);
+            const canvas = scene.textures.createCanvas('item_fever', 32, 44);
             if (canvas) {
                 const ctx = canvas.getContext();
+
+                // Golden Glow
+                ctx.fillStyle = 'rgba(250, 204, 21, 0.4)';
+                ctx.beginPath();
+                ctx.roundRect(1, 3, 30, 38, 6);
+                ctx.fill();
+
                 // Golden Can
-                const grad = ctx.createLinearGradient(4, 0, 26, 0);
-                grad.addColorStop(0, '#eab308');
+                const grad = ctx.createLinearGradient(4, 0, 28, 0);
+                grad.addColorStop(0, '#facc15');
                 grad.addColorStop(0.5, '#fef08a');
                 grad.addColorStop(1, '#ca8a04');
                 ctx.fillStyle = grad;
                 ctx.beginPath();
-                ctx.roundRect(4, 6, 22, 32, 4);
+                ctx.roundRect(5, 6, 22, 32, 4);
                 ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
 
-                // Lightning Bolt ⚡
+                // Lightning ⚡
                 ctx.fillStyle = '#ef4444';
                 ctx.beginPath();
-                ctx.moveTo(17, 10);
-                ctx.lineTo(10, 22);
-                ctx.lineTo(15, 22);
-                ctx.lineTo(13, 32);
-                ctx.lineTo(20, 20);
-                ctx.lineTo(15, 20);
+                ctx.moveTo(17, 10); ctx.lineTo(10, 22); ctx.lineTo(15, 22);
+                ctx.lineTo(13, 32); ctx.lineTo(21, 20); ctx.lineTo(16, 20);
                 ctx.closePath();
                 ctx.fill();
 
@@ -588,56 +552,54 @@ export class TextureGenerator {
     }
 
     private static generateObstacleTextures(scene: Phaser.Scene) {
-        // 1. Ground Obstacle: Error Terminal Monitor (52x58)
+        // 1. Ground: 500 Error Monitor (52x58)
         if (!scene.textures.exists('obstacle_error')) {
             const canvas = scene.textures.createCanvas('obstacle_error', 52, 58);
             if (canvas) {
                 const ctx = canvas.getContext();
-                // Monitor stand
+
+                // Stand
                 ctx.fillStyle = '#334155';
                 ctx.fillRect(22, 44, 8, 10);
                 ctx.fillRect(14, 52, 24, 6);
 
-                // Monitor frame
+                // Frame with bright red border
                 ctx.fillStyle = '#0f172a';
                 ctx.beginPath();
                 ctx.roundRect(2, 4, 48, 40, 4);
                 ctx.fill();
                 ctx.strokeStyle = '#ef4444';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // Red Error Screen
-                ctx.fillStyle = '#450a0a';
+                // Red Screen
+                ctx.fillStyle = '#7f1d1d';
                 ctx.fillRect(6, 8, 40, 32);
 
-                // Error cross & text
-                ctx.fillStyle = '#ef4444';
-                ctx.font = 'bold 10px monospace';
-                ctx.fillText('ERR 500', 8, 22);
+                // Error text
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.fillText('ERR 500', 7, 24);
 
-                // Glitch line
-                ctx.fillStyle = '#f87171';
-                ctx.fillRect(8, 28, 36, 3);
-                ctx.fillRect(12, 33, 20, 2);
+                ctx.fillStyle = '#fca5a5';
+                ctx.fillRect(8, 28, 36, 4);
 
                 canvas.refresh();
             }
         }
 
-        // 2. Ground Obstacle 2: Bug Robot (48x44)
+        // 2. Ground: Bug Robot (48x44)
         if (!scene.textures.exists('obstacle_bug')) {
             const canvas = scene.textures.createCanvas('obstacle_bug', 48, 44);
             if (canvas) {
                 const ctx = canvas.getContext();
+
                 // Legs
-                ctx.strokeStyle = '#991b1b';
+                ctx.strokeStyle = '#b91c1c';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                // Left legs
                 ctx.moveTo(14, 24); ctx.lineTo(4, 38);
                 ctx.moveTo(18, 28); ctx.lineTo(10, 42);
-                // Right legs
                 ctx.moveTo(34, 24); ctx.lineTo(44, 38);
                 ctx.moveTo(30, 28); ctx.lineTo(38, 42);
                 ctx.stroke();
@@ -647,6 +609,9 @@ export class TextureGenerator {
                 ctx.beginPath();
                 ctx.roundRect(14, 12, 20, 24, 8);
                 ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
 
                 // Antennae
                 ctx.beginPath();
@@ -654,7 +619,7 @@ export class TextureGenerator {
                 ctx.moveTo(30, 12); ctx.lineTo(38, 2);
                 ctx.stroke();
 
-                // Glowing yellow eyes
+                // Eyes
                 ctx.fillStyle = '#facc15';
                 ctx.fillRect(17, 18, 4, 4);
                 ctx.fillRect(27, 18, 4, 4);
@@ -663,35 +628,32 @@ export class TextureGenerator {
             }
         }
 
-        // 3. Air Obstacle: Merge Conflict Caution Barrier (70x34)
+        // 3. Air: Merge Conflict Caution Barrier (70x34)
         if (!scene.textures.exists('obstacle_conflict')) {
             const canvas = scene.textures.createCanvas('obstacle_conflict', 70, 34);
             if (canvas) {
                 const ctx = canvas.getContext();
-                // Barrier frame
-                ctx.fillStyle = '#1e293b';
+
+                ctx.fillStyle = '#0f172a';
                 ctx.beginPath();
                 ctx.roundRect(2, 2, 66, 30, 4);
                 ctx.fill();
                 ctx.strokeStyle = '#f59e0b';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // Yellow caution stripes
+                // Diagonal caution stripes
                 ctx.fillStyle = '#f59e0b';
                 for (let x = 6; x < 64; x += 14) {
                     ctx.beginPath();
-                    ctx.moveTo(x, 4);
-                    ctx.lineTo(x + 6, 4);
-                    ctx.lineTo(x - 2, 28);
-                    ctx.lineTo(x - 8, 28);
+                    ctx.moveTo(x, 4); ctx.lineTo(x + 6, 4);
+                    ctx.lineTo(x - 2, 28); ctx.lineTo(x - 8, 28);
                     ctx.fill();
                 }
 
-                // Text
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 9px monospace';
-                ctx.fillText('CONFLICT', 12, 20);
+                ctx.font = 'bold 10px monospace';
+                ctx.fillText('CONFLICT', 11, 20);
 
                 canvas.refresh();
             }
@@ -699,33 +661,26 @@ export class TextureGenerator {
     }
 
     private static generateParticleTextures(scene: Phaser.Scene) {
-        // Sparkle
         if (!scene.textures.exists('particle_sparkle')) {
             const canvas = scene.textures.createCanvas('particle_sparkle', 16, 16);
             if (canvas) {
                 const ctx = canvas.getContext();
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
-                ctx.moveTo(8, 0);
-                ctx.lineTo(10, 6);
-                ctx.lineTo(16, 8);
-                ctx.lineTo(10, 10);
-                ctx.lineTo(8, 16);
-                ctx.lineTo(6, 10);
-                ctx.lineTo(0, 8);
-                ctx.lineTo(6, 6);
+                ctx.moveTo(8, 0); ctx.lineTo(10, 6); ctx.lineTo(16, 8);
+                ctx.lineTo(10, 10); ctx.lineTo(8, 16); ctx.lineTo(6, 10);
+                ctx.lineTo(0, 8); ctx.lineTo(6, 6);
                 ctx.closePath();
                 ctx.fill();
                 canvas.refresh();
             }
         }
 
-        // Dust puff
         if (!scene.textures.exists('particle_dust')) {
             const canvas = scene.textures.createCanvas('particle_dust', 12, 12);
             if (canvas) {
                 const ctx = canvas.getContext();
-                ctx.fillStyle = 'rgba(148, 163, 184, 0.8)';
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.7)';
                 ctx.beginPath();
                 ctx.arc(6, 6, 5, 0, Math.PI * 2);
                 ctx.fill();
@@ -735,78 +690,58 @@ export class TextureGenerator {
     }
 
     private static generateUiTextures(scene: Phaser.Scene) {
-        // Touch Jump Button (90x90)
         if (!scene.textures.exists('btn_touch_jump')) {
             const canvas = scene.textures.createCanvas('btn_touch_jump', 90, 90);
             if (canvas) {
                 const ctx = canvas.getContext();
-                // Outer circle
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
                 ctx.beginPath();
                 ctx.arc(45, 45, 42, 0, Math.PI * 2);
                 ctx.fill();
-
                 ctx.strokeStyle = '#38bdf8';
                 ctx.lineWidth = 4;
                 ctx.stroke();
 
-                // Arrow Up icon
                 ctx.fillStyle = '#38bdf8';
                 ctx.beginPath();
-                ctx.moveTo(45, 22);
-                ctx.lineTo(64, 44);
-                ctx.lineTo(52, 44);
-                ctx.lineTo(52, 64);
-                ctx.lineTo(38, 64);
-                ctx.lineTo(38, 44);
+                ctx.moveTo(45, 22); ctx.lineTo(64, 44); ctx.lineTo(52, 44);
+                ctx.lineTo(52, 64); ctx.lineTo(38, 64); ctx.lineTo(38, 44);
                 ctx.lineTo(26, 44);
                 ctx.closePath();
                 ctx.fill();
 
-                // Label
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 11px sans-serif';
+                ctx.font = 'bold 12px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText('JUMP', 45, 78);
-
                 canvas.refresh();
             }
         }
 
-        // Touch Slide Button (90x90)
         if (!scene.textures.exists('btn_touch_slide')) {
             const canvas = scene.textures.createCanvas('btn_touch_slide', 90, 90);
             if (canvas) {
                 const ctx = canvas.getContext();
-                // Outer circle
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
                 ctx.beginPath();
                 ctx.arc(45, 45, 42, 0, Math.PI * 2);
                 ctx.fill();
-
                 ctx.strokeStyle = '#f59e0b';
                 ctx.lineWidth = 4;
                 ctx.stroke();
 
-                // Arrow Down icon
                 ctx.fillStyle = '#f59e0b';
                 ctx.beginPath();
-                ctx.moveTo(45, 62);
-                ctx.lineTo(64, 40);
-                ctx.lineTo(52, 40);
-                ctx.lineTo(52, 20);
-                ctx.lineTo(38, 20);
-                ctx.lineTo(38, 40);
+                ctx.moveTo(45, 62); ctx.lineTo(64, 40); ctx.lineTo(52, 40);
+                ctx.lineTo(52, 20); ctx.lineTo(38, 20); ctx.lineTo(38, 40);
                 ctx.lineTo(26, 40);
                 ctx.closePath();
                 ctx.fill();
 
-                // Label
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 11px sans-serif';
+                ctx.font = 'bold 12px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText('SLIDE', 45, 78);
-
                 canvas.refresh();
             }
         }
