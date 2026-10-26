@@ -19,15 +19,15 @@ export class Game extends Scene {
     private items!: Phaser.Physics.Arcade.Group;
 
     private groundY: number = 0;
-    private baseSpeed: number = 440;
-    private currentSpeed: number = 440;
-    private distance: number = 0; // In meters
+    private baseSpeed: number = 480;
+    private currentSpeed: number = 480;
+    private distance: number = 0;
 
-    // Mental Gauge (HP)
+    // Mental HP
     private maxHp: number = 100;
     private currentHp: number = 100;
     private hpBarFill!: Phaser.GameObjects.Graphics;
-    private hpDrainRate: number = 2.4; // HP natural drain per second
+    private hpDrainRate: number = 2.2;
 
     // Score & Stats
     public score: number = 0;
@@ -49,17 +49,16 @@ export class Game extends Scene {
     private comboText!: Phaser.GameObjects.Text;
     private hpText!: Phaser.GameObjects.Text;
 
-    // Timers
-    private obstacleTimer!: Phaser.Time.TimerEvent;
-    private patternTimer!: Phaser.Time.TimerEvent;
-    private coffeeTimer!: Phaser.Time.TimerEvent;
+    // Orchestrated Wave Spawner
+    private nextWaveTimer: number = 0;
+    private lastPatternIndex: number = -1;
 
     // Pause & Audio
     private isPaused: boolean = false;
     private pauseContainer?: Phaser.GameObjects.Container;
     private audioManager: AudioManager;
 
-    // Mobile Virtual Touch Buttons
+    // Mobile Visual Buttons
     private jumpBtn?: Phaser.GameObjects.Image;
     private slideBtn?: Phaser.GameObjects.Image;
 
@@ -72,7 +71,7 @@ export class Game extends Scene {
         const { width, height } = this.scale;
         this.cameras.main.fadeIn(300, 10, 14, 26);
 
-        // Reset variables
+        // Reset state
         this.currentSpeed = this.baseSpeed;
         this.distance = 0;
         this.score = 0;
@@ -84,6 +83,7 @@ export class Game extends Scene {
         this.isFeverActive = false;
         this.feverTimeRemaining = 0;
         this.isPaused = false;
+        this.nextWaveTimer = 800; // First wave after 0.8s
         this.highScore = ScoreManager.getHighScore();
 
         // 1. Sky & Parallax Background
@@ -105,12 +105,11 @@ export class Game extends Scene {
                 .setAlpha(0.85);
         }
 
-        // 2. Continuous Ground
+        // 2. Ground
         this.groundTile = this.add.tileSprite(0, this.groundY, width, 60, 'ground_tex')
             .setOrigin(0, 0)
             .setDepth(10);
 
-        // Static ground collider for physics
         this.groundCollider = this.physics.add.staticGroup();
         const groundBody = this.add.rectangle(width / 2, this.groundY + 20, width * 2, 40, 0x000000, 0);
         this.groundCollider.add(groundBody);
@@ -118,12 +117,12 @@ export class Game extends Scene {
         // 3. Player
         this.player = new Player(this, 180, this.groundY, this.groundY).setDepth(20);
         this.physics.add.collider(this.player, this.groundCollider, () => {
-            if (this.player.body && this.player.body.blocked.down) {
+            if (this.player.body && (this.player.body.blocked.down || this.player.body.touching.down)) {
                 this.player.resetJump();
             }
         });
 
-        // 4. Object Groups & Collisions
+        // 4. Object Groups & Overlaps
         this.obstacles = this.physics.add.group();
         this.physics.add.overlap(this.player, this.obstacles, (_p, obs) => {
             this.handleHitObstacle(obs as Phaser.Physics.Arcade.Sprite);
@@ -142,13 +141,10 @@ export class Game extends Scene {
         // 5. HUD
         this.createHUD();
 
-        // 6. Mobile On-Screen Virtual Controls
-        this.createVirtualControls();
+        // 6. Responsive Mobile Touch Controls (Split screen + on-screen buttons)
+        this.setupTouchControls();
 
-        // 7. Spawning Timers
-        this.scheduleSpawns();
-
-        // 8. Key Listeners (Pause)
+        // 7. Keyboard Listeners
         if (this.input.keyboard) {
             this.input.keyboard.on('keydown-P', () => this.togglePause());
             this.input.keyboard.on('keydown-ESC', () => this.togglePause());
@@ -158,29 +154,47 @@ export class Game extends Scene {
         this.audioManager.startBgm();
     }
 
-    private scheduleSpawns() {
-        // Obstacle spawning timer
-        this.obstacleTimer = this.time.addEvent({
-            delay: 1700,
-            callback: this.spawnObstacle,
-            callbackScope: this,
-            loop: true
+    private setupTouchControls() {
+        const { width, height } = this.scale;
+
+        // Visual Buttons
+        if (this.textures.exists('btn_touch_slide')) {
+            this.slideBtn = this.add.image(90, height - 90, 'btn_touch_slide')
+                .setDepth(60)
+                .setAlpha(0.75);
+        }
+
+        if (this.textures.exists('btn_touch_jump')) {
+            this.jumpBtn = this.add.image(width - 90, height - 90, 'btn_touch_jump')
+                .setDepth(60)
+                .setAlpha(0.75);
+        }
+
+        // Screen-Split Multi-touch Zone (Left half = Slide, Right half = Jump)
+        this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            if (this.isPaused) return;
+
+            // Ignore pause button area (top right)
+            if (pointer.x > width - 80 && pointer.y < 80) return;
+
+            if (pointer.x < width / 2) {
+                // Left half: Slide
+                this.player.setTouchSlide(true);
+                this.slideBtn?.setAlpha(1.0).setScale(0.92);
+            } else {
+                // Right half: Jump
+                this.player.requestTouchJump();
+                this.jumpBtn?.setAlpha(1.0).setScale(0.92);
+            }
         });
 
-        // Jelly & Commit Pattern timer
-        this.patternTimer = this.time.addEvent({
-            delay: 900,
-            callback: this.spawnJellyPattern,
-            callbackScope: this,
-            loop: true
-        });
-
-        // Americano Coffee timer
-        this.coffeeTimer = this.time.addEvent({
-            delay: 5500,
-            callback: this.spawnCoffee,
-            callbackScope: this,
-            loop: true
+        this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+            if (pointer.x < width / 2) {
+                this.player.setTouchSlide(false);
+                this.slideBtn?.setAlpha(0.75).setScale(1.0);
+            } else {
+                this.jumpBtn?.setAlpha(0.75).setScale(1.0);
+            }
         });
     }
 
@@ -189,11 +203,11 @@ export class Game extends Scene {
 
         const deltaSec = delta / 1000;
 
-        // Increase distance & speed progression
+        // Distance & Speed Progression
         this.distance += (this.currentSpeed * deltaSec) / 10;
-        this.currentSpeed = Math.min(820, this.baseSpeed + Math.floor(this.distance * 0.3));
+        this.currentSpeed = Math.min(840, this.baseSpeed + Math.floor(this.distance * 0.28));
 
-        // Parallax scroll
+        // Parallax background scrolling
         if (this.bgFarTile) this.bgFarTile.tilePositionX += (this.currentSpeed * 0.12) * deltaSec;
         if (this.bgNearTile) this.bgNearTile.tilePositionX += (this.currentSpeed * 0.35) * deltaSec;
         if (this.groundTile) this.groundTile.tilePositionX += this.currentSpeed * deltaSec;
@@ -217,8 +231,14 @@ export class Game extends Scene {
             }
         }
 
-        // Update player
-        this.player.update();
+        // Orchestrated wave generator
+        this.nextWaveTimer -= delta;
+        if (this.nextWaveTimer <= 0) {
+            this.spawnNextWave();
+        }
+
+        // Player update with snappy input buffer
+        this.player.update(_time, delta);
 
         // Update HUD
         this.distanceText.setText(`📍 ${Math.floor(this.distance)}m 질주 중`);
@@ -227,6 +247,225 @@ export class Game extends Scene {
         this.cleanOffscreen(this.obstacles);
         this.cleanOffscreen(this.jellies);
         this.cleanOffscreen(this.items);
+    }
+
+    // Choreographed Wave Generation
+    private spawnNextWave() {
+        const patterns = [0, 1, 2, 3, 4, 5];
+        // Avoid repeating the exact same pattern consecutively
+        const available = patterns.filter(p => p !== this.lastPatternIndex);
+        const selected = Phaser.Math.RND.pick(available);
+        this.lastPatternIndex = selected;
+
+        let waveDurationMs = 2000;
+
+        switch (selected) {
+            case 0:
+                waveDurationMs = this.spawnRunWave();
+                break;
+            case 1:
+                waveDurationMs = this.spawnJumpArcWave();
+                break;
+            case 2:
+                waveDurationMs = this.spawnSlideTunnelWave();
+                break;
+            case 3:
+                waveDurationMs = this.spawnDoubleJumpQrWave();
+                break;
+            case 4:
+                waveDurationMs = this.spawnCoffeeRestWave();
+                break;
+            case 5:
+                waveDurationMs = this.spawnFeverBonusWave();
+                break;
+        }
+
+        // Set next wave trigger based on current speed
+        this.nextWaveTimer = Math.max(1400, waveDurationMs * (480 / this.currentSpeed));
+    }
+
+    // Pattern 0: Flat sprint row of commits (Builds combo & rhythm)
+    private spawnRunWave(): number {
+        const { width } = this.scale;
+        const count = 5;
+        const spacing = 50;
+
+        for (let i = 0; i < count; i++) {
+            const j = this.jellies.create(width + (i * spacing), this.groundY - 32, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(j, 100, 'grass');
+        }
+
+        return 1600;
+    }
+
+    // Pattern 1: Parabolic jump arc over ground obstacle (Natural guide!)
+    private spawnJumpArcWave(): number {
+        const { width } = this.scale;
+        const obstacleX = width + 240;
+
+        // Ground obstacle right in the center
+        const tex = Phaser.Math.Between(0, 1) === 0 ? 'obstacle_error' : 'obstacle_bug';
+        const obs = this.obstacles.create(obstacleX, this.groundY - 26, tex) as Phaser.Physics.Arcade.Sprite;
+        obs.setDepth(15);
+        const body = obs.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            body.setAllowGravity(false);
+            body.setVelocityX(-this.currentSpeed);
+            if (tex === 'obstacle_error') {
+                body.setSize(44, 48);
+                body.setOffset(4, 8);
+            } else {
+                body.setSize(40, 36);
+                body.setOffset(4, 6);
+            }
+        }
+
+        // Parabolic arc matching jump physics: 7 items spanning 420px
+        const arcOffsets = [
+            { x: -180, y: -35 },
+            { x: -120, y: -80 },
+            { x: -60, y: -130 },
+            { x: 0, y: -150 }, // Apex right above obstacle
+            { x: 60, y: -130 },
+            { x: 120, y: -80 },
+            { x: 180, y: -35 }
+        ];
+
+        arcOffsets.forEach(pt => {
+            const j = this.jellies.create(obstacleX + pt.x, this.groundY + pt.y, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(j, 100, 'grass');
+        });
+
+        return 2200;
+    }
+
+    // Pattern 2: Merge conflict barrier + low slide tunnel
+    private spawnSlideTunnelWave(): number {
+        const { width } = this.scale;
+        const barrierX = width + 220;
+
+        // Air barrier
+        const obs = this.obstacles.create(barrierX, this.groundY - 72, 'obstacle_conflict') as Phaser.Physics.Arcade.Sprite;
+        obs.setDepth(15);
+        const body = obs.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            body.setAllowGravity(false);
+            body.setVelocityX(-this.currentSpeed);
+            body.setSize(64, 26);
+            body.setOffset(3, 4);
+        }
+
+        // Low row of commit grasses under the barrier
+        for (let i = -120; i <= 120; i += 50) {
+            const j = this.jellies.create(barrierX + i, this.groundY - 18, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(j, 100, 'grass');
+        }
+
+        return 2000;
+    }
+
+    // Pattern 3: High Double Jump with SSAFY QR Code Phone
+    private spawnDoubleJumpQrWave(): number {
+        const { width } = this.scale;
+        const centerX = width + 260;
+
+        // Ground obstacle below the QR peak
+        const obs = this.obstacles.create(centerX, this.groundY - 26, 'obstacle_bug') as Phaser.Physics.Arcade.Sprite;
+        obs.setDepth(15);
+        const body = obs.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            body.setAllowGravity(false);
+            body.setVelocityX(-this.currentSpeed);
+            body.setSize(40, 36);
+            body.setOffset(4, 6);
+        }
+
+        // QR Code at high apex
+        const qr = this.jellies.create(centerX, this.groundY - 170, 'jelly_qr') as Phaser.Physics.Arcade.Sprite;
+        this.setupItemPhysics(qr, 300, 'qr');
+
+        // Guide commits leading up and down
+        const guides = [
+            { x: -160, y: -40 },
+            { x: -90, y: -105 },
+            { x: 90, y: -105 },
+            { x: 160, y: -40 }
+        ];
+        guides.forEach(g => {
+            const j = this.jellies.create(centerX + g.x, this.groundY + g.y, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(j, 100, 'grass');
+        });
+
+        return 2200;
+    }
+
+    // Pattern 4: Coffee break & Health refill
+    private spawnCoffeeRestWave(): number {
+        const { width } = this.scale;
+        const coffeeX = width + 200;
+
+        // Floating Americano
+        const coffee = this.items.create(coffeeX, this.groundY - 70, 'item_coffee') as Phaser.Physics.Arcade.Sprite;
+        coffee.setDepth(16);
+        const body = coffee.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            body.setAllowGravity(false);
+            body.setVelocityX(-this.currentSpeed);
+        }
+        coffee.setData('type', 'coffee');
+
+        // Floating bob
+        this.tweens.add({
+            targets: coffee,
+            y: coffee.y - 12,
+            duration: 450,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+
+        // 3 commits before and after
+        [-100, -50, 50, 100].forEach(ox => {
+            const j = this.jellies.create(coffeeX + ox, this.groundY - 32, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(j, 100, 'grass');
+        });
+
+        return 1800;
+    }
+
+    // Pattern 5: Fever Drink & Golden sprint
+    private spawnFeverBonusWave(): number {
+        const { width } = this.scale;
+        const startX = width + 180;
+
+        // Rare booster bottle
+        const booster = this.items.create(startX, this.groundY - 70, 'item_fever') as Phaser.Physics.Arcade.Sprite;
+        booster.setDepth(16);
+        const body = booster.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            body.setAllowGravity(false);
+            body.setVelocityX(-this.currentSpeed);
+        }
+        booster.setData('type', 'fever');
+
+        // Trail of 6 commits right behind
+        for (let i = 1; i <= 6; i++) {
+            const j = this.jellies.create(startX + (i * 45), this.groundY - 32, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(j, 100, 'grass');
+        }
+
+        return 2000;
+    }
+
+    private setupItemPhysics(item: Phaser.Physics.Arcade.Sprite, points: number, type: string) {
+        item.setDepth(16);
+        const body = item.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            body.setAllowGravity(false);
+            body.setVelocityX(-this.currentSpeed);
+        }
+        item.setData('points', points);
+        item.setData('type', type);
     }
 
     private cleanOffscreen(group: Phaser.Physics.Arcade.Group) {
@@ -321,7 +560,6 @@ export class Game extends Scene {
         let barColor = 0x22c55e;
         if (hpRatio < 0.28) {
             barColor = 0xef4444;
-            // Pulsing warning color
             if (Math.floor(Date.now() / 250) % 2 === 0) barColor = 0xb91c1c;
         } else if (hpRatio < 0.6) {
             barColor = 0xf59e0b;
@@ -361,7 +599,6 @@ export class Game extends Scene {
         this.feverText.setVisible(true);
         this.feverBar.setVisible(true);
 
-        // Flash camera
         this.cameras.main.flash(200, 255, 230, 100);
     }
 
@@ -372,170 +609,10 @@ export class Game extends Scene {
         this.feverBar.setVisible(false);
     }
 
-    private createVirtualControls() {
-        const { width, height } = this.scale;
-
-        // Slide Button (Bottom Left)
-        if (this.textures.exists('btn_touch_slide')) {
-            this.slideBtn = this.add.image(90, height - 90, 'btn_touch_slide')
-                .setDepth(60)
-                .setAlpha(0.7)
-                .setInteractive();
-
-            this.slideBtn.on('pointerdown', () => {
-                this.slideBtn?.setAlpha(1.0).setScale(0.92);
-                this.player.setTouchSlide(true);
-            });
-            this.slideBtn.on('pointerup', () => {
-                this.slideBtn?.setAlpha(0.7).setScale(1.0);
-                this.player.setTouchSlide(false);
-            });
-            this.slideBtn.on('pointerout', () => {
-                this.slideBtn?.setAlpha(0.7).setScale(1.0);
-                this.player.setTouchSlide(false);
-            });
-        }
-
-        // Jump Button (Bottom Right)
-        if (this.textures.exists('btn_touch_jump')) {
-            this.jumpBtn = this.add.image(width - 90, height - 90, 'btn_touch_jump')
-                .setDepth(60)
-                .setAlpha(0.7)
-                .setInteractive();
-
-            this.jumpBtn.on('pointerdown', () => {
-                this.jumpBtn?.setAlpha(1.0).setScale(0.92);
-                this.player.requestTouchJump();
-            });
-            this.jumpBtn.on('pointerup', () => {
-                this.jumpBtn?.setAlpha(0.7).setScale(1.0);
-            });
-            this.jumpBtn.on('pointerout', () => {
-                this.jumpBtn?.setAlpha(0.7).setScale(1.0);
-            });
-        }
-    }
-
-    private spawnObstacle() {
-        if (this.isPaused) return;
-        const { width } = this.scale;
-
-        // Air obstacle or Ground obstacle
-        const isAir = Phaser.Math.Between(0, 10) > 6;
-
-        if (isAir) {
-            // Merge conflict banner (must slide under)
-            const obs = this.obstacles.create(width + 60, this.groundY - 72, 'obstacle_conflict') as Phaser.Physics.Arcade.Sprite;
-            obs.setDepth(15);
-            const body = obs.body as Phaser.Physics.Arcade.Body;
-            if (body) {
-                body.setAllowGravity(false);
-                body.setVelocityX(-this.currentSpeed);
-                body.setSize(64, 26);
-                body.setOffset(3, 4);
-            }
-        } else {
-            // Ground obstacle (Error terminal or bug)
-            const tex = Phaser.Math.Between(0, 1) === 0 ? 'obstacle_error' : 'obstacle_bug';
-            const obs = this.obstacles.create(width + 60, this.groundY - 26, tex) as Phaser.Physics.Arcade.Sprite;
-            obs.setDepth(15);
-            const body = obs.body as Phaser.Physics.Arcade.Body;
-            if (body) {
-                body.setAllowGravity(false);
-                body.setVelocityX(-this.currentSpeed);
-                if (tex === 'obstacle_error') {
-                    body.setSize(44, 48);
-                    body.setOffset(4, 8);
-                } else {
-                    body.setSize(40, 36);
-                    body.setOffset(4, 6);
-                }
-            }
-        }
-    }
-
-    private spawnJellyPattern() {
-        if (this.isPaused) return;
-        const { width } = this.scale;
-        const pattern = Phaser.Math.Between(0, 3);
-
-        if (pattern === 0) {
-            // Straight line of 4 commits
-            for (let i = 0; i < 4; i++) {
-                const j = this.jellies.create(width + (i * 45), this.groundY - 32, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
-                this.setupItemPhysics(j, 100, 'grass');
-            }
-        } else if (pattern === 1) {
-            // Jump curve arc
-            const heights = [
-                this.groundY - 40,
-                this.groundY - 95,
-                this.groundY - 145,
-                this.groundY - 95,
-                this.groundY - 40
-            ];
-            heights.forEach((y, idx) => {
-                const j = this.jellies.create(width + (idx * 42), y, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
-                this.setupItemPhysics(j, 100, 'grass');
-            });
-        } else if (pattern === 2) {
-            // SSAFY QR Code in air (Double Jump bonus)
-            const qr = this.jellies.create(width + 50, this.groundY - 130, 'jelly_qr') as Phaser.Physics.Arcade.Sprite;
-            this.setupItemPhysics(qr, 300, 'qr');
-        } else {
-            // Low sliding commit line
-            for (let i = 0; i < 3; i++) {
-                const j = this.jellies.create(width + (i * 45), this.groundY - 24, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
-                this.setupItemPhysics(j, 100, 'grass');
-            }
-        }
-    }
-
-    private spawnCoffee() {
-        if (this.isPaused) return;
-        const { width } = this.scale;
-
-        // Rare chance for Booster drink
-        const isFeverDrink = Phaser.Math.Between(1, 4) === 1 && !this.isFeverActive;
-        const tex = isFeverDrink ? 'item_fever' : 'item_coffee';
-        const type = isFeverDrink ? 'fever' : 'coffee';
-
-        const item = this.items.create(width + 50, this.groundY - 90, tex) as Phaser.Physics.Arcade.Sprite;
-        item.setDepth(16);
-        const body = item.body as Phaser.Physics.Arcade.Body;
-        if (body) {
-            body.setAllowGravity(false);
-            body.setVelocityX(-this.currentSpeed);
-        }
-        item.setData('type', type);
-
-        // Gentle floating bob animation
-        this.tweens.add({
-            targets: item,
-            y: item.y - 12,
-            duration: 500,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-    }
-
-    private setupItemPhysics(item: Phaser.Physics.Arcade.Sprite, points: number, type: string) {
-        item.setDepth(16);
-        const body = item.body as Phaser.Physics.Arcade.Body;
-        if (body) {
-            body.setAllowGravity(false);
-            body.setVelocityX(-this.currentSpeed);
-        }
-        item.setData('points', points);
-        item.setData('type', type);
-    }
-
     private collectJelly(jelly: Phaser.Physics.Arcade.Sprite) {
         let points = jelly.getData('points') || 100;
         const type = jelly.getData('type') || 'grass';
 
-        // Combo increment
         this.combo++;
         if (type === 'grass') {
             this.commitCount++;
@@ -545,7 +622,6 @@ export class Game extends Scene {
             this.audioManager.playQr();
         }
 
-        // Combo multiplier & Fever check
         let multiplier = 1;
         if (this.combo >= 20) multiplier = 3;
         else if (this.combo >= 10) multiplier = 2;
@@ -560,7 +636,6 @@ export class Game extends Scene {
         this.score += totalEarned;
         this.scoreText.setText(this.score.toLocaleString());
 
-        // Update Combo UI
         if (this.combo >= 3) {
             this.comboText.setText(`🔥 ${this.combo} COMBO! (x${multiplier})`);
             this.comboText.setScale(1.2);
@@ -569,7 +644,6 @@ export class Game extends Scene {
             this.comboText.setText('');
         }
 
-        // Floating popup score
         const floatColor = type === 'qr' ? '#38bdf8' : this.isFeverActive ? '#facc15' : '#4ade80';
         const floatText = this.add.text(jelly.x, jelly.y, `+${totalEarned}`, {
             fontFamily: 'Arial Black',
@@ -585,7 +659,6 @@ export class Game extends Scene {
             onComplete: () => floatText.destroy()
         });
 
-        // Sparkle explosion
         if (this.textures.exists('particle_sparkle')) {
             const sparkles = this.add.particles(jelly.x, jelly.y, 'particle_sparkle', {
                 speed: { min: 30, max: 80 },
@@ -642,7 +715,6 @@ export class Game extends Scene {
     }
 
     private handleHitObstacle(obs: Phaser.Physics.Arcade.Sprite) {
-        // In fever mode, crush the obstacle instead!
         if (this.isFeverActive) {
             this.score += 500;
             this.scoreText.setText(this.score.toLocaleString());
@@ -662,7 +734,6 @@ export class Game extends Scene {
         const hitSuccess = this.player.hit();
         if (!hitSuccess) return;
 
-        // Damage & Reset combo
         this.currentHp -= 20;
         this.combo = 0;
         this.comboText.setText('');
@@ -711,18 +782,15 @@ export class Game extends Scene {
         }).setOrigin(0.5);
         this.pauseContainer.add(title);
 
-        // Resume Button
         const resumeBtn = this.createPauseBtn(width / 2, height / 2 - 35, '계속하기 (RESUME)', () => {
             this.togglePause();
         });
 
-        // Restart Button
         const restartBtn = this.createPauseBtn(width / 2, height / 2 + 25, '다시 시작 (RESTART)', () => {
             this.pauseContainer?.destroy();
             this.scene.restart();
         });
 
-        // Main Menu Button
         const menuBtn = this.createPauseBtn(width / 2, height / 2 + 85, '메인 메뉴 (MENU)', () => {
             this.pauseContainer?.destroy();
             this.audioManager.stopBgm();
@@ -758,10 +826,6 @@ export class Game extends Scene {
         this.physics.pause();
         this.audioManager.stopBgm();
         this.audioManager.playGameOver();
-
-        if (this.obstacleTimer) this.obstacleTimer.remove();
-        if (this.patternTimer) this.patternTimer.remove();
-        if (this.coffeeTimer) this.coffeeTimer.remove();
 
         this.cameras.main.fade(400, 10, 14, 26);
         this.time.delayedCall(400, () => {

@@ -18,12 +18,12 @@ const config: Phaser.Types.Core.GameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 1800, x: 0 },
+            gravity: { y: 2400, x: 0 },
             debug: false
         }
     },
     input: {
-        activePointers: 3 // Enable multi-touch for mobile (jump + slide simultaneously)
+        activePointers: 3 // Multi-touch support for simultaneous jump & slide
     },
     scene: [
         Boot,

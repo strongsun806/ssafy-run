@@ -16,9 +16,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     private groundY: number;
     private audioManager: AudioManager;
 
-    // External touch control flags
-    private touchJumpRequested: boolean = false;
-    private touchSlidePressed: boolean = false;
+    // Advanced Input Buffering & Coyote Time
+    private jumpBufferTime: number = 0; // ms
+    private coyoteTime: number = 0; // ms
+    private wasOnGround: boolean = false;
+
+    // External touch control states
+    private touchJumpTriggered: boolean = false;
+    private touchSlideHeld: boolean = false;
 
     // Dust particles
     private dustEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -65,7 +70,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     { key: 'player_run_3' },
                     { key: 'player_run_4' }
                 ],
-                frameRate: 10,
+                frameRate: 12,
                 repeat: -1
             });
         }
@@ -74,13 +79,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     private setupParticles() {
         if (this.scene.textures.exists('particle_dust')) {
             this.dustEmitter = this.scene.add.particles(0, 0, 'particle_dust', {
-                speed: { min: 20, max: 60 },
+                speed: { min: 25, max: 70 },
                 angle: { min: 140, max: 180 },
                 scale: { start: 0.8, end: 0 },
                 alpha: { start: 0.6, end: 0 },
-                lifespan: 300,
+                lifespan: 280,
                 quantity: 1,
-                frequency: 180,
+                frequency: 160,
                 emitting: true
             });
             this.dustEmitter.startFollow(this, -16, 0);
@@ -88,28 +93,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     public resetJump() {
-        if (this.jumpCount > 0) {
-            this.jumpCount = 0;
-            // Emit landing dust
-            if (this.dustEmitter) {
-                this.dustEmitter.explode(4, this.x - 10, this.y);
-            }
+        this.jumpCount = 0;
+        this.coyoteTime = 100;
+        if (this.dustEmitter && !this.wasOnGround) {
+            this.dustEmitter.explode(4, this.x - 10, this.y);
         }
     }
 
-    // Touch control triggers
+    // Touch control hooks
     public requestTouchJump() {
-        this.touchJumpRequested = true;
+        this.jumpBufferTime = 160; // 160ms jump buffer
+        this.touchJumpTriggered = true;
     }
 
     public setTouchSlide(isPressed: boolean) {
-        this.touchSlidePressed = isPressed;
+        this.touchSlideHeld = isPressed;
     }
 
     public setFever(fever: boolean) {
         this.isFever = fever;
         if (fever) {
-            this.setTint(0xfde047); // Golden fever glow
+            this.setTint(0xfde047);
             if (this.anims.currentAnim) {
                 this.anims.timeScale = 1.6;
             }
@@ -121,61 +125,106 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    public update() {
+    public update(_time?: number, delta: number = 16.6) {
         const body = this.body as Phaser.Physics.Arcade.Body;
         if (!body) return;
 
-        const isOnGround = body.blocked.down;
+        const isOnGround = body.blocked.down || body.touching.down;
 
-        // 1. Jump input check
-        let isJumpJustPressed = this.touchJumpRequested;
-        this.touchJumpRequested = false;
+        // Update Coyote Time & Ground State
+        if (isOnGround) {
+            this.coyoteTime = 100;
+            this.jumpCount = 0;
+        } else {
+            this.coyoteTime = Math.max(0, this.coyoteTime - delta);
+        }
 
-        if (this.cursors && !isJumpJustPressed) {
+        // 1. Check for Jump Press (Keyboard + Touch)
+        let isJumpJustPressed = this.touchJumpTriggered;
+        this.touchJumpTriggered = false;
+
+        if (this.cursors) {
             const upJustDown = Phaser.Input.Keyboard.JustDown(this.cursors.up);
             const spaceJustDown = this.keySpace ? Phaser.Input.Keyboard.JustDown(this.keySpace) : false;
             const wJustDown = this.keyW ? Phaser.Input.Keyboard.JustDown(this.keyW) : false;
-            isJumpJustPressed = upJustDown || spaceJustDown || wJustDown;
+            if (upJustDown || spaceJustDown || wJustDown) {
+                isJumpJustPressed = true;
+            }
         }
 
-        if (isJumpJustPressed && this.jumpCount < this.maxJumps && !this.isSliding) {
-            if (this.jumpCount === 0) {
-                this.setVelocityY(-780);
+        if (isJumpJustPressed) {
+            this.jumpBufferTime = 160; // Buffer for 160ms
+        } else {
+            this.jumpBufferTime = Math.max(0, this.jumpBufferTime - delta);
+        }
+
+        // 2. Execute Jump if buffered
+        if (this.jumpBufferTime > 0 && !this.isSliding) {
+            // First jump (grounded or within coyote time)
+            if (isOnGround || this.coyoteTime > 0) {
+                this.setVelocityY(-860);
+                this.jumpCount = 1;
+                this.coyoteTime = 0;
+                this.jumpBufferTime = 0;
                 this.audioManager.playJump();
-            } else {
-                this.setVelocityY(-740);
+                this.anims.stop();
+                this.setTexture('player_jump');
+            }
+            // Double jump (in air, jumpCount === 1)
+            else if (this.jumpCount < this.maxJumps) {
+                this.setVelocityY(-800);
+                this.jumpCount = 2;
+                this.jumpBufferTime = 0;
                 this.audioManager.playDoubleJump();
+                this.anims.stop();
+                this.setTexture('player_jump');
+
                 // Double jump sparkle
                 if (this.scene.textures.exists('particle_sparkle')) {
                     const spark = this.scene.add.particles(this.x, this.y - 20, 'particle_sparkle', {
-                        speed: { min: 40, max: 120 },
-                        lifespan: 350,
+                        speed: { min: 50, max: 140 },
+                        lifespan: 300,
                         scale: { start: 1, end: 0 },
                         quantity: 6
                     });
-                    this.scene.time.delayedCall(400, () => spark.destroy());
+                    this.scene.time.delayedCall(350, () => spark.destroy());
                 }
             }
-            this.jumpCount++;
-            this.anims.stop();
-            this.setTexture('player_jump');
         }
 
-        // 2. Slide input check
-        let isSlideHeld = this.touchSlidePressed;
+        // 3. Variable Jump Height: Short tap dampening
+        let isJumpKeyHeld = this.touchJumpTriggered;
+        if (this.cursors && !isJumpKeyHeld) {
+            const upHeld = this.cursors.up.isDown;
+            const spaceHeld = this.keySpace ? this.keySpace.isDown : false;
+            const wHeld = this.keyW ? this.keyW.isDown : false;
+            isJumpKeyHeld = upHeld || spaceHeld || wHeld;
+        }
+        if (!isJumpKeyHeld && body.velocity.y < -350) {
+            this.setVelocityY(body.velocity.y * 0.75); // Cut upward velocity for snappy response
+        }
+
+        // 4. Slide & Fast Fall
+        let isSlideHeld = this.touchSlideHeld;
         if (this.cursors && !isSlideHeld) {
             const downHeld = this.cursors.down.isDown;
             const sHeld = this.keyS ? this.keyS.isDown : false;
             isSlideHeld = downHeld || sHeld;
         }
 
-        if (isSlideHeld && (isOnGround || this.isSliding)) {
+        // If in air and slide is pressed -> FAST FALL (Dive drop!)
+        if (isSlideHeld && !isOnGround && body.velocity.y > -200) {
+            this.setVelocityY(1050); // Instantly drop to ground
+        }
+
+        // Slide activation on ground
+        if (isSlideHeld) {
             if (!this.isSliding) {
                 this.isSliding = true;
                 this.anims.stop();
                 this.setTexture('player_slide');
-                body.setSize(60, 32);
-                body.setOffset(10, 16);
+                body.setSize(62, 30);
+                body.setOffset(9, 18);
                 this.audioManager.playSlide();
             }
         } else {
@@ -190,7 +239,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        // 3. Ground / Air animation state
+        // 5. Visual State & Animation
         if (isOnGround && !this.isSliding) {
             if (!this.anims.isPlaying || this.anims.currentAnim?.key !== 'player_anim_run') {
                 this.play('player_anim_run');
@@ -202,13 +251,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        // Manage dust emitter
         if (this.dustEmitter) {
             this.dustEmitter.emitting = isOnGround;
         }
+
+        this.wasOnGround = isOnGround;
     }
 
-    // Invincibility flash effect
     public hit(): boolean {
         if (this.isInvincible || this.isFever) return false;
 

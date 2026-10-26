@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { AudioManager } from '../utils/AudioManager';
-import { ScoreManager } from '../utils/ScoreManager';
+import { ScoreManager, LeaderboardEntry } from '../utils/ScoreManager';
 
 export class MainMenu extends Scene {
     private audioManager: AudioManager;
@@ -28,12 +28,12 @@ export class MainMenu extends Scene {
             this.add.image(width / 2, height - 170, 'bg_skyline_near').setAlpha(0.85);
         }
 
-        // Road / Ground on bottom
+        // Ground
         for (let x = 0; x < width + 128; x += 128) {
             this.add.image(x, height - 30, 'ground_tex').setOrigin(0, 0.5);
         }
 
-        // 2. Animated Running Trainee Preview
+        // 2. Animated Trainee
         if (!this.anims.exists('menu_run')) {
             this.anims.create({
                 key: 'menu_run',
@@ -52,7 +52,7 @@ export class MainMenu extends Scene {
             .setScale(1.2);
         runner.play('menu_run');
 
-        // 3. SSAFY RUN Title Header
+        // 3. Title Header
         const title = this.add.text(width / 2, 140, 'SSAFY RUN', {
             fontFamily: 'Arial Black',
             fontSize: '68px',
@@ -71,7 +71,6 @@ export class MainMenu extends Scene {
             ease: 'Sine.easeInOut'
         });
 
-        // Subtitle
         this.add.text(width / 2, 205, '⏰ 지각 위기! 9시 입실 전까지 멀캠을 향해 질주하라!', {
             fontFamily: 'Arial',
             fontSize: '22px',
@@ -88,7 +87,7 @@ export class MainMenu extends Scene {
         badgeBg.strokeRoundedRect(-140, -18, 280, 36, 18);
         scoreBadge.add(badgeBg);
 
-        const scoreText = this.add.text(0, 0, `👑 최고 기록: ${highScore.toLocaleString()} 점`, {
+        const scoreText = this.add.text(0, 0, `👑 내 최고 기록: ${highScore.toLocaleString()} 점`, {
             fontFamily: 'Arial Black',
             fontSize: '18px',
             color: '#facc15'
@@ -96,26 +95,23 @@ export class MainMenu extends Scene {
         scoreBadge.add(scoreText);
 
         // 4. Action Buttons
-        // Start Game Button
-        const startBtn = this.createButton(width / 2, 335, '▶ 게임 시작 (START)', 0x2563eb, 0x1d4ed8, () => {
+        this.createButton(width / 2, 335, '▶ 게임 시작 (START)', 0x2563eb, 0x1d4ed8, () => {
             this.startGame();
         }, 280, 56, '24px');
 
-        // How to Play Button
         this.createButton(width / 2 - 140, 415, '📖 조작 & 규칙', 0x334155, 0x475569, () => {
             this.showHowToPlayModal();
         }, 160, 44, '16px');
 
-        // Leaderboard Button
-        this.createButton(width / 2 + 140, 415, '🏆 명예의 전당', 0x334155, 0x475569, () => {
+        this.createButton(width / 2 + 140, 415, '🌐 실시간 랭킹', 0x059669, 0x047857, () => {
             this.showLeaderboardModal();
         }, 160, 44, '16px');
 
-        // Sound Toggle Button (Top Right)
+        // Sound Toggle
         this.createSoundToggle(width - 90, 45);
 
-        // Press Space / Tap anywhere prompt
-        const prompt = this.add.text(width / 2, 480, '또는 [Space] 키나 화면 터치로 즉시 시작', {
+        // Quick Start prompt
+        const prompt = this.add.text(width / 2, 480, '[Space] 키나 화면 터치로 즉시 시작', {
             fontFamily: 'Arial',
             fontSize: '16px',
             color: '#94a3b8'
@@ -129,7 +125,6 @@ export class MainMenu extends Scene {
             repeat: -1
         });
 
-        // Global key & click listener for quick start
         if (this.input.keyboard) {
             this.input.keyboard.on('keydown-SPACE', () => {
                 if (!this.modalContainer) this.startGame();
@@ -232,14 +227,12 @@ export class MainMenu extends Scene {
 
         this.modalContainer = this.add.container(0, 0).setDepth(100);
 
-        // Dark dim backdrop
         const dim = this.add.graphics();
         dim.fillStyle(0x000000, 0.75);
         dim.fillRect(0, 0, width, height);
         dim.setInteractive(new Phaser.Geom.Rectangle(0, 0, width, height), Phaser.Geom.Rectangle.Contains);
         this.modalContainer.add(dim);
 
-        // Panel
         const panelW = 720;
         const panelH = 500;
         const px = (width - panelW) / 2;
@@ -252,7 +245,6 @@ export class MainMenu extends Scene {
         panel.strokeRoundedRect(px, py, panelW, panelH, 16);
         this.modalContainer.add(panel);
 
-        // Modal Title
         const title = this.add.text(width / 2, py + 45, '📖 SSAFY RUN 가이드 & 조작법', {
             fontFamily: 'Arial Black',
             fontSize: '28px',
@@ -261,30 +253,30 @@ export class MainMenu extends Scene {
         this.modalContainer.add(title);
 
         const guides = [
-            '🎮 [조작법]',
-            '• 점프 / 2단 점프: Space 또는 ↑ / W 키 (모바일: JUMP 버튼)',
-            '• 슬라이드 (숙이기): ↓ 또는 S 키 길게 (모바일: SLIDE 버튼)',
+            '🎮 [조작법 (즉각 반응 업그레이드!)]',
+            '• 점프 / 2단 점프: Space 또는 ↑ / W 키 (모바일: 화면 우측 터치 또는 JUMP)',
+            '• 슬라이드 / 급강하: ↓ 또는 S 키 (모바일: 화면 좌측 터치 또는 SLIDE)',
+            '  * 공중에서 슬라이드를 누르면 즉시 바닥으로 급강하(Fast Fall)합니다!',
             '',
-            '🧩 [아이템 & 젤리]',
-            '• 🌱 커밋 잔디: +100점 (연속 수집 시 콤보 증가 및 피버 모드 돌입!)',
-            '• 📱 입실 QR 코드: +300점 (8시 59분 세이프 보너스)',
-            '• ☕ 아이스 아메리카노: 멘탈 HP +25 회복 (초당 HP 자연 감소 방어)',
-            '• ⚡ 레드불 에너지 드링크: 5초간 무적 & 골든 피버 대쉬!',
+            '🧩 [아이템 가이드]',
+            '• 🌱 커밋 잔디: +100점 (연속 수집 시 콤보 배수 및 15콤보 시 피버 모드)',
+            '• 📱 입실 QR 코드: +300점 (2단 점프로 획득 가능한 최고 보너스)',
+            '• ☕ 아이스 아메리카노: 멘탈 HP +25 즉시 회복 (생존 필수템)',
+            '• ⚡ 레드불 부스터: 5.5초간 골든 피버 대쉬 (무적 & 장애물 파괴)',
             '',
-            '⚠️ [주의할 장애물]',
-            '• ❌ 500 에러 모니터 / 버그 로봇: 점프로 뛰어넘기',
-            '• 🚧 머지 컨플릭트 배너: 슬라이드로 밑으로 통과하기'
+            '⚠️ [장애물 회피법]',
+            '• ❌ 500 에러 모니터 / 버그 로봇: 잔디 곡선을 따라 점프로 뛰어넘기',
+            '• 🚧 머지 컨플릭트 배너: 바닥 잔디 라인을 따라 슬라이드로 통과'
         ];
 
         const content = this.add.text(px + 40, py + 95, guides.join('\n'), {
             fontFamily: 'Arial',
-            fontSize: '16px',
+            fontSize: '15px',
             color: '#e2e8f0',
             lineSpacing: 5
         });
         this.modalContainer.add(content);
 
-        // Close Button
         const closeBtn = this.createButton(width / 2, py + panelH - 45, '닫기 (CLOSE)', 0x2563eb, 0x1d4ed8, () => {
             this.modalContainer?.destroy();
             this.modalContainer = undefined;
@@ -292,7 +284,7 @@ export class MainMenu extends Scene {
         this.modalContainer.add(closeBtn);
     }
 
-    private showLeaderboardModal() {
+    private async showLeaderboardModal() {
         if (this.modalContainer) return;
         const { width, height } = this.scale;
 
@@ -304,8 +296,8 @@ export class MainMenu extends Scene {
         dim.setInteractive(new Phaser.Geom.Rectangle(0, 0, width, height), Phaser.Geom.Rectangle.Contains);
         this.modalContainer.add(dim);
 
-        const panelW = 680;
-        const panelH = 460;
+        const panelW = 720;
+        const panelH = 540;
         const px = (width - panelW) / 2;
         const py = (height - panelH) / 2;
 
@@ -316,41 +308,58 @@ export class MainMenu extends Scene {
         panel.strokeRoundedRect(px, py, panelW, panelH, 16);
         this.modalContainer.add(panel);
 
-        const title = this.add.text(width / 2, py + 45, '🏆 명예의 전당 (TOP 5)', {
+        const title = this.add.text(width / 2, py + 40, '🌐 실시간 전국 교육생 랭킹 (TOP 10)', {
             fontFamily: 'Arial Black',
-            fontSize: '28px',
+            fontSize: '26px',
             color: '#facc15'
         }).setOrigin(0.5);
         this.modalContainer.add(title);
 
-        const list = ScoreManager.getLeaderboard();
-        list.forEach((item, idx) => {
-            const rowY = py + 105 + idx * 52;
+        const loadingText = this.add.text(width / 2, py + 220, '📡 실시간 랭킹 동기화 중...', {
+            fontFamily: 'Arial Black',
+            fontSize: '20px',
+            color: '#38bdf8'
+        }).setOrigin(0.5);
+        this.modalContainer.add(loadingText);
+
+        const result = await ScoreManager.fetchLeaderboard();
+        loadingText.destroy();
+
+        if (result.isOnline) {
+            title.setText('🌐 실시간 온라인 전국 랭킹 (TOP 10)');
+            title.setColor('#38bdf8');
+        } else {
+            title.setText('🏆 명예의 전당 (TOP 10)');
+            title.setColor('#facc15');
+        }
+
+        const list = result.list;
+        const maxDisplay = Math.min(8, list.length);
+        list.slice(0, maxDisplay).forEach((item, idx) => {
+            const rowY = py + 85 + idx * 44;
             const rankEmoji = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : ` ${idx + 1}.`;
 
-            // Row background
             const rowBg = this.add.graphics();
-            rowBg.fillStyle(idx === 0 ? 0x854d0e : 0x1e293b, 0.6);
-            rowBg.fillRoundedRect(px + 30, rowY - 18, panelW - 60, 44, 8);
+            rowBg.fillStyle(idx === 0 ? 0x854d0e : 0x1e293b, idx < 3 ? 0.7 : 0.45);
+            rowBg.fillRoundedRect(px + 30, rowY - 16, panelW - 60, 38, 8);
             this.modalContainer!.add(rowBg);
 
-            const rowText = this.add.text(px + 45, rowY, `${rankEmoji}  ${item.name}`, {
+            const rowText = this.add.text(px + 45, rowY + 3, `${rankEmoji}  ${item.name}`, {
                 fontFamily: 'Arial Black',
-                fontSize: '18px',
+                fontSize: '16px',
                 color: idx === 0 ? '#fef08a' : '#ffffff'
             }).setOrigin(0, 0.5);
 
-            const statsText = this.add.text(px + panelW - 45, rowY, `${item.score.toLocaleString()}점  (${item.distance}m)`, {
+            const statsText = this.add.text(px + panelW - 45, rowY + 3, `${item.score.toLocaleString()}점  (${item.distance}m / ${item.date})`, {
                 fontFamily: 'Arial Black',
-                fontSize: '18px',
+                fontSize: '15px',
                 color: '#38bdf8'
             }).setOrigin(1, 0.5);
 
             this.modalContainer!.add([rowText, statsText]);
         });
 
-        // Close Button
-        const closeBtn = this.createButton(width / 2, py + panelH - 45, '닫기 (CLOSE)', 0x2563eb, 0x1d4ed8, () => {
+        const closeBtn = this.createButton(width / 2, py + panelH - 40, '닫기 (CLOSE)', 0x2563eb, 0x1d4ed8, () => {
             this.modalContainer?.destroy();
             this.modalContainer = undefined;
         }, 160, 40, '16px');
