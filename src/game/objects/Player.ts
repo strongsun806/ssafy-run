@@ -295,7 +295,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.magnetRing.strokeCircle(this.x, this.y - 32, radius + 15);
     }
 
-    // Rescue from pit (Cookie Run style rescuer)
+    // Rescue from pit (SSAFY Emergency Rescue Drone)
     public rescueFromPit(onComplete: () => void) {
         if (this.isRescuing) return;
         this.isRescuing = true;
@@ -308,36 +308,99 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             body.setVelocity(0, 0);
         }
 
-        // Drone sprite appears
-        const drone = this.scene.add.sprite(this.x, this.y - 50, 'rescue_drone')
-            .setDepth(25)
-            .setScale(1.2);
+        // 1. Drone spawns from high above
+        const drone = this.scene.add.sprite(this.x, -60, 'rescue_drone')
+            .setDepth(200)
+            .setScale(1.15);
 
+        // Dynamic tractor beam graphics
+        const beam = this.scene.add.graphics().setDepth(199);
+
+        // Status badge: "🚨 SSAFY RESCUE!"
+        const rescueText = this.scene.add.text(this.x, -50, '🚨 SSAFY RESCUE!', {
+            fontFamily: 'Arial Black',
+            fontSize: '14px',
+            color: '#facc15',
+            stroke: '#0f172a',
+            strokeThickness: 3
+        }).setOrigin(0.5).setDepth(201);
+
+        // Drone swoops down above the falling player
         this.scene.tweens.add({
-            targets: [this, drone],
-            y: this.groundY,
-            duration: 600,
-            ease: 'Back.easeOut',
+            targets: drone,
+            y: this.y - 85,
+            duration: 320,
+            ease: 'Quad.easeOut',
+            onUpdate: () => {
+                rescueText.setPosition(drone.x, drone.y - 36);
+                beam.clear();
+                beam.fillStyle(0x38bdf8, 0.35);
+                beam.beginPath();
+                beam.moveTo(drone.x - 12, drone.y + 20);
+                beam.lineTo(drone.x + 12, drone.y + 20);
+                beam.lineTo(this.x + 30, this.y);
+                beam.lineTo(this.x - 30, this.y);
+                beam.closePath();
+                beam.fill();
+                beam.lineStyle(2, 0x38bdf8, 0.85);
+                beam.stroke();
+            },
             onComplete: () => {
-                drone.destroy();
-                if (body) {
-                    body.setAllowGravity(true);
-                    this.setVelocityY(0);
-                    this.setY(this.groundY);
-                }
-                this.isRescuing = false;
-
-                // 1.5s invincibility flash
+                // Lift player up to safe ground level together with drone hovering above
                 this.scene.tweens.add({
                     targets: this,
-                    alpha: 0.3,
-                    yoyo: true,
-                    repeat: 4,
-                    duration: 150,
+                    y: this.groundY,
+                    duration: 550,
+                    ease: 'Back.easeOut',
+                    onUpdate: () => {
+                        drone.y = this.y - 85;
+                        rescueText.setPosition(drone.x, drone.y - 36);
+                        beam.clear();
+                        beam.fillStyle(0x38bdf8, 0.45);
+                        beam.beginPath();
+                        beam.moveTo(drone.x - 12, drone.y + 20);
+                        beam.lineTo(drone.x + 12, drone.y + 20);
+                        beam.lineTo(this.x + 30, this.y);
+                        beam.lineTo(this.x - 30, this.y);
+                        beam.closePath();
+                        beam.fill();
+                        beam.lineStyle(2, 0x06b6d4, 0.95);
+                        beam.stroke();
+                    },
                     onComplete: () => {
-                        this.setAlpha(1);
-                        this.isInvincible = false;
-                        onComplete();
+                        beam.destroy();
+                        rescueText.destroy();
+
+                        if (body) {
+                            body.setAllowGravity(true);
+                            this.setVelocityY(0);
+                            this.setY(this.groundY);
+                        }
+                        this.isRescuing = false;
+
+                        // Drone zooms swiftly away into the sky!
+                        this.scene.tweens.add({
+                            targets: drone,
+                            x: this.x + 380,
+                            y: -100,
+                            duration: 480,
+                            ease: 'Quad.easeIn',
+                            onComplete: () => drone.destroy()
+                        });
+
+                        // 2.0s invincibility flash
+                        this.scene.tweens.add({
+                            targets: this,
+                            alpha: 0.25,
+                            yoyo: true,
+                            repeat: 6,
+                            duration: 150,
+                            onComplete: () => {
+                                this.setAlpha(1);
+                                this.isInvincible = false;
+                                onComplete();
+                            }
+                        });
                     }
                 });
             }

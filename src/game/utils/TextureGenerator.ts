@@ -368,17 +368,37 @@ export class TextureGenerator {
             }
         }
         if (!scene.textures.exists('ground_s1')) {
-            const canvas = scene.textures.createCanvas('ground_s1', 128, 60);
+            const canvas = scene.textures.createCanvas('ground_s1', 128, 75);
             if (canvas) {
                 const ctx = canvas.getContext();
+                // 1. Deep foundation stone
                 ctx.fillStyle = '#0f172a';
-                ctx.fillRect(0, 0, 128, 60);
-                ctx.fillStyle = '#38bdf8'; // Cyan neon line
-                ctx.fillRect(0, 0, 128, 4);
+                ctx.fillRect(0, 0, 128, 75);
+
+                // 2. Urban sidewalk paving stones
                 ctx.fillStyle = '#1e293b';
-                ctx.fillRect(0, 4, 128, 12);
+                ctx.fillRect(0, 12, 128, 63);
                 ctx.fillStyle = '#334155';
-                ctx.fillRect(10, 8, 40, 4); ctx.fillRect(74, 8, 40, 4);
+                for (let x = 0; x < 128; x += 32) {
+                    ctx.fillRect(x, 14, 30, 24);
+                    ctx.fillRect(x + 16, 40, 30, 30);
+                }
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(0, 12, 128, 63);
+
+                // 3. Lush green lawn trim on top
+                ctx.fillStyle = '#15803d';
+                ctx.fillRect(0, 0, 128, 12);
+                ctx.fillStyle = '#22c55e';
+                ctx.fillRect(0, 0, 128, 6);
+                // Grass blade tufts
+                ctx.fillStyle = '#86efac';
+                for (let x = 4; x < 128; x += 12) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 6); ctx.lineTo(x + 3, 0); ctx.lineTo(x + 6, 6);
+                    ctx.fill();
+                }
                 canvas.refresh();
             }
         }
@@ -419,20 +439,26 @@ export class TextureGenerator {
             }
         }
         if (!scene.textures.exists('ground_s2')) {
-            const canvas = scene.textures.createCanvas('ground_s2', 128, 60);
+            const canvas = scene.textures.createCanvas('ground_s2', 128, 75);
             if (canvas) {
                 const ctx = canvas.getContext();
-                ctx.fillStyle = '#1c1917'; // Concrete stairs
-                ctx.fillRect(0, 0, 128, 60);
-                ctx.fillStyle = '#f59e0b'; // Amber caution edge
-                ctx.fillRect(0, 0, 128, 5);
-                // Yellow & Black hazard stripes
-                ctx.fillStyle = '#ca8a04';
+                ctx.fillStyle = '#1c1917'; // Concrete stairs base
+                ctx.fillRect(0, 0, 128, 75);
+                // Metal treads
+                ctx.fillStyle = '#292524';
+                ctx.fillRect(0, 14, 128, 61);
+                // Yellow & Black hazard stripes on top rim
+                ctx.fillStyle = '#eab308';
+                ctx.fillRect(0, 0, 128, 14);
+                ctx.fillStyle = '#1c1917';
                 for (let i = 0; i < 128; i += 24) {
                     ctx.beginPath();
-                    ctx.moveTo(i, 5); ctx.lineTo(i + 12, 16); ctx.lineTo(i + 6, 16); ctx.lineTo(i - 6, 5);
+                    ctx.moveTo(i, 0); ctx.lineTo(i + 14, 14); ctx.lineTo(i + 7, 14); ctx.lineTo(i - 7, 0);
                     ctx.fill();
                 }
+                // White caution line
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 13, 128, 2);
                 canvas.refresh();
             }
         }
@@ -479,17 +505,119 @@ export class TextureGenerator {
             }
         }
         if (!scene.textures.exists('ground_s3')) {
-            const canvas = scene.textures.createCanvas('ground_s3', 128, 60);
+            const canvas = scene.textures.createCanvas('ground_s3', 128, 75);
             if (canvas) {
                 const ctx = canvas.getContext();
                 ctx.fillStyle = '#03172e';
-                ctx.fillRect(0, 0, 128, 60);
-                ctx.fillStyle = '#06b6d4'; // Cyan neon grid
-                ctx.fillRect(0, 0, 128, 4);
+                ctx.fillRect(0, 0, 128, 75);
+                // Glowing cyan laser rim
+                ctx.fillStyle = '#06b6d4';
+                ctx.fillRect(0, 0, 128, 6);
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(0, 0, 128, 2);
+                // Hexagonal grid server floor
                 ctx.strokeStyle = '#0284c7';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(4, 8, 56, 44);
-                ctx.strokeRect(68, 8, 56, 44);
+                ctx.strokeRect(4, 12, 56, 58);
+                ctx.strokeRect(68, 12, 56, 58);
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+                ctx.fillRect(8, 16, 48, 50);
+                ctx.fillRect(72, 16, 48, 50);
+                canvas.refresh();
+            }
+        }
+
+        // --- Pit Cliff Caps & Abyss Visuals ---
+        if (!scene.textures.exists('ground_cliff_left')) {
+            const canvas = scene.textures.createCanvas('ground_cliff_left', 28, 75);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                // Rounded corner on top right
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(20, 0);
+                ctx.arcTo(28, 0, 28, 8, 8);
+                ctx.lineTo(28, 75);
+                ctx.lineTo(0, 75);
+                ctx.closePath();
+                ctx.fill();
+
+                // Drop edge vertical shadow on right face
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(20, 0, 8, 75);
+
+                // Grass cap on top
+                ctx.fillStyle = '#22c55e';
+                ctx.beginPath();
+                ctx.moveTo(0, 0); ctx.lineTo(20, 0); ctx.arcTo(28, 0, 28, 8, 8); ctx.lineTo(28, 8); ctx.lineTo(0, 8);
+                ctx.fill();
+                ctx.fillStyle = '#86efac';
+                ctx.fillRect(0, 0, 22, 2);
+                canvas.refresh();
+            }
+        }
+
+        if (!scene.textures.exists('ground_cliff_right')) {
+            const canvas = scene.textures.createCanvas('ground_cliff_right', 28, 75);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                // Rounded corner on top left
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.moveTo(28, 0);
+                ctx.lineTo(8, 0);
+                ctx.arcTo(0, 0, 0, 8, 8);
+                ctx.lineTo(0, 75);
+                ctx.lineTo(28, 75);
+                ctx.closePath();
+                ctx.fill();
+
+                // Vertical face highlight on left face
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(0, 0, 8, 75);
+
+                // Grass cap on top
+                ctx.fillStyle = '#22c55e';
+                ctx.beginPath();
+                ctx.moveTo(28, 0); ctx.lineTo(8, 0); ctx.arcTo(0, 0, 0, 8, 8); ctx.lineTo(0, 8); ctx.lineTo(28, 8);
+                ctx.fill();
+                ctx.fillStyle = '#86efac';
+                ctx.fillRect(6, 0, 22, 2);
+                canvas.refresh();
+            }
+        }
+
+        // Pit Void / Danger Hazard Backdrop (160x75)
+        if (!scene.textures.exists('pit_hazard')) {
+            const canvas = scene.textures.createCanvas('pit_hazard', 160, 75);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                // Deep black abyss gradient
+                const grad = ctx.createLinearGradient(0, 0, 0, 75);
+                grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                grad.addColorStop(0.4, 'rgba(15, 23, 42, 0.9)');
+                grad.addColorStop(1, '#000000');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 160, 75);
+
+                // Glowing crimson danger spikes / laser floor at bottom
+                ctx.fillStyle = '#ef4444';
+                for (let x = 8; x < 160; x += 16) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 75); ctx.lineTo(x + 8, 52); ctx.lineTo(x + 16, 75);
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#fca5a5';
+                for (let x = 8; x < 160; x += 16) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + 4, 75); ctx.lineTo(x + 8, 58); ctx.lineTo(x + 12, 75);
+                    ctx.fill();
+                }
+
+                // Laser warning line
+                ctx.fillStyle = '#f87171';
+                ctx.fillRect(0, 50, 160, 2);
                 canvas.refresh();
             }
         }
@@ -709,30 +837,82 @@ export class TextureGenerator {
             }
         }
 
-        // 7. Rescue Drone 🚁 (48x36)
+        // 7. SSAFY Rescue Drone 🚁 (80x56)
         if (!scene.textures.exists('rescue_drone')) {
-            const canvas = scene.textures.createCanvas('rescue_drone', 48, 36);
+            const canvas = scene.textures.createCanvas('rescue_drone', 80, 56);
             if (canvas) {
                 const ctx = canvas.getContext();
-                // Drone Propellers
+
+                // 1. Dual Propeller Motion Rotors (Left & Right)
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.35)'; // Cyan blur rotor disk
+                ctx.beginPath();
+                ctx.ellipse(16, 12, 18, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(64, 12, 18, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Carbon rotor blades
+                ctx.fillStyle = '#0284c7';
+                ctx.fillRect(4, 11, 24, 3);
+                ctx.fillRect(52, 11, 24, 3);
+
+                // Rotor pylons connecting to fuselage
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(16, 13); ctx.lineTo(30, 24);
+                ctx.moveTo(64, 13); ctx.lineTo(50, 24);
+                ctx.stroke();
+
+                // 2. Aerodynamic Drone Hull (Glossy White & SSAFY Blue)
+                const hullGrad = ctx.createLinearGradient(24, 16, 56, 44);
+                hullGrad.addColorStop(0, '#ffffff');
+                hullGrad.addColorStop(0.5, '#f1f5f9');
+                hullGrad.addColorStop(1, '#cbd5e1');
+                ctx.fillStyle = hullGrad;
+                ctx.beginPath();
+                ctx.roundRect(24, 16, 32, 26, 10);
+                ctx.fill();
+                ctx.strokeStyle = '#0284c7';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // SSAFY Blue racing stripe
+                ctx.fillStyle = '#0284c7';
+                ctx.fillRect(26, 26, 28, 5);
+
+                // SSAFY Text
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 8px sans-serif';
+                ctx.fillText('SSAFY', 27, 31);
+
+                // 3. Dual Emergency Strobe Beacons (Red & Cyan)
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(34, 15, 3.5, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.fillStyle = '#38bdf8';
-                ctx.fillRect(4, 6, 16, 3);
-                ctx.fillRect(28, 6, 16, 3);
-                // Body
+                ctx.beginPath();
+                ctx.arc(46, 15, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 4. Digital Visor Screen with Friendly LED Eyes [ ^ _ ^ ]
                 ctx.fillStyle = '#0f172a';
                 ctx.beginPath();
-                ctx.roundRect(14, 10, 20, 16, 6);
+                ctx.roundRect(28, 33, 24, 8, 3);
                 ctx.fill();
-                ctx.strokeStyle = '#38bdf8';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                // Rescue claw
-                ctx.strokeStyle = '#f59e0b';
-                ctx.lineWidth = 2;
+                // Cyan glowing eyes
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(32, 35, 4, 3);
+                ctx.fillRect(44, 35, 4, 3);
+
+                // 5. Underside Magnetic Rescue Tractor Beam Emitter
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(35, 42, 10, 4);
+                ctx.fillStyle = '#38bdf8';
                 ctx.beginPath();
-                ctx.moveTo(24, 26); ctx.lineTo(24, 34);
-                ctx.moveTo(20, 34); ctx.lineTo(28, 34);
-                ctx.stroke();
+                ctx.arc(40, 47, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+
                 canvas.refresh();
             }
         }

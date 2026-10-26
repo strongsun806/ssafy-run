@@ -10,6 +10,10 @@ interface GroundSegment {
     body: Phaser.GameObjects.Rectangle;
     x: number;
     width: number;
+    leftCap?: Phaser.GameObjects.Image;
+    rightCap?: Phaser.GameObjects.Image;
+    pitHazard?: Phaser.GameObjects.TileSprite;
+    pitWarning?: Phaser.GameObjects.Text;
 }
 
 export class Game extends Scene {
@@ -21,8 +25,8 @@ export class Game extends Scene {
 
     // Ground segments (Supports Pits & Gaps)
     private groundSegments: GroundSegment[] = [];
-    private groundColliderGroup!: Phaser.Physics.Arcade.StaticGroup;
-    private floatingPlatforms!: Phaser.Physics.Arcade.StaticGroup;
+    private groundColliderGroup!: Phaser.Physics.Arcade.Group;
+    private floatingPlatforms!: Phaser.Physics.Arcade.Group;
 
     // Object groups
     private obstacles!: Phaser.Physics.Arcade.Group;
@@ -34,6 +38,7 @@ export class Game extends Scene {
     private currentSpeed: number = 440;
     private maxSpeed: number = 750;
     private distance: number = 0;
+    private lastPitDistance: number = 0;
 
     // Current Stage (1, 2, 3)
     private currentStage: number = 1;
@@ -110,7 +115,8 @@ export class Game extends Scene {
         this.nextWaveTimer = 800;
         this.highScore = ScoreManager.getHighScore();
 
-        this.groundY = height - 50;
+        this.groundY = height - 75;
+        this.lastPitDistance = 0;
 
         // 1. Sky & Parallax (Stage 1 initial)
         this.add.graphics()
@@ -125,9 +131,15 @@ export class Game extends Scene {
             .setOrigin(0, 0)
             .setAlpha(0.7);
 
-        // 2. Segmented Ground & Platforms
-        this.groundColliderGroup = this.physics.add.staticGroup();
-        this.floatingPlatforms = this.physics.add.staticGroup();
+        // 2. Segmented Ground & Platforms (Arcade dynamic bodies with immovable)
+        this.groundColliderGroup = this.physics.add.group({
+            immovable: true,
+            allowGravity: false
+        });
+        this.floatingPlatforms = this.physics.add.group({
+            immovable: true,
+            allowGravity: false
+        });
         this.initGroundSegments();
 
         // 3. Player with Equipped Skin
@@ -175,24 +187,90 @@ export class Game extends Scene {
     }
 
     private initGroundSegments() {
-        const { width } = this.scale;
         this.groundSegments = [];
+        // Create continuous starting floor for first 2200px
+        this.spawnGroundSegment(0, 2200, false, false);
+    }
 
-        // Create continuous starting floor for first 1500px
-        const segWidth = 1600;
-        const tile = this.add.tileSprite(0, this.groundY, segWidth, 60, 'ground_s1')
+    private spawnGroundSegment(startX: number, segWidth: number, hasLeftCap: boolean, hasRightCap: boolean): GroundSegment {
+        const groundTex = `ground_s${this.currentStage}`;
+        const tile = this.add.tileSprite(startX, this.groundY, segWidth, 75, groundTex)
             .setOrigin(0, 0)
             .setDepth(10);
 
-        const body = this.add.rectangle(segWidth / 2, this.groundY + 20, segWidth, 40, 0x000000, 0);
+        const body = this.add.rectangle(startX + segWidth / 2, this.groundY + 37, segWidth, 75, 0x000000, 0);
+        this.physics.add.existing(body);
+        const physBody = body.body as Phaser.Physics.Arcade.Body;
+        if (physBody) {
+            physBody.setImmovable(true);
+            physBody.setAllowGravity(false);
+            physBody.setVelocityX(-this.currentSpeed);
+        }
         this.groundColliderGroup.add(body);
 
-        this.groundSegments.push({
+        let leftCap: Phaser.GameObjects.Image | undefined;
+        let rightCap: Phaser.GameObjects.Image | undefined;
+
+        if (hasLeftCap) {
+            leftCap = this.add.image(startX + 14, this.groundY + 37, 'ground_cliff_right')
+                .setDepth(11);
+        }
+
+        if (hasRightCap) {
+            rightCap = this.add.image(startX + segWidth - 14, this.groundY + 37, 'ground_cliff_left')
+                .setDepth(11);
+        }
+
+        const segment: GroundSegment = {
             tile,
             body,
-            x: 0,
-            width: segWidth
+            x: startX,
+            width: segWidth,
+            leftCap,
+            rightCap
+        };
+
+        this.groundSegments.push(segment);
+        return segment;
+    }
+
+    private spawnPitHazard(pitStartX: number, pitWidth: number): Phaser.GameObjects.TileSprite {
+        // Deep abyss container at bottom
+        const pitHazard = this.add.tileSprite(pitStartX, this.groundY, pitWidth, 75, 'pit_hazard')
+            .setOrigin(0, 0)
+            .setDepth(4);
+
+        // Warning text: "⚠️ JUMP! 🕳️"
+        const warn = this.add.text(pitStartX + pitWidth / 2, this.groundY - 30, '⚠️ JUMP! 🕳️', {
+            fontFamily: 'Arial Black',
+            fontSize: '14px',
+            color: '#ef4444',
+            stroke: '#0f172a',
+            strokeThickness: 3
+        }).setOrigin(0.5).setDepth(15);
+
+        this.tweens.add({
+            targets: warn,
+            y: this.groundY - 40,
+            alpha: 0.45,
+            duration: 280,
+            yoyo: true,
+            repeat: -1
         });
+
+        // Parabolic arc of 4 gold coins over the pit to guide the player's jump
+        const numCoins = 4;
+        for (let i = 0; i < numCoins; i++) {
+            const t = (i + 1) / (numCoins + 1);
+            const coinX = pitStartX + pitWidth * t;
+            const coinY = this.groundY - 25 - Math.sin(t * Math.PI) * 55;
+            const coin = this.jellies.create(coinX, coinY, 'item_coin') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(coin, 50, 'coin');
+        }
+
+        this.time.delayedCall(4500, () => warn.destroy());
+
+        return pitHazard;
     }
 
     private setupTouchControls() {
@@ -306,14 +384,15 @@ export class Game extends Scene {
         this.cleanOffscreen(this.obstacles);
         this.cleanOffscreen(this.jellies);
         this.cleanOffscreen(this.items);
+        this.cleanOffscreen(this.floatingPlatforms);
     }
 
-    // Segmented Ground Management (Supports Gaps & Pits)
+    // Segmented Ground Management (Supports Gaps & Pits with 100% Physics Sync)
     private updateGroundSegments(deltaSec: number) {
         const { width } = this.scale;
         const shift = this.currentSpeed * deltaSec;
 
-        // Move existing segments left
+        // Move existing segments left and keep physics bodies 100% in sync
         for (let i = this.groundSegments.length - 1; i >= 0; i--) {
             const seg = this.groundSegments[i];
             seg.x -= shift;
@@ -321,10 +400,23 @@ export class Game extends Scene {
             seg.tile.tilePositionX += shift;
             seg.body.x = seg.x + seg.width / 2;
 
-            // Remove if way offscreen
-            if (seg.x + seg.width < -100) {
+            const physBody = seg.body.body as Phaser.Physics.Arcade.Body;
+            if (physBody) {
+                physBody.reset(seg.x + seg.width / 2, this.groundY + 37);
+                physBody.setVelocityX(-this.currentSpeed);
+            }
+
+            if (seg.leftCap) seg.leftCap.x = seg.x + 14;
+            if (seg.rightCap) seg.rightCap.x = seg.x + seg.width - 14;
+            if (seg.pitHazard) seg.pitHazard.x -= shift;
+
+            // Remove if scrolled past
+            if (seg.x + seg.width < -200) {
                 seg.tile.destroy();
                 seg.body.destroy();
+                if (seg.leftCap) seg.leftCap.destroy();
+                if (seg.rightCap) seg.rightCap.destroy();
+                if (seg.pitHazard) seg.pitHazard.destroy();
                 this.groundSegments.splice(i, 1);
             }
         }
@@ -334,60 +426,36 @@ export class Game extends Scene {
         if (lastSeg && lastSeg.x + lastSeg.width < width + 600) {
             const nextX = lastSeg.x + lastSeg.width;
 
-            // Chance to create a PIT / GAP (130px - 160px gap)
-            const shouldCreatePit = Phaser.Math.Between(1, 4) === 1 && this.distance > 80;
-            const pitWidth = shouldCreatePit ? Phaser.Math.Between(130, 160) : 0;
-            const segWidth = Phaser.Math.Between(550, 850);
-            const startX = nextX + pitWidth;
+            // Only generate pits after 180m, with at least 130m interval
+            const canCreatePit = this.distance >= 180 && (this.distance - this.lastPitDistance) > 130;
+            const shouldCreatePit = canCreatePit && Phaser.Math.Between(1, 3) === 1;
 
-            const groundTex = `ground_s${this.currentStage}`;
-            const tile = this.add.tileSprite(startX, this.groundY, segWidth, 60, groundTex)
-                .setOrigin(0, 0)
-                .setDepth(10);
-
-            const body = this.add.rectangle(startX + segWidth / 2, this.groundY + 20, segWidth, 40, 0x000000, 0);
-            this.groundColliderGroup.add(body);
-
-            this.groundSegments.push({
-                tile,
-                body,
-                x: startX,
-                width: segWidth
-            });
-
-            // If pit created, place a bridge warning line
             if (shouldCreatePit) {
-                this.createPitWarning(nextX);
+                this.lastPitDistance = this.distance;
+                const pitWidth = Phaser.Math.Between(135, 160);
+                const segWidth = Phaser.Math.Between(900, 1300);
+
+                // Add right cliff cap to preceding segment
+                if (!lastSeg.rightCap) {
+                    lastSeg.rightCap = this.add.image(lastSeg.x + lastSeg.width - 14, this.groundY + 37, 'ground_cliff_left').setDepth(11);
+                }
+
+                const pitHazard = this.spawnPitHazard(nextX, pitWidth);
+                const newSeg = this.spawnGroundSegment(nextX + pitWidth, segWidth, true, false);
+                newSeg.pitHazard = pitHazard;
+            } else {
+                const segWidth = Phaser.Math.Between(900, 1400);
+                this.spawnGroundSegment(nextX, segWidth, false, false);
             }
         }
     }
 
-    private createPitWarning(pitStartX: number) {
-        // Red hazard exclamation mark at edge
-        const warn = this.add.text(pitStartX - 25, this.groundY - 35, '⚠️ GAP', {
-            fontFamily: 'Arial Black',
-            fontSize: '13px',
-            color: '#ef4444'
-        }).setDepth(15);
-
-        this.tweens.add({
-            targets: warn,
-            alpha: 0.3,
-            duration: 250,
-            yoyo: true,
-            repeat: -1
-        });
-
-        // Destroy after passing
-        this.time.delayedCall(4000, () => warn.destroy());
-    }
-
-    // Falling into Pit: Takes 30 HP damage & Cookie Run style rescue drone lifts player up!
+    // Falling into Pit: Takes 30 HP damage & Cookie Run style SSAFY Rescue Drone lifts player up!
     private handleFallIntoPit() {
         this.currentHp -= 30;
         this.combo = 0;
         this.comboText.setText('');
-        this.cameras.main.shake(120, 0.02);
+        this.cameras.main.shake(140, 0.025);
 
         if (this.currentHp <= 0) {
             this.currentHp = 0;
@@ -397,9 +465,29 @@ export class Game extends Scene {
         }
 
         this.renderHpBar();
+
+        // GUARANTEE SOLID GROUND UNDER THE PLAYER SO THEY NEVER FALL AGAIN
+        this.ensureGroundUnderPlayer();
+
         this.player.rescueFromPit(() => {
-            // Re-anchored to ground
+            // Re-anchored safely to ground
         });
+    }
+
+    private ensureGroundUnderPlayer() {
+        const px = this.player.x;
+        let hasGround = false;
+        for (const seg of this.groundSegments) {
+            if (seg.x <= px + 40 && (seg.x + seg.width) >= px - 40) {
+                hasGround = true;
+                break;
+            }
+        }
+
+        if (!hasGround) {
+            // Player is over a pit gap! Immediately spawn an emergency safety segment under them
+            this.spawnGroundSegment(px - 100, 500, false, false);
+        }
     }
 
     // Stage Progression (Stage 1 -> Stage 2 -> Stage 3)
@@ -603,8 +691,11 @@ export class Game extends Scene {
         // Platform
         const plat = this.floatingPlatforms.create(platX, platY, 'platform_tex') as Phaser.Physics.Arcade.Sprite;
         plat.setDepth(12);
-        const body = plat.body as Phaser.Physics.Arcade.StaticBody;
+        const body = plat.body as Phaser.Physics.Arcade.Body;
         if (body) {
+            body.setImmovable(true);
+            body.setAllowGravity(false);
+            body.setVelocityX(-this.currentSpeed);
             body.setSize(160, 24);
         }
 
@@ -622,14 +713,6 @@ export class Game extends Scene {
             obody.setAllowGravity(false);
             obody.setVelocityX(-this.currentSpeed);
         }
-
-        // Move platform with world speed
-        this.tweens.add({
-            targets: plat,
-            x: -200,
-            duration: (platX + 300) / this.currentSpeed * 1000,
-            onComplete: () => plat.destroy()
-        });
 
         return 2200;
     }
