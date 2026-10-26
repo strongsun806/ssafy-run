@@ -1,21 +1,20 @@
 {
-  "name": "template-vite-ts",
-  "description": "A Phaser 3 TypeScript template using Vite.",
-  "version": "1.4.0",
+  "name": "ssafy-run",
+  "description": "SSAFY RUN: OvenBreak - 싸피인을 위한 웹 기반 횡스크롤 러닝 액션 게임",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/phaserjs/template-vite-ts.git"
+    "url": "git+https://github.com/strongsun806/ssafy-run.git"
   },
-  "author": "Phaser Studio <support@phaser.io> (https://phaser.io/)",
+  "author": "SSAFY RUN Team",
   "license": "MIT",
-  "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
   "bugs": {
-    "url": "https://github.com/phaserjs/template-vite-ts/issues"
+    "url": "https://github.com/strongsun806/ssafy-run/issues"
   },
-  "homepage": "https://github.com/phaserjs/template-vite-ts#readme",
+  "homepage": "https://strongsun806.github.io/ssafy-run/",
   "scripts": {
-    "dev": "node log.js dev & vite --config vite/config.dev.mjs",
-    "build": "node log.js build & vite build --config vite/config.prod.mjs",
+    "dev": "vite --config vite/config.dev.mjs",
+    "build": "vite build --config vite/config.prod.mjs",
     "dev-nolog": "vite --config vite/config.dev.mjs",
     "build-nolog": "vite build --config vite/config.prod.mjs"
   },

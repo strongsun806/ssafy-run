@@ -1,15 +1,42 @@
-body {
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+html, body {
     margin: 0;
     padding: 0;
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #0f0f0f;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #0a0e1a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    touch-action: none;
 }
 
 #app {
     width: 100%;
     height: 100vh;
-    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: #0a0e1a;
+}
+
+#game-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    outline: none;
 }

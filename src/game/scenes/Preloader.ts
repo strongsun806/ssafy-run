@@ -1,46 +1,68 @@
 import { Scene } from 'phaser';
+import { TextureGenerator } from '../utils/TextureGenerator';
 
-export class Preloader extends Scene
-{
-    constructor ()
-    {
+export class Preloader extends Scene {
+    constructor() {
         super('Preloader');
     }
 
-    init ()
-    {
-        //  We loaded this image in our Boot Scene, so we can display it here
-        this.add.image(512, 384, 'background');
+    init() {
+        const { width, height } = this.scale;
 
-        //  A simple progress bar. This is the outline of the bar.
-        this.add.rectangle(512, 384, 468, 32).setStrokeStyle(1, 0xffffff);
+        // Dark tech gradient background
+        const bg = this.add.graphics();
+        bg.fillGradientStyle(0x0a0e1a, 0x0a0e1a, 0x1e1b4b, 0x1e1b4b, 1);
+        bg.fillRect(0, 0, width, height);
 
-        //  This is the progress bar itself. It will increase in size from the left based on the % of progress.
-        const bar = this.add.rectangle(512-230, 384, 4, 28, 0xffffff);
+        // Title
+        this.add.text(width / 2, height / 2 - 90, 'SSAFY RUN', {
+            fontFamily: 'Arial Black',
+            fontSize: '54px',
+            color: '#38bdf8'
+        }).setOrigin(0.5);
 
-        //  Use the 'progress' event emitted by the LoaderPlugin to update the loading bar
+        this.add.text(width / 2, height / 2 - 35, '멀캠으로 출근 준비 중...', {
+            fontFamily: 'Arial',
+            fontSize: '20px',
+            color: '#94a3b8'
+        }).setOrigin(0.5);
+
+        // Progress bar container
+        const barWidth = 460;
+        const barHeight = 24;
+        const barX = (width - barWidth) / 2;
+        const barY = height / 2 + 30;
+
+        const barBg = this.add.graphics();
+        barBg.fillStyle(0x0f172a, 0.8);
+        barBg.lineStyle(2, 0x38bdf8, 0.8);
+        barBg.fillRoundedRect(barX, barY, barWidth, barHeight, 6);
+        barBg.strokeRoundedRect(barX, barY, barWidth, barHeight, 6);
+
+        const barFill = this.add.graphics();
+
         this.load.on('progress', (progress: number) => {
-
-            //  Update the progress bar (our bar is 464px wide, so 100% = 464px)
-            bar.width = 4 + (460 * progress);
-
+            barFill.clear();
+            barFill.fillStyle(0x38bdf8, 1);
+            if (progress > 0) {
+                barFill.fillRoundedRect(barX + 2, barY + 2, (barWidth - 4) * progress, barHeight - 4, 4);
+            }
         });
     }
 
-    preload ()
-    {
-        //  Load the assets for the game - Replace with your own assets
+    preload() {
         this.load.setPath('assets');
-
-        this.load.image('logo', 'logo.png');
+        // Any extra assets can be loaded here if needed
     }
 
-    create ()
-    {
-        //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
-        //  For example, you can define global animations here, so we can use them in other scenes.
+    create() {
+        // Procedurally generate all in-game pixel & vector textures
+        TextureGenerator.generateAll(this);
 
-        //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-        this.scene.start('Game');
+        // Fade transition to MainMenu
+        this.cameras.main.fade(300, 10, 14, 26);
+        this.time.delayedCall(300, () => {
+            this.scene.start('MainMenu');
+        });
     }
 }

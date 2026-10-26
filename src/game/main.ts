@@ -10,7 +10,7 @@ const config: Phaser.Types.Core.GameConfig = {
     width: 1280,
     height: 720,
     parent: 'game-container',
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0a0e1a',
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -19,8 +19,11 @@ const config: Phaser.Types.Core.GameConfig = {
         default: 'arcade',
         arcade: {
             gravity: { y: 1800, x: 0 },
-            debug: true
+            debug: false
         }
+    },
+    input: {
+        activePointers: 3 // Enable multi-touch for mobile (jump + slide simultaneously)
     },
     scene: [
         Boot,
