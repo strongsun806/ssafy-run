@@ -3,15 +3,26 @@ import { Scene } from 'phaser';
 import { Player } from '../objects/Player';
 import { AudioManager } from '../utils/AudioManager';
 import { ScoreManager } from '../utils/ScoreManager';
+import { SkinManager } from '../utils/SkinManager';
+
+interface GroundSegment {
+    tile: Phaser.GameObjects.TileSprite;
+    body: Phaser.GameObjects.Rectangle;
+    x: number;
+    width: number;
+}
 
 export class Game extends Scene {
     private player!: Player;
-    private groundTile!: Phaser.GameObjects.TileSprite;
-    private groundCollider!: Phaser.Physics.Arcade.StaticGroup;
-
-    // Parallax layers (calm, stable speeds)
+    
+    // Parallax layers
     private bgFarTile!: Phaser.GameObjects.TileSprite;
     private bgNearTile!: Phaser.GameObjects.TileSprite;
+
+    // Ground segments (Supports Pits & Gaps)
+    private groundSegments: GroundSegment[] = [];
+    private groundColliderGroup!: Phaser.Physics.Arcade.StaticGroup;
+    private floatingPlatforms!: Phaser.Physics.Arcade.StaticGroup;
 
     // Object groups
     private obstacles!: Phaser.Physics.Arcade.Group;
@@ -19,21 +30,27 @@ export class Game extends Scene {
     private items!: Phaser.Physics.Arcade.Group;
 
     private groundY: number = 0;
-    private baseSpeed: number = 410; // Comfortable, non-dizzying starting speed
-    private currentSpeed: number = 410;
-    private maxSpeed: number = 600;  // Fair speed cap
+    private baseSpeed: number = 440;
+    private currentSpeed: number = 440;
+    private maxSpeed: number = 750;
     private distance: number = 0;
+
+    // Current Stage (1, 2, 3)
+    private currentStage: number = 1;
+    private stageTransitioning: boolean = false;
+    private stageBanner?: Phaser.GameObjects.Container;
 
     // Mental HP
     private maxHp: number = 100;
     private currentHp: number = 100;
     private hpBarFill!: Phaser.GameObjects.Graphics;
-    private hpDrainRate: number = 1.9; // Slightly gentler drain for enjoyable play
+    private hpDrainRate: number = 2.0;
 
-    // Score & Stats
+    // Score & Currency
     public score: number = 0;
     private highScore: number = 0;
     private combo: number = 0;
+    private coinsCollected: number = 0;
     private commitCount: number = 0;
     private qrCount: number = 0;
     private coffeeCount: number = 0;
@@ -46,11 +63,14 @@ export class Game extends Scene {
 
     // HUD Elements
     private scoreText!: Phaser.GameObjects.Text;
+    private coinText!: Phaser.GameObjects.Text;
     private distanceText!: Phaser.GameObjects.Text;
+    private stageText!: Phaser.GameObjects.Text;
     private comboText!: Phaser.GameObjects.Text;
     private hpText!: Phaser.GameObjects.Text;
+    private magnetHudText!: Phaser.GameObjects.Text;
 
-    // Orchestrated Wave Spawner
+    // Wave & Obstacle Generation
     private nextWaveTimer: number = 0;
     private lastPatternIndex: number = -1;
 
@@ -72,58 +92,58 @@ export class Game extends Scene {
         const { width, height } = this.scale;
         this.cameras.main.fadeIn(300, 10, 14, 26);
 
-        // Reset state
+        // Reset game state
         this.currentSpeed = this.baseSpeed;
         this.distance = 0;
         this.score = 0;
         this.currentHp = 100;
         this.combo = 0;
+        this.coinsCollected = 0;
         this.commitCount = 0;
         this.qrCount = 0;
         this.coffeeCount = 0;
+        this.currentStage = 1;
+        this.stageTransitioning = false;
         this.isFeverActive = false;
         this.feverTimeRemaining = 0;
         this.isPaused = false;
         this.nextWaveTimer = 800;
         this.highScore = ScoreManager.getHighScore();
 
-        // 1. Sky & Parallax (Calm deep indigo & navy, no dizzying neon clashes)
-        const sky = this.add.graphics();
-        sky.fillGradientStyle(0x0a0e1a, 0x0a0e1a, 0x171e38, 0x241b3e, 1);
-        sky.fillRect(0, 0, width, height);
-
         this.groundY = height - 50;
 
-        if (this.textures.exists('bg_skyline_far')) {
-            this.bgFarTile = this.add.tileSprite(0, height - 350, width, 400, 'bg_skyline_far')
-                .setOrigin(0, 0)
-                .setAlpha(0.4);
-        }
+        // 1. Sky & Parallax (Stage 1 initial)
+        this.add.graphics()
+            .fillGradientStyle(0x0a0e1a, 0x0a0e1a, 0x171e38, 0x241b3e, 1)
+            .fillRect(0, 0, width, height);
 
-        if (this.textures.exists('bg_skyline_near')) {
-            this.bgNearTile = this.add.tileSprite(0, height - 230, width, 280, 'bg_skyline_near')
-                .setOrigin(0, 0)
-                .setAlpha(0.65);
-        }
-
-        // 2. Ground
-        this.groundTile = this.add.tileSprite(0, this.groundY, width, 60, 'ground_tex')
+        this.bgFarTile = this.add.tileSprite(0, height - 350, width, 400, 'bg_s1_far')
             .setOrigin(0, 0)
-            .setDepth(10);
+            .setAlpha(0.45);
 
-        this.groundCollider = this.physics.add.staticGroup();
-        const groundBody = this.add.rectangle(width / 2, this.groundY + 20, width * 2, 40, 0x000000, 0);
-        this.groundCollider.add(groundBody);
+        this.bgNearTile = this.add.tileSprite(0, height - 230, width, 280, 'bg_s1_near')
+            .setOrigin(0, 0)
+            .setAlpha(0.7);
 
-        // 3. Player
+        // 2. Segmented Ground & Platforms
+        this.groundColliderGroup = this.physics.add.staticGroup();
+        this.floatingPlatforms = this.physics.add.staticGroup();
+        this.initGroundSegments();
+
+        // 3. Player with Equipped Skin
         this.player = new Player(this, 180, this.groundY, this.groundY).setDepth(20);
-        this.physics.add.collider(this.player, this.groundCollider, () => {
+        this.physics.add.collider(this.player, this.groundColliderGroup, () => {
+            if (this.player.body && (this.player.body.blocked.down || this.player.body.touching.down)) {
+                this.player.resetJump();
+            }
+        });
+        this.physics.add.collider(this.player, this.floatingPlatforms, () => {
             if (this.player.body && (this.player.body.blocked.down || this.player.body.touching.down)) {
                 this.player.resetJump();
             }
         });
 
-        // 4. Object Groups & Overlaps
+        // 4. Object Groups
         this.obstacles = this.physics.add.group();
         this.physics.add.overlap(this.player, this.obstacles, (_p, obs) => {
             this.handleHitObstacle(obs as Phaser.Physics.Arcade.Sprite);
@@ -152,6 +172,27 @@ export class Game extends Scene {
         }
 
         this.audioManager.startBgm();
+    }
+
+    private initGroundSegments() {
+        const { width } = this.scale;
+        this.groundSegments = [];
+
+        // Create continuous starting floor for first 1500px
+        const segWidth = 1600;
+        const tile = this.add.tileSprite(0, this.groundY, segWidth, 60, 'ground_s1')
+            .setOrigin(0, 0)
+            .setDepth(10);
+
+        const body = this.add.rectangle(segWidth / 2, this.groundY + 20, segWidth, 40, 0x000000, 0);
+        this.groundColliderGroup.add(body);
+
+        this.groundSegments.push({
+            tile,
+            body,
+            x: 0,
+            width: segWidth
+        });
     }
 
     private setupTouchControls() {
@@ -197,14 +238,24 @@ export class Game extends Scene {
 
         const deltaSec = delta / 1000;
 
-        // Pacing & gentle distance scaling (capped at 600 px/s to prevent dizziness)
+        // Distance & Progressive Speed Scaling
         this.distance += (this.currentSpeed * deltaSec) / 10;
-        this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + Math.floor(this.distance * 0.16));
+        this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + Math.floor(this.distance * 0.22));
 
-        // Calm, stable parallax scrolling (slow multipliers)
+        // Parallax background scrolling
         if (this.bgFarTile) this.bgFarTile.tilePositionX += (this.currentSpeed * 0.05) * deltaSec;
-        if (this.bgNearTile) this.bgNearTile.tilePositionX += (this.currentSpeed * 0.15) * deltaSec;
-        if (this.groundTile) this.groundTile.tilePositionX += this.currentSpeed * deltaSec;
+        if (this.bgNearTile) this.bgNearTile.tilePositionX += (this.currentSpeed * 0.16) * deltaSec;
+
+        // Ground segments scrolling & pit management
+        this.updateGroundSegments(deltaSec);
+
+        // Check for falling into pit / hole
+        if (this.player.y > this.groundY + 45 && !this.player.isRescuing) {
+            this.handleFallIntoPit();
+        }
+
+        // Check Stage Transitions (Stage 1 -> Stage 2 -> Stage 3)
+        this.checkStageProgression();
 
         // Mental HP natural decay
         this.currentHp -= this.hpDrainRate * deltaSec;
@@ -225,6 +276,14 @@ export class Game extends Scene {
             }
         }
 
+        // Magnet HUD indicator
+        if (this.player.magnetTimeRemaining > 0) {
+            this.magnetHudText.setVisible(true);
+            this.magnetHudText.setText(`🧲 MAGNET: ${this.player.magnetTimeRemaining.toFixed(1)}s`);
+        } else {
+            this.magnetHudText.setVisible(false);
+        }
+
         // Wave generator
         this.nextWaveTimer -= delta;
         if (this.nextWaveTimer <= 0) {
@@ -234,11 +293,14 @@ export class Game extends Scene {
         // Player update
         this.player.update(_time, delta);
 
-        // Magnetic Attraction: Sucks nearby items toward player! (Solves "getting items is hard")
-        this.applyMagneticAttraction();
+        // Temporary Magnet Attraction (Only active when player has magnet power-up!)
+        if (this.player.magnetTimeRemaining > 0 || this.isFeverActive) {
+            this.applyMagneticAttraction();
+        }
 
         // Update HUD
-        this.distanceText.setText(`📍 ${Math.floor(this.distance)}m 질주 중`);
+        this.distanceText.setText(`📍 ${Math.floor(this.distance)}m`);
+        this.coinText.setText(`🪙 ${this.coinsCollected}`);
 
         // Clean off-screen objects
         this.cleanOffscreen(this.obstacles);
@@ -246,9 +308,171 @@ export class Game extends Scene {
         this.cleanOffscreen(this.items);
     }
 
-    // Magnetic Attraction: Smoothly draws items towards player within radius
+    // Segmented Ground Management (Supports Gaps & Pits)
+    private updateGroundSegments(deltaSec: number) {
+        const { width } = this.scale;
+        const shift = this.currentSpeed * deltaSec;
+
+        // Move existing segments left
+        for (let i = this.groundSegments.length - 1; i >= 0; i--) {
+            const seg = this.groundSegments[i];
+            seg.x -= shift;
+            seg.tile.x = seg.x;
+            seg.tile.tilePositionX += shift;
+            seg.body.x = seg.x + seg.width / 2;
+
+            // Remove if way offscreen
+            if (seg.x + seg.width < -100) {
+                seg.tile.destroy();
+                seg.body.destroy();
+                this.groundSegments.splice(i, 1);
+            }
+        }
+
+        // Spawn new segments ahead
+        const lastSeg = this.groundSegments[this.groundSegments.length - 1];
+        if (lastSeg && lastSeg.x + lastSeg.width < width + 600) {
+            const nextX = lastSeg.x + lastSeg.width;
+
+            // Chance to create a PIT / GAP (130px - 160px gap)
+            const shouldCreatePit = Phaser.Math.Between(1, 4) === 1 && this.distance > 80;
+            const pitWidth = shouldCreatePit ? Phaser.Math.Between(130, 160) : 0;
+            const segWidth = Phaser.Math.Between(550, 850);
+            const startX = nextX + pitWidth;
+
+            const groundTex = `ground_s${this.currentStage}`;
+            const tile = this.add.tileSprite(startX, this.groundY, segWidth, 60, groundTex)
+                .setOrigin(0, 0)
+                .setDepth(10);
+
+            const body = this.add.rectangle(startX + segWidth / 2, this.groundY + 20, segWidth, 40, 0x000000, 0);
+            this.groundColliderGroup.add(body);
+
+            this.groundSegments.push({
+                tile,
+                body,
+                x: startX,
+                width: segWidth
+            });
+
+            // If pit created, place a bridge warning line
+            if (shouldCreatePit) {
+                this.createPitWarning(nextX);
+            }
+        }
+    }
+
+    private createPitWarning(pitStartX: number) {
+        // Red hazard exclamation mark at edge
+        const warn = this.add.text(pitStartX - 25, this.groundY - 35, '⚠️ GAP', {
+            fontFamily: 'Arial Black',
+            fontSize: '13px',
+            color: '#ef4444'
+        }).setDepth(15);
+
+        this.tweens.add({
+            targets: warn,
+            alpha: 0.3,
+            duration: 250,
+            yoyo: true,
+            repeat: -1
+        });
+
+        // Destroy after passing
+        this.time.delayedCall(4000, () => warn.destroy());
+    }
+
+    // Falling into Pit: Takes 30 HP damage & Cookie Run style rescue drone lifts player up!
+    private handleFallIntoPit() {
+        this.currentHp -= 30;
+        this.combo = 0;
+        this.comboText.setText('');
+        this.cameras.main.shake(120, 0.02);
+
+        if (this.currentHp <= 0) {
+            this.currentHp = 0;
+            this.renderHpBar();
+            this.triggerGameOver();
+            return;
+        }
+
+        this.renderHpBar();
+        this.player.rescueFromPit(() => {
+            // Re-anchored to ground
+        });
+    }
+
+    // Stage Progression (Stage 1 -> Stage 2 -> Stage 3)
+    private checkStageProgression() {
+        if (this.stageTransitioning) return;
+
+        // Stage 2: 500m milestone (비상계단 지옥)
+        if (this.currentStage === 1 && this.distance >= 500) {
+            this.transitionToStage(2, '🚨 STAGE 2: 8시 55분 비상계단 질주!');
+        }
+        // Stage 3: 1100m milestone (멀캠 11층 랩실)
+        else if (this.currentStage === 2 && this.distance >= 1100) {
+            this.transitionToStage(3, '💻 STAGE 3: 멀캠 11층 코딩 랩실 도착!');
+        }
+    }
+
+    private transitionToStage(newStage: number, bannerText: string) {
+        this.currentStage = newStage;
+        this.stageTransitioning = true;
+        this.audioManager.playStageClear();
+
+        // Flash Camera
+        this.cameras.main.flash(400, 56, 189, 248);
+
+        // Update Backgrounds
+        if (this.bgFarTile) this.bgFarTile.setTexture(`bg_s${newStage}_far`);
+        if (this.bgNearTile) this.bgNearTile.setTexture(`bg_s${newStage}_near`);
+
+        // Announcement Banner
+        const { width, height } = this.scale;
+        this.stageBanner = this.add.container(width / 2, height / 2 - 80).setDepth(150);
+
+        const bannerBg = this.add.graphics();
+        bannerBg.fillStyle(0x0f172a, 0.95);
+        bannerBg.lineStyle(3, 0xfacc15);
+        bannerBg.fillRoundedRect(-320, -35, 640, 70, 16);
+        bannerBg.strokeRoundedRect(-320, -35, 640, 70, 16);
+
+        const bannerLbl = this.add.text(0, 0, bannerText, {
+            fontFamily: 'Arial Black',
+            fontSize: '24px',
+            color: '#facc15'
+        }).setOrigin(0.5);
+
+        this.stageBanner.add([bannerBg, bannerLbl]);
+        this.stageBanner.setScale(0);
+
+        this.tweens.add({
+            targets: this.stageBanner,
+            scale: 1,
+            duration: 400,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                this.time.delayedCall(1600, () => {
+                    this.tweens.add({
+                        targets: this.stageBanner,
+                        alpha: 0,
+                        duration: 300,
+                        onComplete: () => {
+                            this.stageBanner?.destroy();
+                            this.stageTransitioning = false;
+                        }
+                    });
+                });
+            }
+        });
+
+        this.stageText.setText(`STAGE ${newStage}`);
+    }
+
+    // Temporary Magnetic Attraction
     private applyMagneticAttraction() {
-        const magnetRadius = this.isFeverActive ? 260 : 135;
+        const magnetRadius = this.isFeverActive ? 280 : 180;
         const px = this.player.x;
         const py = this.player.y - 32;
 
@@ -257,11 +481,9 @@ export class Game extends Scene {
             if (!j.active) return;
             const dist = Phaser.Math.Distance.Between(px, py, j.x, j.y);
             if (dist < magnetRadius) {
-                // Smooth suction interpolation
                 const angle = Phaser.Math.Angle.Between(j.x, j.y, px, py);
-                const pullSpeed = 520;
-                j.x += Math.cos(angle) * pullSpeed * 0.016;
-                j.y += Math.sin(angle) * pullSpeed * 0.016;
+                j.x += Math.cos(angle) * 600 * 0.016;
+                j.y += Math.sin(angle) * 600 * 0.016;
             }
         });
 
@@ -271,15 +493,14 @@ export class Game extends Scene {
             const dist = Phaser.Math.Distance.Between(px, py, item.x, item.y);
             if (dist < magnetRadius) {
                 const angle = Phaser.Math.Angle.Between(item.x, item.y, px, py);
-                const pullSpeed = 480;
-                item.x += Math.cos(angle) * pullSpeed * 0.016;
-                item.y += Math.sin(angle) * pullSpeed * 0.016;
+                item.x += Math.cos(angle) * 520 * 0.016;
+                item.y += Math.sin(angle) * 520 * 0.016;
             }
         });
     }
 
     private spawnNextWave() {
-        const patterns = [0, 1, 2, 3, 4, 5];
+        const patterns = [0, 1, 2, 3, 4, 5, 6];
         const available = patterns.filter(p => p !== this.lastPatternIndex);
         const selected = Phaser.Math.RND.pick(available);
         this.lastPatternIndex = selected;
@@ -288,7 +509,7 @@ export class Game extends Scene {
 
         switch (selected) {
             case 0:
-                waveDurationMs = this.spawnRunWave();
+                waveDurationMs = this.spawnCoinSprintWave();
                 break;
             case 1:
                 waveDurationMs = this.spawnJumpArcWave();
@@ -297,34 +518,33 @@ export class Game extends Scene {
                 waveDurationMs = this.spawnSlideTunnelWave();
                 break;
             case 3:
-                waveDurationMs = this.spawnDoubleJumpQrWave();
+                waveDurationMs = this.spawnFloatingPlatformWave();
                 break;
             case 4:
-                waveDurationMs = this.spawnCoffeeRestWave();
+                waveDurationMs = this.spawnMagnetPowerupWave();
                 break;
             case 5:
-                waveDurationMs = this.spawnFeverBonusWave();
+                waveDurationMs = this.spawnDoubleJumpQrWave();
+                break;
+            case 6:
+                waveDurationMs = this.spawnCoffeeRestWave();
                 break;
         }
 
-        this.nextWaveTimer = Math.max(1600, waveDurationMs * (420 / this.currentSpeed));
+        this.nextWaveTimer = Math.max(1600, waveDurationMs * (440 / this.currentSpeed));
     }
 
-    // Pattern 0: Flat sprint row of 5 commits
-    private spawnRunWave(): number {
+    // Pattern 0: Gold Coin Sprint (🪙)
+    private spawnCoinSprintWave(): number {
         const { width } = this.scale;
-        const count = 5;
-        const spacing = 45;
-
-        for (let i = 0; i < count; i++) {
-            const j = this.jellies.create(width + (i * spacing), this.groundY - 32, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
-            this.setupItemPhysics(j, 100, 'grass');
+        for (let i = 0; i < 6; i++) {
+            const c = this.jellies.create(width + (i * 45), this.groundY - 32, 'item_coin') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(c, 50, 'coin');
         }
-
-        return 1600;
+        return 1700;
     }
 
-    // Pattern 1: Parabolic jump arc over ground obstacle (Apex lowered to 105px for effortless collection!)
+    // Pattern 1: Jump Arc over obstacle
     private spawnJumpArcWave(): number {
         const { width } = this.scale;
         const obstacleX = width + 240;
@@ -336,24 +556,12 @@ export class Game extends Scene {
         if (body) {
             body.setAllowGravity(false);
             body.setVelocityX(-this.currentSpeed);
-            if (tex === 'obstacle_error') {
-                body.setSize(38, 42);
-                body.setOffset(7, 12);
-            } else {
-                body.setSize(36, 32);
-                body.setOffset(6, 8);
-            }
+            body.setSize(38, 38);
         }
 
-        // Gentle parabolic arc perfectly reachable with 1 simple jump
         const arcOffsets = [
-            { x: -160, y: -30 },
-            { x: -105, y: -65 },
-            { x: -50, y: -95 },
-            { x: 0, y: -105 }, // Apex right above obstacle (easy to collect)
-            { x: 50, y: -95 },
-            { x: 105, y: -65 },
-            { x: 160, y: -30 }
+            { x: -160, y: -30 }, { x: -105, y: -65 }, { x: -50, y: -95 },
+            { x: 0, y: -105 }, { x: 50, y: -95 }, { x: 105, y: -65 }, { x: 160, y: -30 }
         ];
 
         arcOffsets.forEach(pt => {
@@ -364,7 +572,7 @@ export class Game extends Scene {
         return 2200;
     }
 
-    // Pattern 2: Merge conflict barrier + low slide tunnel
+    // Pattern 2: Slide Tunnel under conflict banner
     private spawnSlideTunnelWave(): number {
         const { width } = this.scale;
         const barrierX = width + 220;
@@ -376,10 +584,8 @@ export class Game extends Scene {
             body.setAllowGravity(false);
             body.setVelocityX(-this.currentSpeed);
             body.setSize(58, 22);
-            body.setOffset(6, 6);
         }
 
-        // Low row of commit grasses
         for (let i = -110; i <= 110; i += 45) {
             const j = this.jellies.create(barrierX + i, this.groundY - 18, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
             this.setupItemPhysics(j, 100, 'grass');
@@ -388,7 +594,68 @@ export class Game extends Scene {
         return 2000;
     }
 
-    // Pattern 3: High Double Jump with SSAFY QR Code Phone
+    // Pattern 3: Floating Upper Platform with Gold Coins (Cookie Run style 2-tier path!)
+    private spawnFloatingPlatformWave(): number {
+        const { width } = this.scale;
+        const platX = width + 200;
+        const platY = this.groundY - 95;
+
+        // Platform
+        const plat = this.floatingPlatforms.create(platX, platY, 'platform_tex') as Phaser.Physics.Arcade.Sprite;
+        plat.setDepth(12);
+        const body = plat.body as Phaser.Physics.Arcade.StaticBody;
+        if (body) {
+            body.setSize(160, 24);
+        }
+
+        // Coins on top of platform
+        for (let i = -60; i <= 60; i += 40) {
+            const c = this.jellies.create(platX + i, platY - 32, 'item_coin') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(c, 50, 'coin');
+        }
+
+        // Ground obstacle underneath
+        const obs = this.obstacles.create(platX, this.groundY - 24, 'obstacle_bug') as Phaser.Physics.Arcade.Sprite;
+        obs.setDepth(15);
+        const obody = obs.body as Phaser.Physics.Arcade.Body;
+        if (obody) {
+            obody.setAllowGravity(false);
+            obody.setVelocityX(-this.currentSpeed);
+        }
+
+        // Move platform with world speed
+        this.tweens.add({
+            targets: plat,
+            x: -200,
+            duration: (platX + 300) / this.currentSpeed * 1000,
+            onComplete: () => plat.destroy()
+        });
+
+        return 2200;
+    }
+
+    // Pattern 4: Magnet Power-Up Item (🧲)
+    private spawnMagnetPowerupWave(): number {
+        const { width } = this.scale;
+        const mag = this.items.create(width + 180, this.groundY - 55, 'item_magnet') as Phaser.Physics.Arcade.Sprite;
+        mag.setDepth(16);
+        const body = mag.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            body.setAllowGravity(false);
+            body.setVelocityX(-this.currentSpeed);
+        }
+        mag.setData('type', 'magnet');
+
+        // Gold coin trail behind magnet
+        for (let i = 1; i <= 5; i++) {
+            const c = this.jellies.create(width + 180 + (i * 45), this.groundY - 32, 'item_coin') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(c, 50, 'coin');
+        }
+
+        return 1900;
+    }
+
+    // Pattern 5: High Double Jump QR Code Phone
     private spawnDoubleJumpQrWave(): number {
         const { width } = this.scale;
         const centerX = width + 250;
@@ -400,20 +667,12 @@ export class Game extends Scene {
             body.setAllowGravity(false);
             body.setVelocityX(-this.currentSpeed);
             body.setSize(36, 32);
-            body.setOffset(6, 8);
         }
 
-        // QR Code at reachable double jump peak (145px)
         const qr = this.jellies.create(centerX, this.groundY - 145, 'jelly_qr') as Phaser.Physics.Arcade.Sprite;
         this.setupItemPhysics(qr, 300, 'qr');
 
-        // Guide commits
-        const guides = [
-            { x: -140, y: -35 },
-            { x: -75, y: -90 },
-            { x: 75, y: -90 },
-            { x: 140, y: -35 }
-        ];
+        const guides = [{ x: -130, y: -40 }, { x: -70, y: -90 }, { x: 70, y: -90 }, { x: 130, y: -40 }];
         guides.forEach(g => {
             const j = this.jellies.create(centerX + g.x, this.groundY + g.y, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
             this.setupItemPhysics(j, 100, 'grass');
@@ -422,7 +681,7 @@ export class Game extends Scene {
         return 2200;
     }
 
-    // Pattern 4: Coffee break & Health refill
+    // Pattern 6: Coffee break & Health refill
     private spawnCoffeeRestWave(): number {
         const { width } = this.scale;
         const coffeeX = width + 200;
@@ -436,43 +695,12 @@ export class Game extends Scene {
         }
         coffee.setData('type', 'coffee');
 
-        this.tweens.add({
-            targets: coffee,
-            y: coffee.y - 10,
-            duration: 450,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-
-        [-90, -45, 45, 90].forEach(ox => {
+        [-80, -40, 40, 80].forEach(ox => {
             const j = this.jellies.create(coffeeX + ox, this.groundY - 32, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
             this.setupItemPhysics(j, 100, 'grass');
         });
 
         return 1800;
-    }
-
-    // Pattern 5: Fever Drink & Golden sprint
-    private spawnFeverBonusWave(): number {
-        const { width } = this.scale;
-        const startX = width + 180;
-
-        const booster = this.items.create(startX, this.groundY - 60, 'item_fever') as Phaser.Physics.Arcade.Sprite;
-        booster.setDepth(16);
-        const body = booster.body as Phaser.Physics.Arcade.Body;
-        if (body) {
-            body.setAllowGravity(false);
-            body.setVelocityX(-this.currentSpeed);
-        }
-        booster.setData('type', 'fever');
-
-        for (let i = 1; i <= 5; i++) {
-            const j = this.jellies.create(startX + (i * 45), this.groundY - 32, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
-            this.setupItemPhysics(j, 100, 'grass');
-        }
-
-        return 2000;
     }
 
     private setupItemPhysics(item: Phaser.Physics.Arcade.Sprite, points: number, type: string) {
@@ -499,11 +727,17 @@ export class Game extends Scene {
     private createHUD() {
         const { width } = this.scale;
 
-        // Top Left: HP Bar
+        // Top Left: HP Bar & Stage Badge
         const barX = 30;
         const barY = 32;
 
-        this.hpText = this.add.text(barX, barY - 18, '⚡ MENTAL HP: 100%', {
+        this.stageText = this.add.text(barX, barY - 20, 'STAGE 1', {
+            fontFamily: 'Arial Black',
+            fontSize: '14px',
+            color: '#facc15'
+        }).setDepth(50);
+
+        this.hpText = this.add.text(barX + 85, barY - 20, 'MENTAL HP: 100%', {
             fontFamily: 'Arial Black',
             fontSize: '13px',
             color: '#cbd5e1'
@@ -518,11 +752,24 @@ export class Game extends Scene {
         this.hpBarFill = this.add.graphics().setDepth(50);
         this.renderHpBar();
 
-        // Top Center: Distance & Fever
-        this.distanceText = this.add.text(width / 2, 24, '📍 0m 질주 중', {
+        // Magnet Power-up timer text under HP bar
+        this.magnetHudText = this.add.text(barX, barY + 26, '🧲 MAGNET: 6.0s', {
+            fontFamily: 'Arial Black',
+            fontSize: '13px',
+            color: '#38bdf8'
+        }).setDepth(50).setVisible(false);
+
+        // Top Center: Distance & Coins & Fever
+        this.distanceText = this.add.text(width / 2 - 50, 24, '📍 0m', {
             fontFamily: 'Arial Black',
             fontSize: '20px',
             color: '#38bdf8'
+        }).setOrigin(0.5, 0).setDepth(50);
+
+        this.coinText = this.add.text(width / 2 + 55, 24, '🪙 0', {
+            fontFamily: 'Arial Black',
+            fontSize: '20px',
+            color: '#facc15'
         }).setOrigin(0.5, 0).setDepth(50);
 
         this.feverText = this.add.text(width / 2, 54, '🔥 FEVER TIME! DOUBLE POINTS 🔥', {
@@ -589,7 +836,7 @@ export class Game extends Scene {
             this.hpBarFill.fillRoundedRect(32, 34, 256 * hpRatio, 16, 4);
         }
 
-        this.hpText.setText(`⚡ MENTAL HP: ${Math.round(this.currentHp)}%`);
+        this.hpText.setText(`MENTAL HP: ${Math.round(this.currentHp)}%`);
     }
 
     private renderFeverBar() {
@@ -633,7 +880,10 @@ export class Game extends Scene {
         const type = jelly.getData('type') || 'grass';
 
         this.combo++;
-        if (type === 'grass') {
+        if (type === 'coin') {
+            this.coinsCollected++;
+            this.audioManager.playCoin();
+        } else if (type === 'grass') {
             this.commitCount++;
             this.audioManager.playJelly();
         } else {
@@ -663,7 +913,7 @@ export class Game extends Scene {
             this.comboText.setText('');
         }
 
-        const floatColor = type === 'qr' ? '#38bdf8' : this.isFeverActive ? '#facc15' : '#4ade80';
+        const floatColor = type === 'coin' ? '#facc15' : type === 'qr' ? '#38bdf8' : this.isFeverActive ? '#facc15' : '#4ade80';
         const floatText = this.add.text(jelly.x, jelly.y, `+${totalEarned}`, {
             fontFamily: 'Arial Black',
             fontSize: '18px',
@@ -694,7 +944,16 @@ export class Game extends Scene {
     private collectSpecialItem(item: Phaser.Physics.Arcade.Sprite) {
         const type = item.getData('type');
 
-        if (type === 'coffee') {
+        if (type === 'magnet') {
+            // Temporary 6.5s magnet power-up!
+            this.player.activateMagnet(6.5);
+            const floatText = this.add.text(item.x, item.y, '🧲 MAGNET ON!', {
+                fontFamily: 'Arial Black',
+                fontSize: '22px',
+                color: '#38bdf8'
+            }).setDepth(30);
+            this.tweens.add({ targets: floatText, y: floatText.y - 50, alpha: 0, duration: 600, onComplete: () => floatText.destroy() });
+        } else if (type === 'coffee') {
             this.coffeeCount++;
             this.currentHp = Math.min(this.maxHp, this.currentHp + 25);
             this.renderHpBar();
@@ -705,14 +964,7 @@ export class Game extends Scene {
                 fontSize: '20px',
                 color: '#38bdf8'
             }).setDepth(30);
-
-            this.tweens.add({
-                targets: floatText,
-                y: floatText.y - 50,
-                alpha: 0,
-                duration: 600,
-                onComplete: () => floatText.destroy()
-            });
+            this.tweens.add({ targets: floatText, y: floatText.y - 50, alpha: 0, duration: 600, onComplete: () => floatText.destroy() });
         } else if (type === 'fever') {
             this.startFeverMode();
             const floatText = this.add.text(item.x, item.y, '⚡ FEVER BOOST!!', {
@@ -720,14 +972,7 @@ export class Game extends Scene {
                 fontSize: '22px',
                 color: '#facc15'
             }).setDepth(30);
-
-            this.tweens.add({
-                targets: floatText,
-                y: floatText.y - 50,
-                alpha: 0,
-                duration: 600,
-                onComplete: () => floatText.destroy()
-            });
+            this.tweens.add({ targets: floatText, y: floatText.y - 50, alpha: 0, duration: 600, onComplete: () => floatText.destroy() });
         }
 
         item.destroy();
@@ -756,7 +1001,6 @@ export class Game extends Scene {
         this.currentHp -= 20;
         this.combo = 0;
         this.comboText.setText('');
-        // Gentle screen shake (no violent dizziness)
         this.cameras.main.shake(100, 0.012);
 
         if (this.currentHp <= 0) {
@@ -847,6 +1091,9 @@ export class Game extends Scene {
         this.audioManager.stopBgm();
         this.audioManager.playGameOver();
 
+        // Save earned coins to player wallet
+        SkinManager.addCoins(this.coinsCollected);
+
         this.cameras.main.fade(400, 10, 14, 26);
         this.time.delayedCall(400, () => {
             this.scene.start('GameOver', {
@@ -854,7 +1101,8 @@ export class Game extends Scene {
                 distance: Math.floor(this.distance),
                 commits: this.commitCount,
                 qrs: this.qrCount,
-                coffees: this.coffeeCount
+                coffees: this.coffeeCount,
+                coins: this.coinsCollected
             });
         });
     }

@@ -1,65 +1,69 @@
 import * as Phaser from 'phaser';
+import { SkinManager } from './SkinManager';
 
 export class TextureGenerator {
     public static generateAll(scene: Phaser.Scene) {
-        this.generatePlayerTextures(scene);
-        this.generateGroundTexture(scene);
-        this.generateBackgroundTextures(scene);
+        this.generateAllPlayerSkins(scene);
+        this.generateStageTextures(scene);
         this.generateItemTextures(scene);
         this.generateObstacleTextures(scene);
         this.generateParticleTextures(scene);
         this.generateUiTextures(scene);
     }
 
-    private static generatePlayerTextures(scene: Phaser.Scene) {
-        // Player Run 1-4 with crisp bright colors & white outline for maximum contrast
-        for (let f = 1; f <= 4; f++) {
-            const key = `player_run_${f}`;
-            if (!scene.textures.exists(key)) {
-                const canvas = scene.textures.createCanvas(key, 64, 80);
+    private static generateAllPlayerSkins(scene: Phaser.Scene) {
+        SkinManager.SKINS.forEach(skin => {
+            // Run 1-4
+            for (let f = 1; f <= 4; f++) {
+                const key = `player_${skin.id}_run_${f}`;
+                if (!scene.textures.exists(key)) {
+                    const canvas = scene.textures.createCanvas(key, 64, 80);
+                    if (canvas) {
+                        const ctx = canvas.getContext();
+                        this.drawTrainee(ctx, f, skin);
+                        canvas.refresh();
+                    }
+                }
+            }
+
+            // Jump
+            const jumpKey = `player_${skin.id}_jump`;
+            if (!scene.textures.exists(jumpKey)) {
+                const canvas = scene.textures.createCanvas(jumpKey, 64, 80);
                 if (canvas) {
                     const ctx = canvas.getContext();
-                    this.drawTrainee(ctx, f);
+                    this.drawTraineeJump(ctx, skin);
                     canvas.refresh();
                 }
             }
-        }
 
-        // Jump
-        if (!scene.textures.exists('player_jump')) {
-            const canvas = scene.textures.createCanvas('player_jump', 64, 80);
-            if (canvas) {
-                const ctx = canvas.getContext();
-                this.drawTraineeJump(ctx);
-                canvas.refresh();
+            // Slide
+            const slideKey = `player_${skin.id}_slide`;
+            if (!scene.textures.exists(slideKey)) {
+                const canvas = scene.textures.createCanvas(slideKey, 80, 48);
+                if (canvas) {
+                    const ctx = canvas.getContext();
+                    this.drawTraineeSlide(ctx, skin);
+                    canvas.refresh();
+                }
             }
-        }
-
-        // Slide
-        if (!scene.textures.exists('player_slide')) {
-            const canvas = scene.textures.createCanvas('player_slide', 80, 48);
-            if (canvas) {
-                const ctx = canvas.getContext();
-                this.drawTraineeSlide(ctx);
-                canvas.refresh();
-            }
-        }
+        });
     }
 
-    private static drawTrainee(ctx: CanvasRenderingContext2D, frame: number) {
+    private static drawTrainee(ctx: CanvasRenderingContext2D, frame: number, skin: typeof SkinManager.SKINS[0]) {
         ctx.clearRect(0, 0, 64, 80);
 
         const bounce = (frame === 1 || frame === 3) ? -2 : 0;
         const cy = 38 + bounce;
 
-        // Dark navy backpack
+        // Backpack
         ctx.fillStyle = '#0f172a';
         ctx.beginPath();
         ctx.roundRect(14, cy - 14, 12, 22, 4);
         ctx.fill();
 
         // Left Arm (back)
-        ctx.fillStyle = '#1d4ed8';
+        ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
         if (frame === 1) {
             ctx.ellipse(22, cy - 2, 6, 12, -0.4, 0, Math.PI * 2);
@@ -68,73 +72,73 @@ export class TextureGenerator {
         }
         ctx.fill();
 
-        // Running Legs with bright white socks & red sneakers
-        ctx.fillStyle = '#1e293b'; // Pants
+        // Legs & Shoes
+        ctx.fillStyle = skin.pantsColor;
         if (frame === 1) {
             ctx.fillRect(32, cy + 12, 8, 16);
-            ctx.fillStyle = '#ffffff'; // Sock
+            ctx.fillStyle = '#ffffff';
             ctx.fillRect(32, cy + 24, 8, 4);
-            ctx.fillStyle = '#ef4444'; // Red sneaker
+            ctx.fillStyle = skin.sneakerColor;
             ctx.fillRect(34, cy + 28, 14, 8);
 
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = skin.pantsColor;
             ctx.fillRect(20, cy + 10, 8, 14);
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(20, cy + 20, 8, 4);
-            ctx.fillStyle = '#ef4444';
+            ctx.fillStyle = skin.sneakerColor;
             ctx.fillRect(16, cy + 24, 12, 8);
         } else if (frame === 2) {
             ctx.fillRect(28, cy + 12, 8, 18);
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(28, cy + 26, 8, 4);
-            ctx.fillStyle = '#ef4444';
+            ctx.fillStyle = skin.sneakerColor;
             ctx.fillRect(28, cy + 30, 13, 8);
 
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = skin.pantsColor;
             ctx.fillRect(24, cy + 10, 8, 16);
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(24, cy + 22, 8, 4);
-            ctx.fillStyle = '#ef4444';
+            ctx.fillStyle = skin.sneakerColor;
             ctx.fillRect(22, cy + 26, 12, 8);
         } else if (frame === 3) {
             ctx.fillRect(20, cy + 12, 8, 16);
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(20, cy + 24, 8, 4);
-            ctx.fillStyle = '#ef4444';
+            ctx.fillStyle = skin.sneakerColor;
             ctx.fillRect(16, cy + 28, 14, 8);
 
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = skin.pantsColor;
             ctx.fillRect(32, cy + 10, 8, 14);
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(32, cy + 20, 8, 4);
-            ctx.fillStyle = '#ef4444';
+            ctx.fillStyle = skin.sneakerColor;
             ctx.fillRect(34, cy + 24, 12, 8);
         } else {
             ctx.fillRect(26, cy + 12, 8, 18);
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(26, cy + 26, 8, 4);
-            ctx.fillStyle = '#ef4444';
+            ctx.fillStyle = skin.sneakerColor;
             ctx.fillRect(26, cy + 30, 13, 8);
 
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = skin.pantsColor;
             ctx.fillRect(22, cy + 10, 8, 16);
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(22, cy + 22, 8, 4);
-            ctx.fillStyle = '#ef4444';
+            ctx.fillStyle = skin.sneakerColor;
             ctx.fillRect(20, cy + 26, 12, 8);
         }
 
-        // Torso - Vibrant SSAFY Blue Hoodie with crisp white trim
-        ctx.fillStyle = '#2563eb';
+        // Torso Hoodie
+        ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
         ctx.roundRect(22, cy - 14, 22, 28, 6);
         ctx.fill();
-        ctx.strokeStyle = '#60a5fa';
+        ctx.strokeStyle = skin.color;
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // Lanyard (Orange ribbon with white badge)
-        ctx.strokeStyle = '#f97316';
+        // Ribbon & ID Card
+        ctx.strokeStyle = skin.badgeColor;
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.moveTo(27, cy - 12);
@@ -144,37 +148,70 @@ export class TextureGenerator {
 
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(30, cy + 4, 8, 10);
-        ctx.fillStyle = '#2563eb';
+        ctx.fillStyle = skin.hoodieColor;
         ctx.fillRect(31, cy + 6, 6, 3);
 
-        // Head (Skin tone)
+        // Head
         ctx.fillStyle = '#fed7aa';
         ctx.beginPath();
         ctx.arc(34, cy - 23, 11, 0, Math.PI * 2);
         ctx.fill();
 
-        // Hair
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.arc(33, cy - 25, 12, Math.PI * 0.9, Math.PI * 2.1);
-        ctx.lineTo(44, cy - 24);
-        ctx.lineTo(36, cy - 22);
-        ctx.fill();
+        // Hair / Special Headgear
+        if (skin.id === 'gold_master') {
+            // Golden Crown
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.moveTo(26, cy - 28);
+            ctx.lineTo(29, cy - 38);
+            ctx.lineTo(34, cy - 32);
+            ctx.lineTo(39, cy - 38);
+            ctx.lineTo(42, cy - 28);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(33, cy - 30, 3, 3);
+        } else if (skin.id === 'panda_pajama') {
+            // Panda Hood Ears
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(26, cy - 34, 5, 0, Math.PI * 2);
+            ctx.arc(42, cy - 34, 5, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (skin.id === 'cyber_agent') {
+            // Cyber Visor
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(33, cy - 25, 12, Math.PI * 0.9, Math.PI * 2.1);
+            ctx.fill();
+            ctx.fillStyle = '#06b6d4';
+            ctx.fillRect(35, cy - 26, 12, 6);
+        } else {
+            // Classic Dark Hair
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(33, cy - 25, 12, Math.PI * 0.9, Math.PI * 2.1);
+            ctx.lineTo(44, cy - 24);
+            ctx.lineTo(36, cy - 22);
+            ctx.fill();
+        }
 
-        // Determined Eye
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(37, cy - 24, 3, 3);
-        ctx.fillStyle = '#0284c7';
-        ctx.fillRect(38, cy - 23, 2, 2);
+        // Eye
+        if (skin.id !== 'cyber_agent') {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(37, cy - 24, 3, 3);
+            ctx.fillStyle = skin.color;
+            ctx.fillRect(38, cy - 23, 2, 2);
+        }
 
-        // Sweat drop (hurrying!)
+        // Sweat drop
         ctx.fillStyle = '#38bdf8';
         ctx.beginPath();
         ctx.arc(43, cy - 26, 2, 0, Math.PI * 2);
         ctx.fill();
 
         // Front Arm
-        ctx.fillStyle = '#3b82f6';
+        ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
         if (frame === 1) {
             ctx.ellipse(38, cy - 1, 6, 12, 0.5, 0, Math.PI * 2);
@@ -184,37 +221,35 @@ export class TextureGenerator {
         ctx.fill();
     }
 
-    private static drawTraineeJump(ctx: CanvasRenderingContext2D) {
+    private static drawTraineeJump(ctx: CanvasRenderingContext2D, skin: typeof SkinManager.SKINS[0]) {
         ctx.clearRect(0, 0, 64, 80);
         const cy = 34;
 
-        // Backpack
         ctx.fillStyle = '#0f172a';
         ctx.beginPath();
         ctx.roundRect(14, cy - 12, 12, 22, 4);
         ctx.fill();
 
         // Tucked Legs
-        ctx.fillStyle = '#1e293b';
+        ctx.fillStyle = skin.pantsColor;
         ctx.fillRect(20, cy + 12, 16, 8);
         ctx.fillRect(28, cy + 18, 14, 8);
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(36, cy + 18, 8, 4);
-        ctx.fillStyle = '#ef4444';
+        ctx.fillStyle = skin.sneakerColor;
         ctx.fillRect(38, cy + 22, 12, 8);
         ctx.fillRect(20, cy + 18, 12, 8);
 
         // Torso
-        ctx.fillStyle = '#2563eb';
+        ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
         ctx.roundRect(22, cy - 14, 22, 28, 6);
         ctx.fill();
-        ctx.strokeStyle = '#60a5fa';
+        ctx.strokeStyle = skin.color;
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // Lanyard floating
-        ctx.strokeStyle = '#f97316';
+        ctx.strokeStyle = skin.badgeColor;
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.moveTo(27, cy - 12);
@@ -231,183 +266,265 @@ export class TextureGenerator {
         ctx.arc(34, cy - 23, 11, 0, Math.PI * 2);
         ctx.fill();
 
-        // Fluttering hair
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.arc(33, cy - 25, 12, Math.PI * 0.8, Math.PI * 2.2);
-        ctx.lineTo(45, cy - 28);
-        ctx.fill();
+        if (skin.id === 'gold_master') {
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.moveTo(26, cy - 28);
+            ctx.lineTo(29, cy - 38);
+            ctx.lineTo(34, cy - 32);
+            ctx.lineTo(39, cy - 38);
+            ctx.lineTo(42, cy - 28);
+            ctx.closePath();
+            ctx.fill();
+        } else if (skin.id === 'cyber_agent') {
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(33, cy - 25, 12, Math.PI * 0.8, Math.PI * 2.2);
+            ctx.fill();
+            ctx.fillStyle = '#06b6d4';
+            ctx.fillRect(36, cy - 26, 12, 6);
+        } else {
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(33, cy - 25, 12, Math.PI * 0.8, Math.PI * 2.2);
+            ctx.lineTo(45, cy - 28);
+            ctx.fill();
+        }
 
-        // Eye
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(38, cy - 24, 3, 3);
-
-        // Arms raised
-        ctx.fillStyle = '#3b82f6';
+        // Arm raised
+        ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
         ctx.ellipse(38, cy - 8, 6, 12, 0.8, 0, Math.PI * 2);
         ctx.fill();
     }
 
-    private static drawTraineeSlide(ctx: CanvasRenderingContext2D) {
+    private static drawTraineeSlide(ctx: CanvasRenderingContext2D, skin: typeof SkinManager.SKINS[0]) {
         ctx.clearRect(0, 0, 80, 48);
 
-        // Sparks
         ctx.fillStyle = '#f59e0b';
         ctx.fillRect(2, 42, 20, 3);
-        ctx.fillStyle = '#ef4444';
+        ctx.fillStyle = skin.sneakerColor;
         ctx.fillRect(10, 44, 25, 2);
 
-        // Legs back
-        ctx.fillStyle = '#1e293b';
+        ctx.fillStyle = skin.pantsColor;
         ctx.fillRect(12, 24, 28, 10);
-        ctx.fillStyle = '#ef4444';
+        ctx.fillStyle = skin.sneakerColor;
         ctx.fillRect(8, 26, 14, 8);
 
-        // Torso
-        ctx.fillStyle = '#2563eb';
+        ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
         ctx.roundRect(32, 16, 26, 18, 4);
         ctx.fill();
-        ctx.strokeStyle = '#60a5fa';
+        ctx.strokeStyle = skin.color;
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // Head
         ctx.fillStyle = '#fed7aa';
         ctx.beginPath();
         ctx.arc(62, 22, 10, 0, Math.PI * 2);
         ctx.fill();
 
-        // Hair
         ctx.fillStyle = '#0f172a';
         ctx.beginPath();
         ctx.arc(60, 20, 11, Math.PI * 0.9, Math.PI * 2.1);
         ctx.lineTo(48, 16);
         ctx.fill();
 
-        // Eye
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(65, 21, 3, 3);
-
-        // Arm forward
-        ctx.fillStyle = '#3b82f6';
+        ctx.fillStyle = skin.hoodieColor;
         ctx.fillRect(44, 28, 20, 6);
     }
 
-    private static generateGroundTexture(scene: Phaser.Scene) {
-        if (scene.textures.exists('ground_tex')) return;
-
-        const canvas = scene.textures.createCanvas('ground_tex', 128, 60);
-        if (!canvas) return;
-        const ctx = canvas.getContext();
-
-        // Deep calm navy pavement (no eye fatigue)
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, 128, 60);
-
-        // Clean glowing cyan top guide line
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillRect(0, 0, 128, 4);
-
-        // Gentle tech road markings
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(0, 4, 128, 12);
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(10, 8, 40, 4);
-        ctx.fillRect(74, 8, 40, 4);
-
-        // Subtle road lines
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(0, 30);
-        ctx.lineTo(128, 30);
-        ctx.stroke();
-
-        canvas.refresh();
-    }
-
-    private static generateBackgroundTextures(scene: Phaser.Scene) {
-        // Far skyline: Soft, low-contrast calm silhouettes (no flickering grids to prevent dizziness!)
-        if (!scene.textures.exists('bg_skyline_far')) {
-            const canvas = scene.textures.createCanvas('bg_skyline_far', 1280, 400);
+    private static generateStageTextures(scene: Phaser.Scene) {
+        // --- STAGE 1: 테헤란로 출근길 (Seoul Dawn City) ---
+        if (!scene.textures.exists('bg_s1_far')) {
+            const canvas = scene.textures.createCanvas('bg_s1_far', 1280, 400);
             if (canvas) {
                 const ctx = canvas.getContext();
                 ctx.fillStyle = '#111827';
-
-                const buildings = [
-                    { x: 0, w: 100, h: 220 }, { x: 110, w: 130, h: 270 }, { x: 250, w: 90, h: 180 },
-                    { x: 350, w: 150, h: 300 }, { x: 510, w: 110, h: 230 }, { x: 630, w: 120, h: 280 },
-                    { x: 760, w: 100, h: 190 }, { x: 870, w: 140, h: 270 }, { x: 1020, w: 120, h: 220 },
-                    { x: 1150, w: 130, h: 310 }
-                ];
-
+                const buildings = [{ x: 0, w: 120, h: 220 }, { x: 130, w: 140, h: 280 }, { x: 290, w: 90, h: 180 }, { x: 400, w: 160, h: 310 }, { x: 580, w: 130, h: 240 }, { x: 730, w: 110, h: 270 }, { x: 860, w: 140, h: 220 }, { x: 1020, w: 150, h: 300 }, { x: 1190, w: 90, h: 200 }];
                 buildings.forEach(b => {
                     ctx.fillRect(b.x, 400 - b.h, b.w, b.h);
-                    // Soft warm glow at roof
                     ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
                     ctx.fillRect(b.x, 400 - b.h, b.w, 4);
                     ctx.fillStyle = '#111827';
                 });
-
+                canvas.refresh();
+            }
+        }
+        if (!scene.textures.exists('bg_s1_near')) {
+            const canvas = scene.textures.createCanvas('bg_s1_near', 1280, 280);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = '#1e293b';
+                const blocks = [{ x: 40, w: 190, h: 230, label: 'SSAFY' }, { x: 260, w: 150, h: 180, label: '9:00 AM' }, { x: 440, w: 230, h: 250, label: 'MULTICAMPUS' }, { x: 700, w: 160, h: 200, label: 'SEOUL' }, { x: 890, w: 210, h: 230, label: 'COMMIT' }, { x: 1120, w: 160, h: 210, label: 'MULTICAMPUS' }];
+                blocks.forEach(b => {
+                    ctx.fillRect(b.x, 280 - b.h, b.w, b.h);
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.font = 'bold 15px sans-serif';
+                    ctx.fillText(b.label, b.x + 20, 280 - b.h + 28);
+                    ctx.fillStyle = '#1e293b';
+                });
+                canvas.refresh();
+            }
+        }
+        if (!scene.textures.exists('ground_s1')) {
+            const canvas = scene.textures.createCanvas('ground_s1', 128, 60);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, 0, 128, 60);
+                ctx.fillStyle = '#38bdf8'; // Cyan neon line
+                ctx.fillRect(0, 0, 128, 4);
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(0, 4, 128, 12);
+                ctx.fillStyle = '#334155';
+                ctx.fillRect(10, 8, 40, 4); ctx.fillRect(74, 8, 40, 4);
                 canvas.refresh();
             }
         }
 
-        // Near skyline: SSAFY campus landmarks with warm clean glow
-        if (!scene.textures.exists('bg_skyline_near')) {
-            const canvas = scene.textures.createCanvas('bg_skyline_near', 1280, 280);
+        // --- STAGE 2: 만원 엘리베이터 & 비상계단 지옥 (Emergency Stairs) ---
+        if (!scene.textures.exists('bg_s2_far')) {
+            const canvas = scene.textures.createCanvas('bg_s2_far', 1280, 400);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = '#18121e';
+                ctx.fillRect(0, 0, 1280, 400);
+                // Shaft structures & caution stripes
+                ctx.strokeStyle = '#450a0a';
+                ctx.lineWidth = 4;
+                for (let x = 60; x < 1280; x += 180) {
+                    ctx.strokeRect(x, 40, 120, 360);
+                }
+                canvas.refresh();
+            }
+        }
+        if (!scene.textures.exists('bg_s2_near')) {
+            const canvas = scene.textures.createCanvas('bg_s2_near', 1280, 280);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = '#271724';
+                // Elevator doors & emergency exit green signs
+                for (let x = 80; x < 1280; x += 220) {
+                    ctx.fillRect(x, 40, 140, 240);
+                    // Green Exit Sign
+                    ctx.fillStyle = '#16a34a';
+                    ctx.fillRect(x + 35, 55, 70, 26);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 12px sans-serif';
+                    ctx.fillText('EXIT 비상구', x + 40, 72);
+                    ctx.fillStyle = '#271724';
+                }
+                canvas.refresh();
+            }
+        }
+        if (!scene.textures.exists('ground_s2')) {
+            const canvas = scene.textures.createCanvas('ground_s2', 128, 60);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = '#1c1917'; // Concrete stairs
+                ctx.fillRect(0, 0, 128, 60);
+                ctx.fillStyle = '#f59e0b'; // Amber caution edge
+                ctx.fillRect(0, 0, 128, 5);
+                // Yellow & Black hazard stripes
+                ctx.fillStyle = '#ca8a04';
+                for (let i = 0; i < 128; i += 24) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 5); ctx.lineTo(i + 12, 16); ctx.lineTo(i + 6, 16); ctx.lineTo(i - 6, 5);
+                    ctx.fill();
+                }
+                canvas.refresh();
+            }
+        }
+
+        // --- STAGE 3: 11층 미래 코딩 랩 (Cyber Server Room) ---
+        if (!scene.textures.exists('bg_s3_far')) {
+            const canvas = scene.textures.createCanvas('bg_s3_far', 1280, 400);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = '#061325';
+                ctx.fillRect(0, 0, 1280, 400);
+                // Glowing cyber circuit grid
+                ctx.strokeStyle = '#0284c7';
+                ctx.lineWidth = 1.5;
+                for (let y = 100; y < 400; y += 45) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y); ctx.lineTo(1280, y);
+                    ctx.stroke();
+                }
+                canvas.refresh();
+            }
+        }
+        if (!scene.textures.exists('bg_s3_near')) {
+            const canvas = scene.textures.createCanvas('bg_s3_near', 1280, 280);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = '#0c2240';
+                // Server racks with blinking LED lights
+                for (let x = 60; x < 1280; x += 190) {
+                    ctx.fillRect(x, 20, 130, 260);
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.font = 'bold 13px monospace';
+                    ctx.fillText('SERVER #11F', x + 18, 50);
+                    // Blinking LEDs
+                    for (let ly = 75; ly < 250; ly += 24) {
+                        ctx.fillStyle = (ly % 48 === 0) ? '#22c55e' : '#38bdf8';
+                        ctx.fillRect(x + 20, ly, 6, 6);
+                        ctx.fillRect(x + 35, ly, 6, 6);
+                        ctx.fillRect(x + 50, ly, 6, 6);
+                    }
+                    ctx.fillStyle = '#0c2240';
+                }
+                canvas.refresh();
+            }
+        }
+        if (!scene.textures.exists('ground_s3')) {
+            const canvas = scene.textures.createCanvas('ground_s3', 128, 60);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = '#03172e';
+                ctx.fillRect(0, 0, 128, 60);
+                ctx.fillStyle = '#06b6d4'; // Cyan neon grid
+                ctx.fillRect(0, 0, 128, 4);
+                ctx.strokeStyle = '#0284c7';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(4, 8, 56, 44);
+                ctx.strokeRect(68, 8, 56, 44);
+                canvas.refresh();
+            }
+        }
+
+        // Floating Platform Texture (공중 발판 - 160x28)
+        if (!scene.textures.exists('platform_tex')) {
+            const canvas = scene.textures.createCanvas('platform_tex', 160, 28);
             if (canvas) {
                 const ctx = canvas.getContext();
                 ctx.fillStyle = '#1e293b';
-
-                const blocks = [
-                    { x: 30, w: 180, h: 220, label: 'SSAFY' },
-                    { x: 240, w: 140, h: 170, label: '9:00 AM' },
-                    { x: 410, w: 220, h: 240, label: 'MULTICAMPUS' },
-                    { x: 660, w: 150, h: 190, label: 'SEOUL' },
-                    { x: 840, w: 200, h: 230, label: 'COMMIT' },
-                    { x: 1070, w: 180, h: 220, label: 'MULTICAMPUS' }
-                ];
-
-                blocks.forEach(b => {
-                    ctx.fillRect(b.x, 280 - b.h, b.w, b.h);
-
-                    // Clean neon signs
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.font = 'bold 15px sans-serif';
-                    ctx.fillText(b.label, b.x + 20, 280 - b.h + 28);
-
-                    // Soft warm window accents
-                    ctx.fillStyle = 'rgba(254, 240, 138, 0.3)';
-                    for (let wy = 280 - b.h + 50; wy < 260; wy += 35) {
-                        for (let wx = b.x + 20; wx < b.x + b.w - 20; wx += 30) {
-                            ctx.fillRect(wx, wy, 12, 14);
-                        }
-                    }
-                    ctx.fillStyle = '#1e293b';
-                });
-
+                ctx.beginPath();
+                ctx.roundRect(0, 0, 160, 28, 6);
+                ctx.fill();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+                // Glowing top rail
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(4, 2, 152, 4);
                 canvas.refresh();
             }
         }
     }
 
     private static generateItemTextures(scene: Phaser.Scene) {
-        // 1. Commit Grass: Bright emerald green git commit square with glowing pulse border (36x36)
+        // 1. Commit Grass (36x36)
         if (!scene.textures.exists('jelly_grass')) {
             const canvas = scene.textures.createCanvas('jelly_grass', 36, 36);
             if (canvas) {
                 const ctx = canvas.getContext();
-
-                // Outer bright glow
                 ctx.fillStyle = 'rgba(74, 222, 128, 0.4)';
                 ctx.beginPath();
                 ctx.roundRect(0, 0, 36, 36, 10);
                 ctx.fill();
 
-                // Bright Green Body
                 const grad = ctx.createLinearGradient(0, 0, 36, 36);
                 grad.addColorStop(0, '#4ade80');
                 grad.addColorStop(1, '#16a34a');
@@ -419,7 +536,6 @@ export class TextureGenerator {
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
-                // Commit node icon
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2.5;
                 ctx.beginPath();
@@ -430,24 +546,84 @@ export class TextureGenerator {
                 ctx.moveTo(9, 18); ctx.lineTo(13, 18);
                 ctx.moveTo(23, 18); ctx.lineTo(27, 18);
                 ctx.stroke();
-
                 canvas.refresh();
             }
         }
 
-        // 2. SSAFY QR Code Phone Badge (38x46)
+        // 2. Gold Coin 🪙 (32x32)
+        if (!scene.textures.exists('item_coin')) {
+            const canvas = scene.textures.createCanvas('item_coin', 32, 32);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                // Gold outer glow
+                ctx.fillStyle = 'rgba(250, 204, 21, 0.4)';
+                ctx.beginPath();
+                ctx.arc(16, 16, 15, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Shiny Gold Coin
+                const grad = ctx.createLinearGradient(0, 0, 32, 32);
+                grad.addColorStop(0, '#fde047');
+                grad.addColorStop(1, '#ca8a04');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(16, 16, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Center S (SSAFY Coin)
+                ctx.fillStyle = '#854d0e';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('S', 16, 21);
+                canvas.refresh();
+            }
+        }
+
+        // 3. Magnet Power-Up Item 🧲 (36x36)
+        if (!scene.textures.exists('item_magnet')) {
+            const canvas = scene.textures.createCanvas('item_magnet', 36, 36);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                // Cyan Glow
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+                ctx.beginPath();
+                ctx.arc(18, 18, 17, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Horseshoe Magnet Shape
+                ctx.fillStyle = '#ef4444'; // Red body
+                ctx.beginPath();
+                ctx.arc(18, 16, 13, Math.PI, 0, false);
+                ctx.lineTo(31, 26);
+                ctx.lineTo(24, 26);
+                ctx.lineTo(24, 16);
+                ctx.arc(18, 16, 6, 0, Math.PI, true);
+                ctx.lineTo(12, 26);
+                ctx.lineTo(5, 26);
+                ctx.closePath();
+                ctx.fill();
+
+                // Silver tips
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(5, 22, 7, 6);
+                ctx.fillRect(24, 22, 7, 6);
+                canvas.refresh();
+            }
+        }
+
+        // 4. SSAFY QR Code Phone (38x46)
         if (!scene.textures.exists('jelly_qr')) {
             const canvas = scene.textures.createCanvas('jelly_qr', 38, 46);
             if (canvas) {
                 const ctx = canvas.getContext();
-
-                // Glow
                 ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
                 ctx.beginPath();
                 ctx.roundRect(0, 0, 38, 46, 8);
                 ctx.fill();
 
-                // Phone Body
                 ctx.fillStyle = '#0f172a';
                 ctx.beginPath();
                 ctx.roundRect(3, 3, 32, 40, 6);
@@ -456,76 +632,61 @@ export class TextureGenerator {
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
-                // Screen
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(7, 7, 24, 28);
-
-                // QR matrix
                 ctx.fillStyle = '#0f172a';
                 ctx.fillRect(9, 9, 7, 7);
                 ctx.fillRect(22, 9, 7, 7);
                 ctx.fillRect(9, 22, 7, 7);
                 ctx.fillRect(18, 18, 4, 4);
-                ctx.fillRect(23, 23, 5, 5);
-
                 canvas.refresh();
             }
         }
 
-        // 3. Iced Americano (36x44)
+        // 5. Iced Americano (36x44)
         if (!scene.textures.exists('item_coffee')) {
             const canvas = scene.textures.createCanvas('item_coffee', 36, 44);
             if (canvas) {
                 const ctx = canvas.getContext();
-
-                // Glow
                 ctx.fillStyle = 'rgba(56, 189, 248, 0.3)';
                 ctx.beginPath();
                 ctx.roundRect(2, 6, 32, 38, 6);
                 ctx.fill();
 
-                // Cup Body
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
                 ctx.beginPath();
                 ctx.moveTo(6, 12); ctx.lineTo(10, 40); ctx.lineTo(26, 40); ctx.lineTo(30, 12);
                 ctx.closePath();
                 ctx.fill();
 
-                // Coffee liquid
                 ctx.fillStyle = '#451a03';
                 ctx.beginPath();
                 ctx.moveTo(8, 18); ctx.lineTo(11, 38); ctx.lineTo(25, 38); ctx.lineTo(28, 18);
                 ctx.closePath();
                 ctx.fill();
 
-                // Ice cubes
                 ctx.fillStyle = '#bae6fd';
                 ctx.fillRect(12, 20, 6, 6);
                 ctx.fillRect(20, 22, 6, 6);
 
-                // Lid & Red Straw
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(4, 9, 28, 4);
                 ctx.fillStyle = '#ef4444';
                 ctx.fillRect(20, 0, 4, 18);
-
                 canvas.refresh();
             }
         }
 
-        // 4. Booster Drink (32x44)
+        // 6. Booster Drink (32x44)
         if (!scene.textures.exists('item_fever')) {
             const canvas = scene.textures.createCanvas('item_fever', 32, 44);
             if (canvas) {
                 const ctx = canvas.getContext();
-
-                // Golden Glow
                 ctx.fillStyle = 'rgba(250, 204, 21, 0.4)';
                 ctx.beginPath();
                 ctx.roundRect(1, 3, 30, 38, 6);
                 ctx.fill();
 
-                // Golden Can
                 const grad = ctx.createLinearGradient(4, 0, 28, 0);
                 grad.addColorStop(0, '#facc15');
                 grad.addColorStop(0.5, '#fef08a');
@@ -538,32 +699,55 @@ export class TextureGenerator {
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
 
-                // Lightning ⚡
                 ctx.fillStyle = '#ef4444';
                 ctx.beginPath();
                 ctx.moveTo(17, 10); ctx.lineTo(10, 22); ctx.lineTo(15, 22);
                 ctx.lineTo(13, 32); ctx.lineTo(21, 20); ctx.lineTo(16, 20);
                 ctx.closePath();
                 ctx.fill();
+                canvas.refresh();
+            }
+        }
 
+        // 7. Rescue Drone 🚁 (48x36)
+        if (!scene.textures.exists('rescue_drone')) {
+            const canvas = scene.textures.createCanvas('rescue_drone', 48, 36);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                // Drone Propellers
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(4, 6, 16, 3);
+                ctx.fillRect(28, 6, 16, 3);
+                // Body
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.roundRect(14, 10, 20, 16, 6);
+                ctx.fill();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                // Rescue claw
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(24, 26); ctx.lineTo(24, 34);
+                ctx.moveTo(20, 34); ctx.lineTo(28, 34);
+                ctx.stroke();
                 canvas.refresh();
             }
         }
     }
 
     private static generateObstacleTextures(scene: Phaser.Scene) {
-        // 1. Ground: 500 Error Monitor (52x58)
+        // Ground 1: 500 Error Monitor
         if (!scene.textures.exists('obstacle_error')) {
             const canvas = scene.textures.createCanvas('obstacle_error', 52, 58);
             if (canvas) {
                 const ctx = canvas.getContext();
-
-                // Stand
                 ctx.fillStyle = '#334155';
                 ctx.fillRect(22, 44, 8, 10);
                 ctx.fillRect(14, 52, 24, 6);
 
-                // Frame with bright red border
                 ctx.fillStyle = '#0f172a';
                 ctx.beginPath();
                 ctx.roundRect(2, 4, 48, 40, 4);
@@ -572,29 +756,22 @@ export class TextureGenerator {
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // Red Screen
                 ctx.fillStyle = '#7f1d1d';
                 ctx.fillRect(6, 8, 40, 32);
-
-                // Error text
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 11px sans-serif';
                 ctx.fillText('ERR 500', 7, 24);
-
                 ctx.fillStyle = '#fca5a5';
                 ctx.fillRect(8, 28, 36, 4);
-
                 canvas.refresh();
             }
         }
 
-        // 2. Ground: Bug Robot (48x44)
+        // Ground 2: Bug Robot
         if (!scene.textures.exists('obstacle_bug')) {
             const canvas = scene.textures.createCanvas('obstacle_bug', 48, 44);
             if (canvas) {
                 const ctx = canvas.getContext();
-
-                // Legs
                 ctx.strokeStyle = '#b91c1c';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
@@ -604,7 +781,6 @@ export class TextureGenerator {
                 ctx.moveTo(30, 28); ctx.lineTo(38, 42);
                 ctx.stroke();
 
-                // Body
                 ctx.fillStyle = '#dc2626';
                 ctx.beginPath();
                 ctx.roundRect(14, 12, 20, 24, 8);
@@ -613,27 +789,23 @@ export class TextureGenerator {
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
 
-                // Antennae
                 ctx.beginPath();
                 ctx.moveTo(18, 12); ctx.lineTo(10, 2);
                 ctx.moveTo(30, 12); ctx.lineTo(38, 2);
                 ctx.stroke();
 
-                // Eyes
                 ctx.fillStyle = '#facc15';
                 ctx.fillRect(17, 18, 4, 4);
                 ctx.fillRect(27, 18, 4, 4);
-
                 canvas.refresh();
             }
         }
 
-        // 3. Air: Merge Conflict Caution Barrier (70x34)
+        // Air: Merge Conflict Caution Barrier
         if (!scene.textures.exists('obstacle_conflict')) {
             const canvas = scene.textures.createCanvas('obstacle_conflict', 70, 34);
             if (canvas) {
                 const ctx = canvas.getContext();
-
                 ctx.fillStyle = '#0f172a';
                 ctx.beginPath();
                 ctx.roundRect(2, 2, 66, 30, 4);
@@ -642,7 +814,6 @@ export class TextureGenerator {
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // Diagonal caution stripes
                 ctx.fillStyle = '#f59e0b';
                 for (let x = 6; x < 64; x += 14) {
                     ctx.beginPath();
@@ -654,7 +825,6 @@ export class TextureGenerator {
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 10px monospace';
                 ctx.fillText('CONFLICT', 11, 20);
-
                 canvas.refresh();
             }
         }

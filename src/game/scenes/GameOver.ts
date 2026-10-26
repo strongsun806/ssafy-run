@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { ScoreManager } from '../utils/ScoreManager';
 import { AudioManager } from '../utils/AudioManager';
+import { SkinManager } from '../utils/SkinManager';
 
 interface GameOverData {
     score: number;
@@ -8,6 +9,7 @@ interface GameOverData {
     commits: number;
     qrs: number;
     coffees: number;
+    coins?: number;
 }
 
 export class GameOver extends Scene {
@@ -16,6 +18,7 @@ export class GameOver extends Scene {
     private commits: number = 0;
     private qrs: number = 0;
     private coffees: number = 0;
+    private coins: number = 0;
     private isNewRecord: boolean = false;
     private audioManager: AudioManager;
 
@@ -30,6 +33,7 @@ export class GameOver extends Scene {
         this.commits = data.commits || 0;
         this.qrs = data.qrs || 0;
         this.coffees = data.coffees || 0;
+        this.coins = data.coins || 0;
 
         this.isNewRecord = ScoreManager.saveHighScore(this.score);
     }
@@ -38,17 +42,17 @@ export class GameOver extends Scene {
         const { width, height } = this.scale;
         this.cameras.main.fadeIn(400, 10, 14, 26);
 
-        // Calm navy background
+        // Background
         const bg = this.add.graphics();
         bg.fillGradientStyle(0x0a0e1a, 0x0a0e1a, 0x1e1b4b, 0x2e1022, 1);
         bg.fillRect(0, 0, width, height);
 
-        if (this.textures.exists('bg_skyline_far')) {
-            this.add.image(width / 2, height - 250, 'bg_skyline_far').setAlpha(0.3);
+        if (this.textures.exists('bg_s1_far')) {
+            this.add.image(width / 2, height - 250, 'bg_s1_far').setAlpha(0.3);
         }
 
         // Header Title
-        const headerTitle = this.add.text(width / 2, 60, 'GAME OVER', {
+        const headerTitle = this.add.text(width / 2, 55, 'GAME OVER', {
             fontFamily: 'Arial Black',
             fontSize: '52px',
             color: '#ef4444',
@@ -67,17 +71,17 @@ export class GameOver extends Scene {
 
         // Evaluation Rank
         const evalRank = this.getEvaluationRank(this.score);
-        this.add.text(width / 2, 115, evalRank, {
+        this.add.text(width / 2, 110, evalRank, {
             fontFamily: 'Arial Black',
             fontSize: '20px',
             color: '#facc15'
         }).setOrigin(0.5);
 
         // Result Card Container
-        const cardW = 700;
-        const cardH = 350;
+        const cardW = 740;
+        const cardH = 370;
         const cx = (width - cardW) / 2;
-        const cy = 145;
+        const cy = 138;
 
         const card = this.add.graphics();
         card.fillStyle(0x0f172a, 0.96);
@@ -102,44 +106,53 @@ export class GameOver extends Scene {
         }
 
         // Final Score
-        this.add.text(width / 2, cy + 62, 'FINAL SCORE', {
+        this.add.text(width / 2, cy + 60, 'FINAL SCORE', {
             fontFamily: 'Arial Black',
             fontSize: '15px',
             color: '#94a3b8'
         }).setOrigin(0.5);
 
-        this.add.text(width / 2, cy + 104, this.score.toLocaleString(), {
+        this.add.text(width / 2, cy + 100, this.score.toLocaleString(), {
             fontFamily: 'Arial Black',
-            fontSize: '50px',
+            fontSize: '48px',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Stats Grid
-        const statY = cy + 175;
-        this.createStatItem(cx + 85, statY, '🏃 달린 거리', `${this.distance}m`);
-        this.createStatItem(cx + 235, statY, '🌱 커밋 잔디', `${this.commits}개`);
-        this.createStatItem(cx + 385, statY, '📱 출석 QR', `${this.qrs}개`);
-        this.createStatItem(cx + 535, statY, '☕ 아메리카노', `${this.coffees}잔`);
+        // Stats Grid (5 items: Distance, Commits, QRs, Coffee, Coins!)
+        const statY = cy + 165;
+        this.createStatItem(cx + 80, statY, '🏃 달린 거리', `${this.distance}m`);
+        this.createStatItem(cx + 215, statY, '🌱 커밋 잔디', `${this.commits}개`);
+        this.createStatItem(cx + 350, statY, '📱 출석 QR', `${this.qrs}개`);
+        this.createStatItem(cx + 485, statY, '☕ 아메리카노', `${this.coffees}잔`);
+        this.createStatItem(cx + 625, statY, '🪙 획득 코인', `+${this.coins}`, '#facc15');
 
-        // Prominent Leaderboard Register Section
-        const savePrompt = this.add.text(width / 2, cy + 258, '🏆 전국 명예의 전당(실시간 랭킹)에 내 닉네임을 등록하세요!', {
+        // Leaderboard Registration Prompt
+        const savePrompt = this.add.text(width / 2, cy + 252, '🏆 전국 명예의 전당(실시간 랭킹)에 내 닉네임을 등록하세요!', {
             fontFamily: 'Arial Black',
-            fontSize: '16px',
+            fontSize: '15px',
             color: '#facc15'
         }).setOrigin(0.5);
 
-        const regBtn = this.createButton(width / 2, cy + 300, '✨ 내 닉네임 등록 (REGISTER)', 0x0284c7, 0x0369a1, () => {
+        const regBtn = this.createButton(width / 2, cy + 292, '✨ 내 닉네임 등록 (REGISTER)', 0x0284c7, 0x0369a1, () => {
             this.promptRegisterLeaderboard(savePrompt, regBtn);
-        }, 260, 42, '15px');
+        }, 260, 40, '15px');
+
+        // Total Coins Owned Badge inside Card Bottom
+        const totalCoins = SkinManager.getCoins();
+        this.add.text(width / 2, cy + 342, `내 보유 코인: 🪙 ${totalCoins.toLocaleString()} (상점에서 스킨 구매 가능!)`, {
+            fontFamily: 'Arial',
+            fontSize: '13px',
+            color: '#fef08a'
+        }).setOrigin(0.5);
 
         // Action Buttons
         const btnY = cy + cardH + 45;
 
-        this.createButton(width / 2 - 190, btnY, '🔄 다시 도전 (RETRY)', 0x2563eb, 0x1d4ed8, () => {
+        this.createButton(width / 2 - 200, btnY, '🔄 다시 도전 (RETRY)', 0x2563eb, 0x1d4ed8, () => {
             this.scene.start('Game');
-        }, 180, 50, '16px');
+        }, 170, 50, '16px');
 
-        this.createButton(width / 2, btnY, '🏠 메인 메뉴 (MENU)', 0x334155, 0x475569, () => {
+        this.createButton(width / 2 - 10, btnY, '🏠 메인 메뉴 (MENU)', 0x334155, 0x475569, () => {
             this.scene.start('MainMenu');
         }, 160, 50, '16px');
 
@@ -185,7 +198,7 @@ export class GameOver extends Scene {
     }
 
     private shareScore() {
-        const text = `🏃‍♂️ [SSAFY RUN: OvenBreak]\n지각 위기에서 살아남아 ${this.score.toLocaleString()}점을 달성했습니다! (달린 거리: ${this.distance}m)\n너도 멀캠으로 출근해볼래? 🎮\nhttps://strongsun806.github.io/ssafy-run/`;
+        const text = `🏃‍♂️ [SSAFY RUN: OvenBreak]\n지각 위기에서 살아남아 ${this.score.toLocaleString()}점을 달성했습니다! (달린 거리: ${this.distance}m, 코인: 🪙${this.coins})\n너도 멀캠으로 출근해볼래? 🎮\nhttps://strongsun806.github.io/ssafy-run/`;
 
         if (navigator.clipboard) {
             navigator.clipboard.writeText(text).then(() => {
@@ -206,7 +219,7 @@ export class GameOver extends Scene {
         return '💀 멘탈 붕괴 지각생 (9시 01분 출석 불가... 내일은 일찍 오자!)';
     }
 
-    private createStatItem(x: number, y: number, label: string, value: string) {
+    private createStatItem(x: number, y: number, label: string, value: string, valColor: string = '#38bdf8') {
         this.add.text(x, y, label, {
             fontFamily: 'Arial',
             fontSize: '13px',
@@ -216,7 +229,7 @@ export class GameOver extends Scene {
         this.add.text(x, y + 26, value, {
             fontFamily: 'Arial Black',
             fontSize: '18px',
-            color: '#38bdf8'
+            color: valColor
         }).setOrigin(0.5);
     }
 

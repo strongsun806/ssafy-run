@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import { AudioManager } from '../utils/AudioManager';
+import { SkinManager } from '../utils/SkinManager';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -12,41 +13,47 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     public isSliding: boolean = false;
     public isInvincible: boolean = false;
     public isFever: boolean = false;
+    public isRescuing: boolean = false;
+
+    // Temporary Magnet Power-Up State (자석 효과는 이제 일시적!)
+    public magnetTimeRemaining: number = 0; // seconds
 
     private groundY: number;
     private audioManager: AudioManager;
+    private skinId: string = 'default';
 
     // Advanced Input Buffering & Coyote Time
-    private jumpBufferTime: number = 0; // ms
-    private coyoteTime: number = 0; // ms
+    private jumpBufferTime: number = 0;
+    private coyoteTime: number = 0;
     private wasOnGround: boolean = false;
 
-    // External touch control states
+    // Touch control states
     private touchJumpTriggered: boolean = false;
     private touchSlideHeld: boolean = false;
 
-    // Dust particles
+    // Particle Emitters
     private dustEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
+    private magnetRing?: Phaser.GameObjects.Graphics;
 
     constructor(scene: Phaser.Scene, x: number, y: number, groundY: number) {
-        super(scene, x, y, 'player_run_1');
+        const equipped = SkinManager.getEquippedSkin();
+        super(scene, x, y, `player_${equipped}_run_1`);
         this.groundY = groundY;
+        this.skinId = equipped;
         this.audioManager = AudioManager.getInstance();
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
         this.setOrigin(0.5, 1);
-        this.setCollideWorldBounds(true);
+        this.setCollideWorldBounds(false); // Allow falling into pits!
 
-        // Adjust body hitbox for trainee
         const body = this.body as Phaser.Physics.Arcade.Body;
         if (body) {
             body.setSize(38, 68);
             body.setOffset(13, 10);
         }
 
-        // Init keyboard keys
         if (scene.input.keyboard) {
             this.cursors = scene.input.keyboard.createCursorKeys();
             this.keyW = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
@@ -57,18 +64,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.setupAnimations();
         this.setupParticles();
 
-        this.play('player_anim_run');
+        // Magnet Aura Graphic
+        this.magnetRing = scene.add.graphics().setDepth(18);
+
+        this.play(`player_${this.skinId}_anim_run`);
     }
 
     private setupAnimations() {
-        if (!this.scene.anims.exists('player_anim_run')) {
+        const animKey = `player_${this.skinId}_anim_run`;
+        if (!this.scene.anims.exists(animKey)) {
             this.scene.anims.create({
-                key: 'player_anim_run',
+                key: animKey,
                 frames: [
-                    { key: 'player_run_1' },
-                    { key: 'player_run_2' },
-                    { key: 'player_run_3' },
-                    { key: 'player_run_4' }
+                    { key: `player_${this.skinId}_run_1` },
+                    { key: `player_${this.skinId}_run_2` },
+                    { key: `player_${this.skinId}_run_3` },
+                    { key: `player_${this.skinId}_run_4` }
                 ],
                 frameRate: 12,
                 repeat: -1
@@ -100,14 +111,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    // Touch control hooks
     public requestTouchJump() {
-        this.jumpBufferTime = 160; // 160ms jump buffer
+        this.jumpBufferTime = 160;
         this.touchJumpTriggered = true;
     }
 
     public setTouchSlide(isPressed: boolean) {
         this.touchSlideHeld = isPressed;
+    }
+
+    // Activate temporary magnet (e.g. 6.5s)
+    public activateMagnet(duration: number = 6.5) {
+        this.magnetTimeRemaining = Math.max(this.magnetTimeRemaining, duration);
+        this.audioManager.playMagnet();
     }
 
     public setFever(fever: boolean) {
@@ -126,12 +142,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     public update(_time?: number, delta: number = 16.6) {
+        if (this.isRescuing) return;
+
         const body = this.body as Phaser.Physics.Arcade.Body;
         if (!body) return;
 
+        const deltaSec = delta / 1000;
+
+        // Magnet timer decay
+        if (this.magnetTimeRemaining > 0) {
+            this.magnetTimeRemaining = Math.max(0, this.magnetTimeRemaining - deltaSec);
+            this.renderMagnetAura();
+        } else {
+            this.magnetRing?.clear();
+        }
+
         const isOnGround = body.blocked.down || body.touching.down;
 
-        // Update Coyote Time & Ground State
         if (isOnGround) {
             this.coyoteTime = 100;
             this.jumpCount = 0;
@@ -139,7 +166,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.coyoteTime = Math.max(0, this.coyoteTime - delta);
         }
 
-        // 1. Check for Jump Press (Keyboard + Touch)
+        // 1. Jump input check
         let isJumpJustPressed = this.touchJumpTriggered;
         this.touchJumpTriggered = false;
 
@@ -153,14 +180,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         if (isJumpJustPressed) {
-            this.jumpBufferTime = 160; // Buffer for 160ms
+            this.jumpBufferTime = 160;
         } else {
             this.jumpBufferTime = Math.max(0, this.jumpBufferTime - delta);
         }
 
-        // 2. Execute Jump if buffered
+        // 2. Execute Jump
         if (this.jumpBufferTime > 0 && !this.isSliding) {
-            // First jump (grounded or within coyote time)
             if (isOnGround || this.coyoteTime > 0) {
                 this.setVelocityY(-860);
                 this.jumpCount = 1;
@@ -168,18 +194,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.jumpBufferTime = 0;
                 this.audioManager.playJump();
                 this.anims.stop();
-                this.setTexture('player_jump');
-            }
-            // Double jump (in air, jumpCount === 1)
-            else if (this.jumpCount < this.maxJumps) {
+                this.setTexture(`player_${this.skinId}_jump`);
+            } else if (this.jumpCount < this.maxJumps) {
                 this.setVelocityY(-800);
                 this.jumpCount = 2;
                 this.jumpBufferTime = 0;
                 this.audioManager.playDoubleJump();
                 this.anims.stop();
-                this.setTexture('player_jump');
+                this.setTexture(`player_${this.skinId}_jump`);
 
-                // Double jump sparkle
                 if (this.scene.textures.exists('particle_sparkle')) {
                     const spark = this.scene.add.particles(this.x, this.y - 20, 'particle_sparkle', {
                         speed: { min: 50, max: 140 },
@@ -192,7 +215,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        // 3. Variable Jump Height: Short tap dampening
+        // 3. Variable Jump Height
         let isJumpKeyHeld = this.touchJumpTriggered;
         if (this.cursors && !isJumpKeyHeld) {
             const upHeld = this.cursors.up.isDown;
@@ -201,7 +224,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             isJumpKeyHeld = upHeld || spaceHeld || wHeld;
         }
         if (!isJumpKeyHeld && body.velocity.y < -350) {
-            this.setVelocityY(body.velocity.y * 0.75); // Cut upward velocity for snappy response
+            this.setVelocityY(body.velocity.y * 0.75);
         }
 
         // 4. Slide & Fast Fall
@@ -212,17 +235,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             isSlideHeld = downHeld || sHeld;
         }
 
-        // If in air and slide is pressed -> FAST FALL (Dive drop!)
         if (isSlideHeld && !isOnGround && body.velocity.y > -200) {
-            this.setVelocityY(1050); // Instantly drop to ground
+            this.setVelocityY(1050); // Instant dive drop!
         }
 
-        // Slide activation on ground
         if (isSlideHeld) {
             if (!this.isSliding) {
                 this.isSliding = true;
                 this.anims.stop();
-                this.setTexture('player_slide');
+                this.setTexture(`player_${this.skinId}_slide`);
                 body.setSize(62, 30);
                 body.setOffset(9, 18);
                 this.audioManager.playSlide();
@@ -232,22 +253,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.isSliding = false;
                 body.setSize(38, 68);
                 body.setOffset(13, 10);
-                if (this.y > this.groundY) {
+                if (this.y > this.groundY && !body.blocked.down) {
                     this.setY(this.groundY);
                 }
                 this.setVelocityY(0);
             }
         }
 
-        // 5. Visual State & Animation
+        // 5. Animations
+        const runAnimKey = `player_${this.skinId}_anim_run`;
         if (isOnGround && !this.isSliding) {
-            if (!this.anims.isPlaying || this.anims.currentAnim?.key !== 'player_anim_run') {
-                this.play('player_anim_run');
+            if (!this.anims.isPlaying || this.anims.currentAnim?.key !== runAnimKey) {
+                this.play(runAnimKey);
             }
         } else if (!isOnGround && !this.isSliding) {
-            if (this.texture.key !== 'player_jump') {
+            const jumpTex = `player_${this.skinId}_jump`;
+            if (this.texture.key !== jumpTex) {
                 this.anims.stop();
-                this.setTexture('player_jump');
+                this.setTexture(jumpTex);
             }
         }
 
@@ -258,8 +281,71 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.wasOnGround = isOnGround;
     }
 
+    private renderMagnetAura() {
+        if (!this.magnetRing) return;
+        this.magnetRing.clear();
+
+        const pulse = 1 + Math.sin(Date.now() / 150) * 0.08;
+        const radius = 65 * pulse;
+
+        this.magnetRing.lineStyle(2, 0x38bdf8, 0.7);
+        this.magnetRing.strokeCircle(this.x, this.y - 32, radius);
+
+        this.magnetRing.lineStyle(1.5, 0x60a5fa, 0.4);
+        this.magnetRing.strokeCircle(this.x, this.y - 32, radius + 15);
+    }
+
+    // Rescue from pit (Cookie Run style rescuer)
+    public rescueFromPit(onComplete: () => void) {
+        if (this.isRescuing) return;
+        this.isRescuing = true;
+        this.isInvincible = true;
+        this.audioManager.playRescue();
+
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            body.setAllowGravity(false);
+            body.setVelocity(0, 0);
+        }
+
+        // Drone sprite appears
+        const drone = this.scene.add.sprite(this.x, this.y - 50, 'rescue_drone')
+            .setDepth(25)
+            .setScale(1.2);
+
+        this.scene.tweens.add({
+            targets: [this, drone],
+            y: this.groundY,
+            duration: 600,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                drone.destroy();
+                if (body) {
+                    body.setAllowGravity(true);
+                    this.setVelocityY(0);
+                    this.setY(this.groundY);
+                }
+                this.isRescuing = false;
+
+                // 1.5s invincibility flash
+                this.scene.tweens.add({
+                    targets: this,
+                    alpha: 0.3,
+                    yoyo: true,
+                    repeat: 4,
+                    duration: 150,
+                    onComplete: () => {
+                        this.setAlpha(1);
+                        this.isInvincible = false;
+                        onComplete();
+                    }
+                });
+            }
+        });
+    }
+
     public hit(): boolean {
-        if (this.isInvincible || this.isFever) return false;
+        if (this.isInvincible || this.isFever || this.isRescuing) return false;
 
         this.isInvincible = true;
         this.audioManager.playHit();
@@ -280,9 +366,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     public destroy(fromScene?: boolean) {
-        if (this.dustEmitter) {
-            this.dustEmitter.destroy();
-        }
+        if (this.dustEmitter) this.dustEmitter.destroy();
+        if (this.magnetRing) this.magnetRing.destroy();
         super.destroy(fromScene);
     }
 }
