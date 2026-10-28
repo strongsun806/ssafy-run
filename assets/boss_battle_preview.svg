@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="bossBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#180509"/>
+      <stop offset="40%" stop-color="#2a0812"/>
+      <stop offset="100%" stop-color="#0a0510"/>
+    </linearGradient>
+    <linearGradient id="hpGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <filter id="laserGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#bossBg)"/>
+
+  <!-- Red Hazard Alarm Stripes (Top & Bottom) -->
+  <g fill="#ef4444" opacity="0.8">
+    <polygon points="0,0 20,0 10,12 0,12"/>
+    <polygon points="40,0 60,0 50,12 30,12"/>
+    <polygon points="80,0 100,0 90,12 70,12"/>
+    <polygon points="120,0 140,0 130,12 110,12"/>
+    <polygon points="160,0 180,0 170,12 150,12"/>
+    <polygon points="200,0 220,0 210,12 190,12"/>
+    <polygon points="240,0 260,0 250,12 230,12"/>
+    <polygon points="280,0 300,0 290,12 270,12"/>
+    <polygon points="320,0 340,0 330,12 310,12"/>
+    <polygon points="360,0 380,0 370,12 350,12"/>
+    <polygon points="400,0 420,0 410,12 390,12"/>
+    <polygon points="440,0 460,0 450,12 430,12"/>
+    <polygon points="480,0 500,0 490,12 470,12"/>
+    <polygon points="520,0 540,0 530,12 510,12"/>
+    <polygon points="560,0 580,0 570,12 550,12"/>
+    <polygon points="600,0 620,0 610,12 590,12"/>
+    <polygon points="640,0 660,0 650,12 630,12"/>
+    <polygon points="680,0 700,0 690,12 670,12"/>
+    <polygon points="720,0 740,0 730,12 710,12"/>
+    <polygon points="760,0 780,0 770,12 750,12"/>
+    <polygon points="800,0 820,0 810,12 790,12"/>
+    <polygon points="840,0 860,0 850,12 830,12"/>
+    <polygon points="880,0 900,0 890,12 870,12"/>
+    <polygon points="920,0 940,0 930,12 910,12"/>
+    <polygon points="960,0 980,0 970,12 950,12"/>
+    <polygon points="1000,0 1020,0 1010,12 990,12"/>
+    <polygon points="1040,0 1060,0 1050,12 1030,12"/>
+    <polygon points="1080,0 1100,0 1090,12 1070,12"/>
+    <polygon points="1120,0 1140,0 1130,12 1110,12"/>
+    <polygon points="1160,0 1180,0 1170,12 1150,12"/>
+    <polygon points="1200,0 1220,0 1210,12 1190,12"/>
+    <polygon points="1240,0 1260,0 1250,12 1230,12"/>
+  </g>
+
+  <!-- Top Center: Boss Encounter HUD -->
+  <g transform="translate(640, 60)">
+    <rect x="-240" y="-35" width="480" height="70" rx="16" fill="#0f172a" stroke="#ef4444" stroke-width="3" filter="url(#laserGlow)"/>
+    <text x="0" y="-10" text-anchor="middle" fill="#ef4444" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="20">🚨 [긴급 과제평가] 일타싸피 당구 AI 보스 침공! 🚨</text>
+    <text x="0" y="16" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="14">🧩 디버그 패치를 모아 유도 번개로 보스에게 반격하라!</text>
+
+    <!-- Boss HP Bar -->
+    <g transform="translate(-180, 24)">
+      <rect width="360" height="12" rx="4" fill="#1e293b"/>
+      <rect width="216" height="12" rx="4" fill="url(#hpGrad)"/>
+      <text x="180" y="10" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="10">BOSS HP: 60%</text>
+    </g>
+  </g>
+
+  <!-- Ground -->
+  <g transform="translate(0, 645)">
+    <rect width="1280" height="75" fill="#1c1917"/>
+    <rect width="1280" height="6" fill="#f59e0b"/>
+    <rect width="1280" height="2" fill="#fef08a"/>
+    <rect y="32" width="1280" height="1" fill="rgba(255,255,255,0.08)"/>
+  </g>
+
+  <!-- Player Trainee (Jumping & Counterattacking) -->
+  <g transform="translate(180, 520)">
+    <!-- Shadow -->
+    <ellipse cx="0" cy="125" rx="35" ry="8" fill="rgba(0,0,0,0.5)"/>
+
+    <!-- Player Body -->
+    <circle cx="0" cy="40" r="24" fill="#38bdf8" filter="url(#laserGlow)"/>
+    <text x="0" y="47" text-anchor="middle" font-size="22">🏃</text>
+
+    <!-- Player Action Text -->
+    <text x="0" y="-10" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="16">JUMP!</text>
+  </g>
+
+  <!-- Lightning Homing Counter-Attack from Player to Boss -->
+  <g filter="url(#laserGlow)">
+    <path d="M 210,540 L 400,480 L 480,510 L 650,420 L 780,450 L 1020,410" stroke="#38bdf8" stroke-width="4" fill="none" opacity="0.9"/>
+    <path d="M 210,540 L 400,480 L 480,510 L 650,420 L 780,450 L 1020,410" stroke="#ffffff" stroke-width="2" fill="none"/>
+  </g>
+
+  <!-- Floating Critical Damage Hit Badge -->
+  <g transform="translate(980, 320)" filter="url(#laserGlow)">
+    <rect x="-90" y="-20" width="180" height="40" rx="10" fill="#0f172a" stroke="#facc15" stroke-width="2"/>
+    <text x="0" y="6" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="18">💥 CRITICAL -25 HP</text>
+  </g>
+
+  <!-- 🧩 Debug Patch Item floating in air -->
+  <g transform="translate(540, 500)" filter="url(#laserGlow)">
+    <rect x="-24" y="-24" width="48" height="48" rx="12" fill="#a855f7" stroke="#ffffff" stroke-width="3"/>
+    <text x="0" y="8" text-anchor="middle" fill="#ffffff" font-family="monospace" font-weight="900" font-size="18">&lt;/&gt;</text>
+    <text x="0" y="44" text-anchor="middle" fill="#c084fc" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="13">디버그 패치</text>
+  </g>
+
+  <!-- Boss: 🎱 [일타싸피] Billiards AI Master -->
+  <g transform="translate(1080, 420)">
+    <!-- Thruster fire -->
+    <ellipse cx="-20" cy="55" rx="14" ry="25" fill="#38bdf8" opacity="0.7" filter="url(#laserGlow)"/>
+    <ellipse cx="20" cy="55" rx="14" ry="25" fill="#38bdf8" opacity="0.7" filter="url(#laserGlow)"/>
+
+    <!-- Giant 8-Ball -->
+    <circle cx="0" cy="0" r="65" fill="#0f172a" stroke="#ef4444" stroke-width="4" filter="url(#laserGlow)"/>
+    <circle cx="0" cy="0" r="30" fill="#f8fafc"/>
+    <text x="0" y="12" text-anchor="middle" fill="#0f172a" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="36">8</text>
+
+    <!-- Glowing Red Scanner Eye -->
+    <circle cx="0" cy="-36" r="10" fill="#ef4444" filter="url(#laserGlow)"/>
+    <circle cx="0" cy="-36" r="4" fill="#ffffff"/>
+
+    <!-- Mechanical Cue Cannon Arms -->
+    <rect x="-90" y="-8" width="30" height="16" rx="4" fill="#f59e0b"/>
+    <rect x="60" y="-8" width="30" height="16" rx="4" fill="#f59e0b"/>
+
+    <!-- Boss Name Plate -->
+    <text x="0" y="90" text-anchor="middle" fill="#f87171" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="18">🎱 일타싸피 AI BOSS</text>
+  </g>
+
+  <!-- Incoming Bouncing Billiard Fireball Attack -->
+  <g transform="translate(800, 580)" filter="url(#laserGlow)">
+    <circle cx="0" cy="0" r="24" fill="#dc2626" stroke="#fef08a" stroke-width="3"/>
+    <text x="0" y="7" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="18">🔥</text>
+    <path d="M 28,0 L 70,-10 L 50,5 L 80,0" stroke="#f97316" stroke-width="4" fill="none"/>
+  </g>
+</svg>

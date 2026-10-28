@@ -93,22 +93,26 @@ export class MainMenu extends Scene {
 
         badgeContainer.add([scoreText, this.coinBadgeText]);
 
-        // Start Game Button
-        this.createButton(leftX, 310, '▶ 게임 시작 (START)', 0x2563eb, 0x1d4ed8, () => {
+        // 1. Stage Mode Button (1~30단계 스테이지 클리어)
+        this.createButton(leftX, 305, '🗺️ 30단계 스테이지 (STAGE)', 0x059669, 0x047857, () => {
+            this.scene.start('StageSelect');
+        }, 290, 52, '20px');
+
+        // 2. Infinite Run Button (무한 랭킹 런)
+        this.createButton(leftX, 368, '⚡ 무한 랭킹 런 (INFINITE)', 0x2563eb, 0x1d4ed8, () => {
             this.startGame();
-        }, 280, 56, '22px');
+        }, 290, 52, '20px');
 
-        // Shop / Dressing Room Button (🛍️ 캐릭터 꾸미기 상점!)
-        this.createButton(leftX - 82, 385, '🛍️ 스킨 상점', 0x7c3aed, 0x6d28d9, () => {
+        // 3. Shop & How to Play Buttons
+        this.createButton(leftX - 78, 432, '🛍️ 스킨 상점', 0x7c3aed, 0x6d28d9, () => {
             this.showShopModal();
-        }, 145, 46, '15px');
+        }, 140, 44, '15px');
 
-        // How to Play Button
-        this.createButton(leftX + 82, 385, '📖 플레이 방법', 0x334155, 0x475569, () => {
+        this.createButton(leftX + 78, 432, '📖 플레이 방법', 0x334155, 0x475569, () => {
             this.showHowToPlayModal();
-        }, 145, 46, '15px');
+        }, 140, 44, '15px');
 
-        const prompt = this.add.text(leftX, 450, '[Space] 키나 화면 터치로 즉시 시작', {
+        const prompt = this.add.text(leftX, 482, '[Space] 키를 누르면 무한 런 즉시 시작', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '15px',
             color: '#94a3b8'
@@ -211,25 +215,26 @@ export class MainMenu extends Scene {
             rowBg.strokeRoundedRect(16, rowY, boardW - 32, 50, 8);
             this.liveRankContainer!.add(rowBg);
 
-            const nameText = this.add.text(28, rowY + 25, `${rankEmoji} ${item.name}`, {
-                fontFamily: 'Arial Black',
-                fontSize: '16px',
+            const stageBadge = item.stage ? `[ST.${item.stage}]` : '';
+            const nameText = this.add.text(28, rowY + 16, `${rankEmoji} ${item.name}`, {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '15px',
                 color: idx === 0 ? '#fef08a' : '#ffffff'
             }).setOrigin(0, 0.5);
 
-            const scoreText = this.add.text(boardW - 28, rowY + 16, `${item.score.toLocaleString()}점`, {
-                fontFamily: 'Arial Black',
+            const detailText = this.add.text(28, rowY + 36, `${stageBadge} 📍 ${item.distance}m (${item.date})`, {
+                fontFamily: '"Do Hyeon", sans-serif',
+                fontSize: '12px',
+                color: '#facc15'
+            }).setOrigin(0, 0.5);
+
+            const scoreText = this.add.text(boardW - 28, rowY + 25, `${item.score.toLocaleString()}점`, {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '16px',
                 color: '#38bdf8'
             }).setOrigin(1, 0.5);
 
-            const distText = this.add.text(boardW - 28, rowY + 36, `${item.distance}m (${item.date})`, {
-                fontFamily: 'Arial',
-                fontSize: '12px',
-                color: '#94a3b8'
-            }).setOrigin(1, 0.5);
-
-            this.liveRankContainer!.add([nameText, scoreText, distText]);
+            this.liveRankContainer!.add([nameText, detailText, scoreText]);
         });
 
         const fullBtn = this.createButton(boardW / 2, boardH - 28, '🔍 전체 랭킹 (TOP 10)', 0x1e293b, 0x334155, () => {
@@ -567,15 +572,16 @@ export class MainMenu extends Scene {
             rowBg.strokeRoundedRect(px + 30, rowY - 16, panelW - 60, 40, 8);
             this.modalContainer!.add(rowBg);
 
-            const rowText = this.add.text(px + 45, rowY + 4, `${rankEmoji}  ${item.name}`, {
-                fontFamily: 'Arial Black',
-                fontSize: '17px',
+            const stageBadge = item.stage ? `[STAGE ${item.stage}]` : '';
+            const rowText = this.add.text(px + 45, rowY + 4, `${rankEmoji}  ${item.name}  ${stageBadge}`, {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '16px',
                 color: idx === 0 ? '#fef08a' : '#ffffff'
             }).setOrigin(0, 0.5);
 
             const statsText = this.add.text(px + panelW - 45, rowY + 4, `${item.score.toLocaleString()}점  (${item.distance}m / ${item.date})`, {
-                fontFamily: 'Arial Black',
-                fontSize: '16px',
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '15px',
                 color: '#38bdf8'
             }).setOrigin(1, 0.5);
 

@@ -4,6 +4,7 @@ import { Player } from '../objects/Player';
 import { AudioManager } from '../utils/AudioManager';
 import { ScoreManager } from '../utils/ScoreManager';
 import { SkinManager } from '../utils/SkinManager';
+import { StageManager, StageConfig } from '../utils/StageManager';
 
 interface GroundSegment {
     tile: Phaser.GameObjects.TileSprite;
@@ -103,14 +104,46 @@ export class Game extends Scene {
     private jumpBtn?: Phaser.GameObjects.Image;
     private slideBtn?: Phaser.GameObjects.Image;
 
+    // Stage Mode Fields (1~30 단계 모드)
+    private gameMode: 'infinite' | 'stage' = 'infinite';
+    private currentStageId: number = 1;
+    private targetDistance: number = 0;
+    private isStageCleared: boolean = false;
+    private finishGate?: Phaser.Physics.Arcade.Sprite;
+    private stageProgressBar?: Phaser.GameObjects.Graphics;
+    private stageGoalText?: Phaser.GameObjects.Text;
+    private currentStageConfig?: StageConfig;
+    private stageClearContainer?: Phaser.GameObjects.Container;
+
     constructor() {
         super('Game');
         this.audioManager = AudioManager.getInstance();
     }
 
+    init(data?: { mode?: 'infinite' | 'stage'; stageId?: number }) {
+        this.gameMode = data?.mode || 'infinite';
+        this.currentStageId = data?.stageId || 1;
+        this.isStageCleared = false;
+        this.finishGate = undefined;
+        this.stageClearContainer = undefined;
+    }
+
     create() {
         const { width, height } = this.scale;
         this.cameras.main.fadeIn(300, 10, 14, 26);
+
+        // Load stage config if in stage mode
+        if (this.gameMode === 'stage') {
+            this.currentStageConfig = StageManager.getStageConfig(this.currentStageId);
+            this.baseSpeed = this.currentStageConfig.baseSpeed;
+            this.targetDistance = this.currentStageConfig.targetDistance;
+            this.currentStage = this.currentStageConfig.themeStage;
+        } else {
+            this.baseSpeed = 440;
+            this.targetDistance = 0;
+            this.currentStage = 1;
+            this.currentStageConfig = undefined;
+        }
 
         // Reset game state
         this.currentSpeed = this.baseSpeed;
@@ -343,13 +376,21 @@ export class Game extends Scene {
     }
 
     update(_time: number, delta: number) {
-        if (this.isPaused) return;
+        if (this.isPaused || this.isStageCleared) return;
 
         const deltaSec = delta / 1000;
 
         // Distance & Progressive Speed Scaling
         this.distance += (this.currentSpeed * deltaSec) / 10;
         this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + Math.floor(this.distance * 0.22));
+
+        // Check Stage Finish Gate in Stage Mode
+        if (this.gameMode === 'stage') {
+            this.updateStageProgressHUD();
+            if (this.distance >= this.targetDistance - 25 && !this.finishGate) {
+                this.spawnFinishGate();
+            }
+        }
 
         // Parallax background scrolling
         if (this.bgFarTile) this.bgFarTile.tilePositionX += (this.currentSpeed * 0.05) * deltaSec;
@@ -601,12 +642,21 @@ export class Game extends Scene {
     private checkBossProgression() {
         if (this.isBossActive) return;
 
-        // Boss 1: [일타싸피] Billiards AI Evaluation Boss at 350m
+        // Stage Mode Boss
+        if (this.gameMode === 'stage') {
+            if (this.currentStageConfig?.bossType) {
+                const bossDist = this.targetDistance * 0.35;
+                if (this.distance >= bossDist && !this.bossDefeatedList.has(this.currentStageConfig.bossType)) {
+                    this.startBossEncounter(this.currentStageConfig.bossType);
+                }
+            }
+            return;
+        }
+
+        // Infinite Runner Mode Bosses
         if (this.distance >= 350 && !this.bossDefeatedList.has('iltassafy')) {
             this.startBossEncounter('iltassafy');
-        }
-        // Boss 2: [배틀싸피] Battle Tank Algorithm Boss at 850m
-        else if (this.distance >= 850 && !this.bossDefeatedList.has('battlessafy')) {
+        } else if (this.distance >= 850 && !this.bossDefeatedList.has('battlessafy')) {
             this.startBossEncounter('battlessafy');
         }
     }
@@ -1263,18 +1313,37 @@ export class Game extends Scene {
             color: '#38bdf8'
         }).setDepth(50).setVisible(false);
 
-        // Top Center: Distance & Coins & Fever
-        this.distanceText = this.add.text(width / 2 - 50, 24, '📍 0m', {
-            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '20px',
-            color: '#38bdf8'
-        }).setOrigin(0.5, 0).setDepth(50);
+        // Top Center: Distance & Coins & Fever (or Stage Goal Progress in Stage Mode)
+        if (this.gameMode === 'stage') {
+            this.stageGoalText = this.add.text(width / 2, 20, `🚩 STAGE ${this.currentStageId} : 0m / ${this.targetDistance}m`, {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '16px',
+                color: '#38bdf8'
+            }).setOrigin(0.5, 0).setDepth(50);
 
-        this.coinText = this.add.text(width / 2 + 55, 24, '🪙 0', {
-            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '20px',
-            color: '#facc15'
-        }).setOrigin(0.5, 0).setDepth(50);
+            this.stageProgressBar = this.add.graphics().setDepth(50);
+            this.renderStageProgressBar();
+
+            this.coinText = this.add.text(width / 2 + 155, 20, '🪙 0', {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '18px',
+                color: '#facc15'
+            }).setOrigin(0, 0).setDepth(50);
+
+            this.distanceText = this.add.text(0, 0, '', {}).setVisible(false);
+        } else {
+            this.distanceText = this.add.text(width / 2 - 50, 24, '📍 0m', {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '20px',
+                color: '#38bdf8'
+            }).setOrigin(0.5, 0).setDepth(50);
+
+            this.coinText = this.add.text(width / 2 + 55, 24, '🪙 0', {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '20px',
+                color: '#facc15'
+            }).setOrigin(0.5, 0).setDepth(50);
+        }
 
         this.feverText = this.add.text(width / 2, 54, '🔥 FEVER TIME! DOUBLE POINTS 🔥', {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
@@ -1624,5 +1693,187 @@ export class Game extends Scene {
                 coins: this.coinsCollected
             });
         });
+    }
+
+    // --- Stage Mode (1~30) Logic ---
+    private updateStageProgressHUD() {
+        if (!this.stageGoalText || this.targetDistance <= 0) return;
+        const currentM = Math.min(this.targetDistance, Math.floor(this.distance));
+        this.stageGoalText.setText(`🚩 STAGE ${this.currentStageId} : ${currentM}m / ${this.targetDistance}m`);
+        this.renderStageProgressBar();
+    }
+
+    private renderStageProgressBar() {
+        if (!this.stageProgressBar || this.targetDistance <= 0) return;
+        this.stageProgressBar.clear();
+
+        const { width } = this.scale;
+        const barW = 200;
+        const barH = 8;
+        const bx = width / 2 - barW / 2;
+        const by = 48;
+
+        // Background
+        this.stageProgressBar.fillStyle(0x0f172a, 0.85);
+        this.stageProgressBar.fillRoundedRect(bx, by, barW, barH, 4);
+
+        // Progress fill
+        const ratio = Math.min(1, Math.max(0, this.distance / this.targetDistance));
+        this.stageProgressBar.fillStyle(0x38bdf8, 1);
+        if (ratio > 0) {
+            this.stageProgressBar.fillRoundedRect(bx, by, barW * ratio, barH, 4);
+        }
+    }
+
+    private spawnFinishGate() {
+        const { width } = this.scale;
+        this.finishGate = this.physics.add.sprite(width + 220, this.groundY - 100, 'finish_gate');
+        this.finishGate.setDepth(15);
+        const body = this.finishGate.body as Phaser.Physics.Arcade.Body;
+        if (body) {
+            body.setAllowGravity(false);
+            body.setImmovable(true);
+            body.setVelocityX(-this.currentSpeed);
+            body.setSize(70, 190);
+        }
+
+        this.physics.add.overlap(this.player, this.finishGate, () => {
+            this.triggerStageClear();
+        });
+    }
+
+    private triggerStageClear() {
+        if (this.isStageCleared) return;
+        this.isStageCleared = true;
+
+        this.audioManager.playStageClear();
+        this.cameras.main.flash(350, 74, 222, 128);
+
+        // Calculate Star Rating
+        let stars = 1;
+        if (this.currentHp >= 75) stars = 3;
+        else if (this.currentHp >= 40) stars = 2;
+
+        // Save progress & unlock next stage
+        StageManager.saveStageProgress(this.currentStageId, stars, this.score);
+        SkinManager.addCoins(this.coinsCollected);
+
+        // Stop physics
+        this.physics.pause();
+        this.audioManager.stopBgm();
+
+        // Confetti explosion
+        if (this.textures.exists('particle_sparkle')) {
+            const confetti = this.add.particles(this.scale.width / 2, this.scale.height / 2 - 50, 'particle_sparkle', {
+                speed: { min: 100, max: 320 },
+                scale: { start: 1.2, end: 0 },
+                quantity: 40,
+                lifespan: 1200
+            });
+            this.time.delayedCall(1200, () => confetti.destroy());
+        }
+
+        // Show Stage Clear Modal
+        this.showStageClearModal(stars);
+    }
+
+    private showStageClearModal(stars: number) {
+        const { width, height } = this.scale;
+        this.stageClearContainer = this.add.container(width / 2, height / 2).setDepth(200);
+
+        const dim = this.add.graphics();
+        dim.fillStyle(0x000000, 0.75);
+        dim.fillRect(-width / 2, -height / 2, width, height);
+        this.stageClearContainer.add(dim);
+
+        const cardW = 540;
+        const cardH = 440;
+        const panel = this.add.graphics();
+        panel.fillStyle(0x0f172a, 0.98);
+        panel.lineStyle(3, 0xfacc15);
+        panel.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 20);
+        panel.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 20);
+        this.stageClearContainer.add(panel);
+
+        const title = this.add.text(0, -cardH / 2 + 50, `🏆 STAGE ${this.currentStageId} CLEAR!`, {
+            fontFamily: '"Black Han Sans", "Permanent Marker", sans-serif',
+            fontSize: '32px',
+            color: '#facc15',
+            stroke: '#0f172a',
+            strokeThickness: 6
+        }).setOrigin(0.5);
+
+        const subtitle = this.add.text(0, -cardH / 2 + 92, this.currentStageConfig ? this.currentStageConfig.title : 'SSAFY 알고리즘 과제 완주!', {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '17px',
+            color: '#38bdf8'
+        }).setOrigin(0.5);
+
+        // Animated Stars
+        const starsText = stars === 3 ? '⭐⭐⭐' : stars === 2 ? '⭐⭐☆' : '⭐☆☆';
+        const starsLabel = this.add.text(0, -cardH / 2 + 145, starsText, {
+            fontSize: '44px'
+        }).setOrigin(0.5);
+
+        // Stats Box
+        const statsBox = this.add.graphics();
+        statsBox.fillStyle(0x1e293b, 0.85);
+        statsBox.lineStyle(1, 0x475569);
+        statsBox.fillRoundedRect(-210, -20, 420, 100, 12);
+        statsBox.strokeRoundedRect(-210, -20, 420, 100, 12);
+        this.stageClearContainer.add(statsBox);
+
+        const hpStat = this.add.text(-105, 8, `잔여 멘탈: ${Math.round(this.currentHp)}%`, {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '16px',
+            color: '#4ade80'
+        }).setOrigin(0.5);
+
+        const coinStat = this.add.text(105, 8, `획득 코인: 🪙 +${this.coinsCollected}`, {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '16px',
+            color: '#fde047'
+        }).setOrigin(0.5);
+
+        const scoreStat = this.add.text(0, 45, `최종 점수: ${this.score.toLocaleString()}점`, {
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+            fontSize: '20px',
+            color: '#38bdf8'
+        }).setOrigin(0.5);
+
+        this.stageClearContainer.add([title, subtitle, starsLabel, hpStat, coinStat, scoreStat]);
+
+        // Action Buttons
+        const btnY = cardH / 2 - 50;
+
+        if (this.currentStageId < 30) {
+            const nextBtn = this.createPauseBtn(-125, btnY, `▶ 다음 단계 (STAGE ${this.currentStageId + 1})`, () => {
+                this.stageClearContainer?.destroy();
+                this.scene.restart({ mode: 'stage', stageId: this.currentStageId + 1 });
+            });
+            nextBtn.setSize(220, 44);
+            this.stageClearContainer.add(nextBtn);
+
+            const mapBtn = this.createPauseBtn(125, btnY, '🗺️ 스테이지 맵', () => {
+                this.stageClearContainer?.destroy();
+                this.scene.start('StageSelect');
+            });
+            mapBtn.setSize(180, 44);
+            this.stageClearContainer.add(mapBtn);
+        } else {
+            const congrats = this.add.text(0, 105, '🎉 축하합니다! SSAFY 30개 전 단계를 마스터하셨습니다! 🎓', {
+                fontFamily: '"Do Hyeon", sans-serif',
+                fontSize: '16px',
+                color: '#facc15'
+            }).setOrigin(0.5);
+            this.stageClearContainer.add(congrats);
+
+            const mapBtn = this.createPauseBtn(0, btnY, '🗺️ 스테이지 맵으로 복귀', () => {
+                this.stageClearContainer?.destroy();
+                this.scene.start('StageSelect');
+            });
+            mapBtn.setSize(250, 46);
+            this.stageClearContainer.add(mapBtn);
+        }
     }
 }

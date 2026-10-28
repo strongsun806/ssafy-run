@@ -3,6 +3,7 @@ export interface LeaderboardEntry {
     score: number;
     distance: number;
     date: string;
+    stage?: number; // Highest stage cleared (1~30)
 }
 
 export class ScoreManager {
@@ -16,11 +17,11 @@ export class ScoreManager {
     public static FIREBASE_DB_URL: string = 'https://ssafy-run-default-rtdb.firebaseio.com/leaderboard';
 
     private static defaultLeaderboard: LeaderboardEntry[] = [
-        { name: '멀캠1타강사', score: 9800, distance: 1680, date: '10.25' },
-        { name: '1일1커밋장인', score: 7500, distance: 1320, date: '10.25' },
-        { name: '아아수혈러버', score: 5600, distance: 1040, date: '10.26' },
-        { name: '비상계단스프린터', score: 4200, distance: 820, date: '10.26' },
-        { name: '8시59분세이프', score: 2800, distance: 560, date: '10.26' }
+        { name: '멀캠1타강사', score: 9800, distance: 1680, date: '10.25', stage: 30 },
+        { name: '1일1커밋장인', score: 7500, distance: 1320, date: '10.25', stage: 25 },
+        { name: '아아수혈러버', score: 5600, distance: 1040, date: '10.26', stage: 19 },
+        { name: '비상계단스프린터', score: 4200, distance: 820, date: '10.26', stage: 14 },
+        { name: '8시59분세이프', score: 2800, distance: 560, date: '10.26', stage: 8 }
     ];
 
     public static getHighScore(): number {

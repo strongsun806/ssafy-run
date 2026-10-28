@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="shopBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="50%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1f2937"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#shopBg)"/>
+  
+  <!-- Subtle Grid Pattern -->
+  <g stroke="#1e293b" stroke-width="1" opacity="0.4">
+    <line x1="0" y1="120" x2="1280" y2="120"/>
+    <line x1="0" y1="240" x2="1280" y2="240"/>
+    <line x1="0" y1="360" x2="1280" y2="360"/>
+    <line x1="0" y1="480" x2="1280" y2="480"/>
+    <line x1="0" y1="600" x2="1280" y2="600"/>
+  </g>
+
+  <!-- Modal Frame -->
+  <rect x="80" y="40" width="1120" height="640" rx="24" fill="#0b1120" stroke="#3b82f6" stroke-width="3" opacity="0.95"/>
+
+  <!-- Header -->
+  <text x="640" y="95" font-family="'Impact', 'Arial Black', sans-serif" font-size="34" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="2">
+    🛍️ SSAFY WARDROBE &amp; SKIN SHOP
+  </text>
+  <text x="640" y="125" font-family="'Pretendard', sans-serif" font-size="15" fill="#94a3b8" text-anchor="middle">
+    인게임에서 획득한 골드 코인(🪙)으로 개성 넘치는 교육생 스킨을 수집해보세요!
+  </text>
+
+  <!-- Coin Balance Pill (Top Right) -->
+  <g transform="translate(930, 68)">
+    <rect width="230" height="48" rx="24" fill="#1e293b" stroke="#eab308" stroke-width="2"/>
+    <circle cx="28" cy="24" r="14" fill="url(#goldGrad)" filter="url(#goldGlow)"/>
+    <text x="28" y="29" font-family="sans-serif" font-size="14" font-weight="bold" fill="#713f12" text-anchor="middle">🪙</text>
+    <text x="54" y="30" font-family="'Pretendard', sans-serif" font-size="14" fill="#cbd5e1" font-weight="bold">보유 코인:</text>
+    <text x="145" y="31" font-family="'Impact', sans-serif" font-size="22" fill="#fbbf24" font-weight="bold">3,450 G</text>
+  </g>
+
+  <!-- 5 Skin Cards -->
+  <!-- Card 1: Default Blue -->
+  <g transform="translate(110, 160)">
+    <rect width="200" height="420" rx="16" fill="url(#cardGrad)" stroke="#3b82f6" stroke-width="2"/>
+    <rect x="15" y="15" width="170" height="180" rx="12" fill="#0f172a"/>
+    <!-- Character Avatar 1: Blue Hoodie -->
+    <circle cx="100" cy="80" r="32" fill="#ffedd5"/>
+    <path d="M72,70 Q100,50 128,70 L124,105 Q100,115 76,105 Z" fill="#2563eb"/>
+    <rect x="75" y="112" width="50" height="55" rx="10" fill="#1d4ed8"/>
+    <rect x="88" y="125" width="24" height="28" rx="4" fill="#60a5fa"/>
+    <text x="100" y="143" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle">SSAFY</text>
+    <!-- Skin Info -->
+    <text x="100" y="230" font-family="'Pretendard', sans-serif" font-size="17" font-weight="900" fill="#ffffff" text-anchor="middle">기본 싸피생</text>
+    <text x="100" y="255" font-family="'Pretendard', sans-serif" font-size="12" fill="#60a5fa" text-anchor="middle">Default Blue</text>
+    <text x="100" y="295" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">클래식 싸피 공식 후드와</text>
+    <text x="100" y="315" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">열정 가득 사원증 착용</text>
+    <!-- Button: Equipped -->
+    <rect x="25" y="355" width="150" height="44" rx="22" fill="#22c55e"/>
+    <text x="100" y="382" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">✓ 착용중</text>
+  </g>
+
+  <!-- Card 2: Red Passion Hoodie -->
+  <g transform="translate(330, 160)">
+    <rect width="200" height="420" rx="16" fill="url(#cardGrad)" stroke="#ef4444" stroke-width="2"/>
+    <rect x="15" y="15" width="170" height="180" rx="12" fill="#0f172a"/>
+    <!-- Character Avatar 2: Red Passion -->
+    <circle cx="100" cy="80" r="32" fill="#ffedd5"/>
+    <path d="M72,70 Q100,50 128,70 L124,105 Q100,115 76,105 Z" fill="#dc2626"/>
+    <rect x="75" y="112" width="50" height="55" rx="10" fill="#b91c1c"/>
+    <text x="100" y="98" font-size="16" text-anchor="middle">🔥</text>
+    <!-- Skin Info -->
+    <text x="100" y="230" font-family="'Pretendard', sans-serif" font-size="17" font-weight="900" fill="#ffffff" text-anchor="middle">열정의 불꽃</text>
+    <text x="100" y="255" font-family="'Pretendard', sans-serif" font-size="12" fill="#f87171" text-anchor="middle">Red Passion</text>
+    <text x="100" y="295" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">1일 1커밋의 불타는</text>
+    <text x="100" y="315" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">투지와 열정의 레드</text>
+    <!-- Button: Equip -->
+    <rect x="25" y="355" width="150" height="44" rx="22" fill="#2563eb"/>
+    <text x="100" y="382" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">장착하기</text>
+  </g>
+
+  <!-- Card 3: Cyber Agent -->
+  <g transform="translate(550, 160)">
+    <rect width="200" height="420" rx="16" fill="url(#cardGrad)" stroke="#06b6d4" stroke-width="2"/>
+    <rect x="15" y="15" width="170" height="180" rx="12" fill="#0f172a"/>
+    <!-- Character Avatar 3: Cyber -->
+    <circle cx="100" cy="80" r="32" fill="#0f172a"/>
+    <rect x="76" y="74" width="48" height="12" rx="6" fill="#06b6d4"/>
+    <rect x="75" y="112" width="50" height="55" rx="10" fill="#1e293b" stroke="#06b6d4" stroke-width="2"/>
+    <line x1="85" y1="125" x2="115" y2="125" stroke="#22d3ee" stroke-width="2"/>
+    <!-- Skin Info -->
+    <text x="100" y="230" font-family="'Pretendard', sans-serif" font-size="17" font-weight="900" fill="#ffffff" text-anchor="middle">사이버 요원</text>
+    <text x="100" y="255" font-family="'Pretendard', sans-serif" font-size="12" fill="#22d3ee" text-anchor="middle">Cyber Agent</text>
+    <text x="100" y="295" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">디지털 네온 바이저와</text>
+    <text x="100" y="315" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">스텔스 방탄 코딩 수트</text>
+    <!-- Button: Buy 1500 -->
+    <rect x="25" y="355" width="150" height="44" rx="22" fill="#0284c7"/>
+    <text x="100" y="382" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">🪙 1,500 구매</text>
+  </g>
+
+  <!-- Card 4: Gold Master -->
+  <g transform="translate(770, 160)">
+    <rect width="200" height="420" rx="16" fill="url(#cardGrad)" stroke="#eab308" stroke-width="2"/>
+    <rect x="15" y="15" width="170" height="180" rx="12" fill="#0f172a"/>
+    <!-- Character Avatar 4: Gold Crown -->
+    <circle cx="100" cy="80" r="32" fill="#fef08a"/>
+    <polygon points="76,55 86,40 100,50 114,40 124,55" fill="url(#goldGrad)"/>
+    <rect x="75" y="112" width="50" height="55" rx="10" fill="url(#goldGrad)"/>
+    <!-- Skin Info -->
+    <text x="100" y="230" font-family="'Pretendard', sans-serif" font-size="17" font-weight="900" fill="#fef08a" text-anchor="middle">👑 골든 마스터</text>
+    <text x="100" y="255" font-family="'Pretendard', sans-serif" font-size="12" fill="#eab308" text-anchor="middle">Gold Master</text>
+    <text x="100" y="295" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">수석 수료생의 영예를</text>
+    <text x="100" y="315" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">상징하는 황금 왕관</text>
+    <!-- Button: Buy 3000 -->
+    <rect x="25" y="355" width="150" height="44" rx="22" fill="#d97706"/>
+    <text x="100" y="382" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">🪙 3,000 구매</text>
+  </g>
+
+  <!-- Card 5: Panda Pajama -->
+  <g transform="translate(990, 160)">
+    <rect width="180" height="420" rx="16" fill="url(#cardGrad)" stroke="#a855f7" stroke-width="2"/>
+    <rect x="10" y="15" width="160" height="180" rx="12" fill="#0f172a"/>
+    <!-- Character Avatar 5: Panda -->
+    <circle cx="90" cy="80" r="32" fill="#ffffff"/>
+    <circle cx="70" cy="58" r="10" fill="#1e293b"/>
+    <circle cx="110" cy="58" r="10" fill="#1e293b"/>
+    <ellipse cx="78" cy="78" rx="7" ry="9" fill="#1e293b"/>
+    <ellipse cx="102" cy="78" rx="7" ry="9" fill="#1e293b"/>
+    <circle cx="90" cy="90" r="4" fill="#1e293b"/>
+    <rect x="68" y="112" width="44" height="55" rx="10" fill="#f8fafc"/>
+    <!-- Skin Info -->
+    <text x="90" y="230" font-family="'Pretendard', sans-serif" font-size="16" font-weight="900" fill="#e9d5ff" text-anchor="middle">🐼 판다 잠옷생</text>
+    <text x="90" y="255" font-family="'Pretendard', sans-serif" font-size="12" fill="#c084fc" text-anchor="middle">Panda Pajama</text>
+    <text x="90" y="295" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">밤샘 프로젝트의 징표,</text>
+    <text x="90" y="315" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">극강의 포근한 동물 잠옷</text>
+    <!-- Button: Buy 4500 -->
+    <rect x="15" y="355" width="150" height="44" rx="22" fill="#7e22ce"/>
+    <text x="90" y="382" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">🪙 4,500 구매</text>
+  </g>
+
+  <!-- Footer Tip -->
+  <text x="640" y="625" font-family="'Pretendard', sans-serif" font-size="14" fill="#64748b" text-anchor="middle">
+    💡 구매한 스킨과 코인은 로컬 브라우저에 안전하게 영구 저장됩니다. 언제든지 자유롭게 갈아입고 달려보세요!
+  </text>
+</svg>

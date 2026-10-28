@@ -1100,6 +1100,118 @@ export class TextureGenerator {
                 canvas.refresh();
             }
         }
+
+        // 3. Stage Finish Gate 🏁 (130x210)
+        if (!scene.textures.exists('finish_gate')) {
+            const canvas = scene.textures.createCanvas('finish_gate', 130, 210);
+            if (canvas) {
+                const ctx = canvas.getContext();
+
+                // Left Pillar
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(8, 20, 24, 190);
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(16, 20, 8, 190);
+
+                // Right Pillar
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(98, 20, 24, 190);
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(106, 20, 8, 190);
+
+                // Top Crossbar Arch
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.roundRect(0, 4, 130, 44, 8);
+                ctx.fill();
+                ctx.strokeStyle = '#facc15';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Checkered Banner Pattern
+                for (let x = 6; x < 124; x += 14) {
+                    ctx.fillStyle = (x % 28 === 6) ? '#000000' : '#ffffff';
+                    ctx.fillRect(x, 8, 14, 14);
+                }
+
+                // LED Gate Title
+                ctx.fillStyle = '#facc15';
+                ctx.font = 'bold 15px "Black Han Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('FINISH! 골인', 65, 40);
+
+                // Laser Sensor Curtain between pillars
+                ctx.fillStyle = 'rgba(74, 222, 128, 0.2)';
+                ctx.fillRect(32, 48, 66, 162);
+                ctx.strokeStyle = 'rgba(74, 222, 128, 0.6)';
+                ctx.lineWidth = 1.5;
+                for (let y = 60; y < 200; y += 22) {
+                    ctx.beginPath();
+                    ctx.moveTo(32, y); ctx.lineTo(98, y);
+                    ctx.stroke();
+                }
+
+                canvas.refresh();
+            }
+        }
+
+        // 4. Star Gold Icon ⭐ (32x32)
+        if (!scene.textures.exists('icon_star_gold')) {
+            const canvas = scene.textures.createCanvas('icon_star_gold', 32, 32);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = '#facc15';
+                this.drawStar(ctx, 16, 16, 5, 14, 6);
+                ctx.strokeStyle = '#d97706';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                canvas.refresh();
+            }
+        }
+
+        // 5. Star Empty Icon (32x32)
+        if (!scene.textures.exists('icon_star_empty')) {
+            const canvas = scene.textures.createCanvas('icon_star_empty', 32, 32);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = '#334155';
+                this.drawStar(ctx, 16, 16, 5, 14, 6);
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                canvas.refresh();
+            }
+        }
+
+        // 6. Lock Icon 🔒 (32x32)
+        if (!scene.textures.exists('icon_lock')) {
+            const canvas = scene.textures.createCanvas('icon_lock', 32, 32);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                // Shackle
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.arc(16, 12, 6, Math.PI, 0);
+                ctx.stroke();
+
+                // Body
+                ctx.fillStyle = '#475569';
+                ctx.beginPath();
+                ctx.roundRect(8, 14, 16, 14, 4);
+                ctx.fill();
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Keyhole
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(16, 20, 2, 0, Math.PI * 2);
+                ctx.fill();
+                canvas.refresh();
+            }
+        }
     }
 
     private static generateBossTextures(scene: Phaser.Scene) {
@@ -1341,5 +1453,29 @@ export class TextureGenerator {
                 canvas.refresh();
             }
         }
+    }
+
+    private static drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outerRadius: number, innerRadius: number) {
+        let rot = (Math.PI / 2) * 3;
+        let x = cx;
+        let y = cy;
+        const step = Math.PI / spikes;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - outerRadius);
+        for (let i = 0; i < spikes; i++) {
+            x = cx + Math.cos(rot) * outerRadius;
+            y = cy + Math.sin(rot) * outerRadius;
+            ctx.lineTo(x, y);
+            rot += step;
+
+            x = cx + Math.cos(rot) * innerRadius;
+            y = cy + Math.sin(rot) * innerRadius;
+            ctx.lineTo(x, y);
+            rot += step;
+        }
+        ctx.lineTo(cx, cy - outerRadius);
+        ctx.closePath();
+        ctx.fill();
     }
 }

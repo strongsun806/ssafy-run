@@ -4,6 +4,7 @@ import { GameOver } from './scenes/GameOver';
 import { Game } from './scenes/Game';
 import { MainMenu } from './scenes/MainMenu';
 import { Preloader } from './scenes/Preloader';
+import { StageSelect } from './scenes/StageSelect';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
@@ -29,6 +30,7 @@ const config: Phaser.Types.Core.GameConfig = {
         Boot,
         Preloader,
         MainMenu,
+        StageSelect,
         Game,
         GameOver
     ]

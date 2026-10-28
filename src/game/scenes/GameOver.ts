@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { ScoreManager } from '../utils/ScoreManager';
 import { AudioManager } from '../utils/AudioManager';
 import { SkinManager } from '../utils/SkinManager';
+import { StageManager } from '../utils/StageManager';
 
 interface GameOverData {
     score: number;
@@ -181,11 +182,13 @@ export class GameOver extends Scene {
             const now = new Date();
             const dateStr = `${now.getMonth() + 1}.${now.getDate()}`;
 
+            const highestStage = StageManager.getHighestUnlockedStage();
             const isOnline = await ScoreManager.submitScore({
                 name: trimmed,
                 score: this.score,
                 distance: this.distance,
-                date: dateStr
+                date: dateStr,
+                stage: highestStage
             });
 
             if (isOnline) {
