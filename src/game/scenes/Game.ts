@@ -37,9 +37,9 @@ export class Game extends Scene {
     private items!: Phaser.Physics.Arcade.Group;
 
     private groundY: number = 0;
-    private baseSpeed: number = 440;
-    private currentSpeed: number = 440;
-    private maxSpeed: number = 750;
+    private baseSpeed: number = 400;
+    private currentSpeed: number = 400;
+    private maxSpeed: number = 620;
     private distance: number = 0;
     private lastPitDistance: number = 0;
 
@@ -140,7 +140,6 @@ export class Game extends Scene {
 
     create() {
         const { width, height } = this.scale;
-        this.cameras.main.fadeIn(300, 10, 14, 26);
 
         // Load stage config if in stage mode
         if (this.gameMode === 'stage') {
@@ -149,7 +148,7 @@ export class Game extends Scene {
             this.targetDistance = this.currentStageConfig.targetDistance;
             this.currentStage = this.currentStageConfig.themeStage;
         } else {
-            this.baseSpeed = 440;
+            this.baseSpeed = 400;
             this.targetDistance = 0;
             this.currentStage = 1;
             this.currentStageConfig = undefined;
@@ -177,8 +176,8 @@ export class Game extends Scene {
         this.isFeverActive = false;
         this.feverTimeRemaining = 0;
         this.isPaused = false;
-        this.maxSpeed = 950;
-        this.hpDrainRate = this.gameMode === 'stage' ? 2.6 + (this.currentStageId * 0.08) : 2.6;
+        this.maxSpeed = 620;
+        this.hpDrainRate = this.gameMode === 'stage' ? 2.4 + (this.currentStageId * 0.06) : 2.4;
         this.nextWaveTimer = 150;
         this.highScore = ScoreManager.getHighScore();
 
@@ -190,20 +189,20 @@ export class Game extends Scene {
         this.groundY = height - 75;
         this.lastPitDistance = 0;
 
-        // 1. Sky & Parallax (Stage 1 initial)
+        // 1. Calm Eye-Comfort Sky & Subtle Background Silhouettes
         this.add.graphics()
-            .fillGradientStyle(0x0a0e1a, 0x0a0e1a, 0x171e38, 0x241b3e, 1)
+            .fillGradientStyle(0x0b1120, 0x0b1120, 0x111827, 0x111827, 1)
             .fillRect(0, 0, width, height);
 
         this.bgFarTile = this.add.tileSprite(0, height - 350, width, 400, `bg_s${this.currentStage}_far`)
             .setOrigin(0, 0)
-            .setAlpha(0.45);
+            .setAlpha(0.25);
 
         this.bgNearTile = this.add.tileSprite(0, height - 230, width, 280, `bg_s${this.currentStage}_near`)
             .setOrigin(0, 0)
-            .setAlpha(0.7);
+            .setAlpha(0.32);
 
-        // 2. Segmented Ground & Platforms (Arcade dynamic bodies with immovable)
+        // 2. Segmented Ground & Platforms
         this.groundColliderGroup = this.physics.add.group({
             immovable: true,
             allowGravity: false
@@ -222,9 +221,7 @@ export class Game extends Scene {
         this.events.off('request-hyper-dash');
         this.events.on('request-hyper-dash', () => {
             if (UpgradeManager.isArcadeDashEnabled()) {
-                if (this.player.triggerHyperDash(true)) {
-                    this.cameras.main.flash(180, 34, 211, 238);
-                }
+                this.player.triggerHyperDash(true);
             }
         });
         this.physics.add.collider(this.player, this.groundColliderGroup, () => {
@@ -298,7 +295,6 @@ export class Game extends Scene {
 
     private initGroundSegments() {
         this.groundSegments = [];
-        // Create continuous starting floor for first 2200px
         this.spawnGroundSegment(0, 1200, false, false);
     }
 
@@ -345,30 +341,11 @@ export class Game extends Scene {
     }
 
     private spawnPitHazard(pitStartX: number, pitWidth: number): Phaser.GameObjects.TileSprite {
-        // Deep abyss container at bottom
         const pitHazard = this.add.tileSprite(pitStartX, this.groundY, pitWidth, 75, 'pit_hazard')
             .setOrigin(0, 0)
             .setDepth(4);
 
-        // Warning text: "⚠️ JUMP! 🕳️"
-        const warn = this.add.text(pitStartX + pitWidth / 2, this.groundY - 30, '⚠️ JUMP! 🕳️', {
-            fontFamily: 'Arial Black',
-            fontSize: '14px',
-            color: '#ef4444',
-            stroke: '#0f172a',
-            strokeThickness: 3
-        }).setOrigin(0.5).setDepth(15);
-
-        this.tweens.add({
-            targets: warn,
-            y: this.groundY - 40,
-            alpha: 0.45,
-            duration: 280,
-            yoyo: true,
-            repeat: -1
-        });
-
-        // Parabolic arc of 4 gold coins over the pit to guide the player's jump
+        // Parabolic arc of 4 gold coins over the pit to guide the player's jump cleanly
         const numCoins = 4;
         for (let i = 0; i < numCoins; i++) {
             const t = (i + 1) / (numCoins + 1);
@@ -377,8 +354,6 @@ export class Game extends Scene {
             const coin = this.jellies.create(coinX, coinY, 'item_coin') as Phaser.Physics.Arcade.Sprite;
             this.setupItemPhysics(coin, 50, 'coin');
         }
-
-        this.time.delayedCall(4500, () => warn.destroy());
 
         return pitHazard;
     }
@@ -389,13 +364,13 @@ export class Game extends Scene {
         if (this.textures.exists('btn_touch_slide')) {
             this.slideBtn = this.add.image(90, height - 90, 'btn_touch_slide')
                 .setDepth(60)
-                .setAlpha(0.75);
+                .setAlpha(0.65);
         }
 
         if (this.textures.exists('btn_touch_jump')) {
             this.jumpBtn = this.add.image(width - 90, height - 90, 'btn_touch_jump')
                 .setDepth(60)
-                .setAlpha(0.75);
+                .setAlpha(0.65);
         }
 
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
@@ -404,19 +379,19 @@ export class Game extends Scene {
 
             if (pointer.x < width / 2) {
                 this.player.setTouchSlide(true);
-                this.slideBtn?.setAlpha(1.0).setScale(0.92);
+                this.slideBtn?.setAlpha(0.9).setScale(0.95);
             } else {
                 this.player.requestTouchJump();
-                this.jumpBtn?.setAlpha(1.0).setScale(0.92);
+                this.jumpBtn?.setAlpha(0.9).setScale(0.95);
             }
         });
 
         this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
             if (pointer.x < width / 2) {
                 this.player.setTouchSlide(false);
-                this.slideBtn?.setAlpha(0.75).setScale(1.0);
+                this.slideBtn?.setAlpha(0.65).setScale(1.0);
             } else {
-                this.jumpBtn?.setAlpha(0.75).setScale(1.0);
+                this.jumpBtn?.setAlpha(0.65).setScale(1.0);
             }
         });
     }
@@ -426,13 +401,13 @@ export class Game extends Scene {
 
         const deltaSec = delta / 1000;
 
-        // Distance & Progressive Speed Scaling (with Hyper Dash 1.85x speed boost!)
-        const dashSpeedMult = this.player.isDashing ? 1.85 : 1.0;
+        // Distance & Progressive Speed Scaling (Comfortable 1.35x speed boost during Dash)
+        const dashSpeedMult = this.player.isDashing ? 1.35 : 1.0;
         const effectiveSpeed = this.currentSpeed * dashSpeedMult;
-        this.distance += (effectiveSpeed * deltaSec) / 16;
-        this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + Math.floor(this.distance * 0.35));
+        this.distance += (effectiveSpeed * deltaSec) / 14;
+        this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + Math.floor(this.distance * 0.18));
 
-        // AI Companion Bit-Drone Autonomous Assist (RPG Tech Lab)
+        // AI Companion Bit-Drone Autonomous Assist
         if (UpgradeManager.isRpgTechEnabled() && !this.isBossActive) {
             this.droneAssistTimer -= deltaSec;
             if (this.droneAssistTimer <= 0) {
@@ -444,14 +419,14 @@ export class Game extends Scene {
         // Update Hyper Dash HUD status
         if (this.dashHudText && UpgradeManager.isArcadeDashEnabled()) {
             if (this.player.isDashing) {
-                this.dashHudText.setText('⚡ HYPER DASH 발동 중!!');
-                this.dashHudText.setColor('#fef08a');
+                this.dashHudText.setText('DASH 작동 중');
+                this.dashHudText.setColor('#fde047');
             } else if (this.player.dashCooldownRemaining > 0) {
-                this.dashHudText.setText(`⚡ DASH 쿨타임: ${this.player.dashCooldownRemaining.toFixed(1)}s`);
+                this.dashHudText.setText(`DASH 대기: ${this.player.dashCooldownRemaining.toFixed(1)}s`);
                 this.dashHudText.setColor('#94a3b8');
             } else {
-                this.dashHudText.setText('⚡ [Shift / 클릭] HYPER DASH 준비완료!');
-                this.dashHudText.setColor('#22d3ee');
+                this.dashHudText.setText('DASH [Shift] 준비완료');
+                this.dashHudText.setColor('#38bdf8');
             }
         }
 
@@ -463,9 +438,9 @@ export class Game extends Scene {
             }
         }
 
-        // Parallax background scrolling
-        if (this.bgFarTile) this.bgFarTile.tilePositionX += (this.currentSpeed * 0.05) * deltaSec;
-        if (this.bgNearTile) this.bgNearTile.tilePositionX += (this.currentSpeed * 0.16) * deltaSec;
+        // Very gentle background drift (Prevents eye fatigue & motion sickness)
+        if (this.bgFarTile) this.bgFarTile.tilePositionX += (this.currentSpeed * 0.008) * deltaSec;
+        if (this.bgNearTile) this.bgNearTile.tilePositionX += (this.currentSpeed * 0.018) * deltaSec;
 
         // Ground segments scrolling & pit management
         this.updateGroundSegments(deltaSec);
@@ -478,7 +453,7 @@ export class Game extends Scene {
         // Check Stage Transitions (Stage 1 -> Stage 2 -> Stage 3)
         this.checkStageProgression();
 
-        // Check Boss Encounters (일타싸피, 배틀싸피)
+        // Check Boss Encounters
         this.checkBossProgression();
 
         // Mental HP natural decay
@@ -503,12 +478,12 @@ export class Game extends Scene {
         // Magnet HUD indicator
         if (this.player.magnetTimeRemaining > 0) {
             this.magnetHudText.setVisible(true);
-            this.magnetHudText.setText(`🧲 MAGNET: ${this.player.magnetTimeRemaining.toFixed(1)}s`);
+            this.magnetHudText.setText(`MAGNET: ${this.player.magnetTimeRemaining.toFixed(1)}s`);
         } else {
             this.magnetHudText.setVisible(false);
         }
 
-        // Wave generator (Paused during Boss Encounter)
+        // Wave generator
         if (this.isBossActive) {
             this.updateBoss(deltaSec, delta);
         } else {
@@ -521,14 +496,14 @@ export class Game extends Scene {
         // Player update
         this.player.update(_time, delta);
 
-        // Temporary Magnet Attraction (Only active when player has magnet power-up!)
+        // Temporary Magnet Attraction
         if (this.player.magnetTimeRemaining > 0 || this.isFeverActive) {
             this.applyMagneticAttraction();
         }
 
         // Update HUD
-        this.distanceText.setText(`📍 ${Math.floor(this.distance)}m`);
-        this.coinText.setText(`🪙 ${this.coinsCollected}`);
+        this.distanceText.setText(`${Math.floor(this.distance)}m`);
+        this.coinText.setText(`${this.coinsCollected} G`);
 
         // Clean off-screen objects
         this.cleanOffscreen(this.obstacles);
@@ -539,12 +514,10 @@ export class Game extends Scene {
         this.cleanOffscreen(this.bossPatches);
     }
 
-    // Segmented Ground Management (Supports Gaps & Pits with 100% Physics Sync)
     private updateGroundSegments(deltaSec: number) {
         const { width } = this.scale;
         const shift = this.currentSpeed * deltaSec;
 
-        // Move existing segments left and keep physics bodies 100% in sync
         for (let i = this.groundSegments.length - 1; i >= 0; i--) {
             const seg = this.groundSegments[i];
             seg.x -= shift;
@@ -561,7 +534,6 @@ export class Game extends Scene {
             if (seg.rightCap) seg.rightCap.x = seg.x + seg.width - 14;
             if (seg.pitHazard) seg.pitHazard.x -= shift;
 
-            // Remove if scrolled past
             if (seg.x + seg.width < -200) {
                 seg.tile.destroy();
                 seg.body.destroy();
@@ -572,7 +544,6 @@ export class Game extends Scene {
             }
         }
 
-        // Spawn new segments ahead
         const lastSeg = this.groundSegments[this.groundSegments.length - 1];
         if (lastSeg && lastSeg.x + lastSeg.width < width + 600) {
             const nextX = lastSeg.x + lastSeg.width;
@@ -583,11 +554,10 @@ export class Game extends Scene {
 
             if (shouldCreatePit) {
                 this.lastPitDistance = this.distance;
-                const extraW = this.gameMode === 'stage' ? Math.min(45, this.currentStageId * 1.5) : 20;
-                const pitWidth = Phaser.Math.Between(145, 165 + Math.floor(extraW));
+                const extraW = this.gameMode === 'stage' ? Math.min(35, this.currentStageId * 1.2) : 15;
+                const pitWidth = Phaser.Math.Between(135, 155 + Math.floor(extraW));
                 const segWidth = Phaser.Math.Between(520, 860);
 
-                // Add right cliff cap to preceding segment
                 if (!lastSeg.rightCap) {
                     lastSeg.rightCap = this.add.image(lastSeg.x + lastSeg.width - 14, this.groundY + 37, 'ground_cliff_left').setDepth(11);
                 }
@@ -602,12 +572,10 @@ export class Game extends Scene {
         }
     }
 
-    // Falling into Pit: Takes 30 HP damage & SSAFY Emergency Rescue Drone lifts player up!
     private handleFallIntoPit() {
         this.currentHp -= 45;
         this.combo = 0;
         this.comboText.setText('');
-        this.cameras.main.shake(140, 0.025);
 
         if (this.currentHp <= 0) {
             this.currentHp = 0;
@@ -617,13 +585,8 @@ export class Game extends Scene {
         }
 
         this.renderHpBar();
-
-        // GUARANTEE SOLID GROUND UNDER THE PLAYER SO THEY NEVER FALL AGAIN
         this.ensureGroundUnderPlayer();
-
-        this.player.rescueFromPit(() => {
-            // Re-anchored safely to ground
-        });
+        this.player.rescueFromPit(() => {});
     }
 
     private ensureGroundUnderPlayer() {
@@ -637,22 +600,17 @@ export class Game extends Scene {
         }
 
         if (!hasGround) {
-            // Player is over a pit gap! Immediately spawn an emergency safety segment under them
             this.spawnGroundSegment(px - 100, 500, false, false);
         }
     }
 
-    // Stage Progression (Stage 1 -> Stage 2 -> Stage 3)
     private checkStageProgression() {
-        if (this.stageTransitioning) return;
+        if (this.stageTransitioning || this.gameMode === 'stage') return;
 
-        // Stage 2: 500m milestone (비상계단 지옥)
         if (this.currentStage === 1 && this.distance >= 500) {
-            this.transitionToStage(2, '🚨 STAGE 2: 8시 55분 비상계단 질주!');
-        }
-        // Stage 3: 1100m milestone (멀캠 11층 랩실)
-        else if (this.currentStage === 2 && this.distance >= 1100) {
-            this.transitionToStage(3, '💻 STAGE 3: 멀캠 11층 코딩 랩실 도착!');
+            this.transitionToStage(2, 'STAGE 2: 비상계단 구간 진입');
+        } else if (this.currentStage === 2 && this.distance >= 1100) {
+            this.transitionToStage(3, 'STAGE 3: 11층 코딩 랩실 진입');
         }
     }
 
@@ -661,60 +619,36 @@ export class Game extends Scene {
         this.stageTransitioning = true;
         this.audioManager.playStageClear();
 
-        // Flash Camera
-        this.cameras.main.flash(400, 56, 189, 248);
-
-        // Update Backgrounds
         if (this.bgFarTile) this.bgFarTile.setTexture(`bg_s${newStage}_far`);
         if (this.bgNearTile) this.bgNearTile.setTexture(`bg_s${newStage}_near`);
 
-        // Announcement Banner
         const { width, height } = this.scale;
         this.stageBanner = this.add.container(width / 2, height / 2 - 80).setDepth(150);
 
         const bannerBg = this.add.graphics();
         bannerBg.fillStyle(0x0f172a, 0.95);
-        bannerBg.lineStyle(3, 0xfacc15);
-        bannerBg.fillRoundedRect(-320, -35, 640, 70, 16);
-        bannerBg.strokeRoundedRect(-320, -35, 640, 70, 16);
+        bannerBg.lineStyle(2, 0x38bdf8);
+        bannerBg.fillRoundedRect(-260, -30, 520, 60, 12);
+        bannerBg.strokeRoundedRect(-260, -30, 520, 60, 12);
 
         const bannerLbl = this.add.text(0, 0, bannerText, {
-            fontFamily: 'Arial Black',
-            fontSize: '24px',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+            fontSize: '20px',
             color: '#facc15'
         }).setOrigin(0.5);
 
         this.stageBanner.add([bannerBg, bannerLbl]);
-        this.stageBanner.setScale(0);
-
-        this.tweens.add({
-            targets: this.stageBanner,
-            scale: 1,
-            duration: 400,
-            ease: 'Back.easeOut',
-            onComplete: () => {
-                this.time.delayedCall(1600, () => {
-                    this.tweens.add({
-                        targets: this.stageBanner,
-                        alpha: 0,
-                        duration: 300,
-                        onComplete: () => {
-                            this.stageBanner?.destroy();
-                            this.stageTransitioning = false;
-                        }
-                    });
-                });
-            }
+        this.time.delayedCall(1500, () => {
+            this.stageBanner?.destroy();
+            this.stageTransitioning = false;
         });
 
         this.stageText.setText(`STAGE ${newStage}`);
     }
 
-    // --- Boss Encounter System (SSAFY Evaluation Boss Battles) ---
     private checkBossProgression() {
         if (this.isBossActive) return;
 
-        // Stage Mode Boss
         if (this.gameMode === 'stage') {
             if (this.currentStageConfig?.bossType) {
                 const bossDist = this.targetDistance * 0.35;
@@ -725,7 +659,6 @@ export class Game extends Scene {
             return;
         }
 
-        // Infinite Runner Mode Bosses
         if (this.distance >= 350 && !this.bossDefeatedList.has('iltassafy')) {
             this.startBossEncounter('iltassafy');
         } else if (this.distance >= 850 && !this.bossDefeatedList.has('battlessafy')) {
@@ -738,115 +671,55 @@ export class Game extends Scene {
         this.currentBossType = type;
 
         this.audioManager.playBossWarning();
-        this.cameras.main.flash(350, 56, 189, 248);
 
         const { width, height } = this.scale;
 
-        // Break Time Invitation Banner
         const alertContainer = this.add.container(width / 2, height / 2 - 80).setDepth(200);
         const alertBg = this.add.graphics();
         alertBg.fillStyle(0x0f172a, 0.96);
-        alertBg.lineStyle(3, 0x38bdf8);
-        alertBg.fillRoundedRect(-330, -50, 660, 100, 16);
-        alertBg.strokeRoundedRect(-330, -50, 660, 100, 16);
+        alertBg.lineStyle(2, 0x38bdf8);
+        alertBg.fillRoundedRect(-300, -45, 600, 90, 14);
+        alertBg.strokeRoundedRect(-300, -45, 600, 90, 14);
 
         const titleText = type === 'iltassafy'
-            ? '🎱 [중간 힐링 타임] 일타싸피 알고리즘 세션! 🎱'
-            : '⚔️ [중간 힐링 타임] 배틀싸피 전차전 알고리즘 세션! ⚔️';
+            ? '[인터미션] 일타싸피 알고리즘 평가'
+            : '[인터미션] 배틀싸피 알고리즘 평가';
 
-        const alertTitle = this.add.text(0, -15, titleText, {
+        const alertTitle = this.add.text(0, -14, titleText, {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '22px',
+            fontSize: '21px',
             color: '#38bdf8'
         }).setOrigin(0.5);
 
-        const alertSub = this.add.text(0, 20, '🧩 지친 손가락을 쉬어가세요! 블록 코딩으로 보스를 격파하라!', {
+        const alertSub = this.add.text(0, 18, '블록 코딩을 완료하면 체력 100% 회복 및 보너스 점수를 획득합니다', {
             fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '16px',
-            color: '#facc15'
+            fontSize: '15px',
+            color: '#e2e8f0'
         }).setOrigin(0.5);
 
         alertContainer.add([alertBg, alertTitle, alertSub]);
-        alertContainer.setScale(0);
 
-        this.tweens.add({
-            targets: alertContainer,
-            scale: 1,
-            duration: 350,
-            ease: 'Back.easeOut',
-            onComplete: () => {
-                this.time.delayedCall(1100, () => {
-                    this.tweens.add({
-                        targets: alertContainer,
-                        alpha: 0,
-                        scale: 0.8,
-                        duration: 250,
-                        onComplete: () => {
-                            alertContainer.destroy();
+        this.time.delayedCall(1000, () => {
+            alertContainer.destroy();
 
-                            // Pause runner and launch Block Coding Mini-game
-                            this.isPaused = true;
-                            (this.player.body as Phaser.Physics.Arcade.Body)?.setVelocity(0, 0);
+            this.isPaused = true;
+            (this.player.body as Phaser.Physics.Arcade.Body)?.setVelocity(0, 0);
 
-                            new BlockCodingModal(this, type, this.audioManager, (scoreBonus, coinBonus) => {
-                                this.bossDefeatedList.add(type);
-                                this.score += scoreBonus;
-                                this.coinsCollected += coinBonus;
-                                this.scoreText.setText(this.score.toLocaleString());
-                                this.coinText.setText(this.coinsCollected.toString());
+            new BlockCodingModal(this, type, this.audioManager, (scoreBonus, coinBonus) => {
+                this.bossDefeatedList.add(type);
+                this.score += scoreBonus;
+                this.coinsCollected += coinBonus;
+                this.scoreText.setText(this.score.toLocaleString());
+                this.coinText.setText(`${this.coinsCollected} G`);
 
-                                // Full heal 100%
-                                this.currentHp = this.maxHp;
-                                this.updateHpBar();
+                this.currentHp = this.maxHp;
+                this.renderHpBar();
 
-                                // Resume runner with Golden Fever Mode
-                                this.isPaused = false;
-                                this.isBossActive = false;
-                                this.startFeverMode();
-
-                                // Floating celebratory notice
-                                const floatText = this.add.text(this.player.x, this.player.y - 70, '✨ 멘탈 100% 완전 회복! 골든 피버 질주! ✨', {
-                                    fontFamily: '"Black Han Sans", sans-serif',
-                                    fontSize: '22px',
-                                    color: '#4ade80'
-                                }).setDepth(50);
-
-                                this.tweens.add({
-                                    targets: floatText,
-                                    y: floatText.y - 50,
-                                    alpha: 0,
-                                    duration: 1600,
-                                    onComplete: () => floatText.destroy()
-                                });
-                            });
-                        }
-                    });
-                });
-            }
+                this.isPaused = false;
+                this.isBossActive = false;
+                this.startFeverMode();
+            });
         });
-    }
-
-    private createBossHUD(type: 'iltassafy' | 'battlessafy') {
-        const { width } = this.scale;
-        this.bossHpContainer = this.add.container(width / 2, 58).setDepth(60);
-
-        const bg = this.add.graphics();
-        bg.fillStyle(0x0f172a, 0.9);
-        bg.lineStyle(2, 0xef4444);
-        bg.fillRoundedRect(-150, -22, 300, 44, 10);
-        bg.strokeRoundedRect(-150, -22, 300, 44, 10);
-
-        const nameLabel = type === 'iltassafy' ? '🎱 일타싸피 AI BOSS' : '⚔️ 배틀싸피 TANK BOSS';
-        this.bossHpText = this.add.text(0, -9, `${nameLabel} - 100%`, {
-            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '13px',
-            color: '#facc15'
-        }).setOrigin(0.5);
-
-        this.bossHpFill = this.add.graphics();
-        this.renderBossHpBar();
-
-        this.bossHpContainer.add([bg, this.bossHpFill, this.bossHpText]);
     }
 
     private renderBossHpBar() {
@@ -858,11 +731,9 @@ export class Game extends Scene {
         const bx = -barW / 2;
         const by = 4;
 
-        // Background
         this.bossHpFill.fillStyle(0x1e293b, 1);
         this.bossHpFill.fillRoundedRect(bx, by, barW, barH, 3);
 
-        // Fill
         const ratio = Math.max(0, this.bossHp / this.bossMaxHp);
         const color = ratio > 0.5 ? 0xef4444 : 0xf97316;
         this.bossHpFill.fillStyle(color, 1);
@@ -871,17 +742,15 @@ export class Game extends Scene {
         }
     }
 
-    private updateBoss(deltaSec: number, delta: number) {
+    private updateBoss(_deltaSec: number, delta: number) {
         if (!this.bossSprite || !this.isBossActive) return;
 
-        // Boss Attack Timer
         this.bossAttackTimer -= delta;
         if (this.bossAttackTimer <= 0) {
             this.executeBossAttack();
             this.bossAttackTimer = Phaser.Math.Between(2200, 3000);
         }
 
-        // Spawn Debug Patches (Counters)
         this.bossPatchTimer -= delta;
         if (this.bossPatchTimer <= 0) {
             this.spawnDebugPatch();
@@ -899,31 +768,28 @@ export class Game extends Scene {
         if (this.currentBossType === 'iltassafy') {
             const attackType = Phaser.Math.Between(0, 1);
             if (attackType === 0) {
-                // Bouncing cue ball
                 const ball = this.bossProjectiles.create(bx, by, 'boss_projectile_ball') as Phaser.Physics.Arcade.Sprite;
                 ball.setDepth(16);
                 const bbody = ball.body as Phaser.Physics.Arcade.Body;
                 if (bbody) {
                     bbody.setAllowGravity(true);
                     bbody.setBounce(0.9, 0.85);
-                    bbody.setVelocityX(-this.currentSpeed * 1.35);
+                    bbody.setVelocityX(-this.currentSpeed * 1.25);
                     bbody.setVelocityY(-200);
                     bbody.setSize(30, 30);
                 }
                 this.physics.add.collider(ball, this.groundColliderGroup);
             } else {
-                // Low altitude laser cue - requires slide!
                 const cue = this.obstacles.create(width + 100, this.groundY - 55, 'obstacle_conflict') as Phaser.Physics.Arcade.Sprite;
                 cue.setDepth(16);
                 const cbody = cue.body as Phaser.Physics.Arcade.Body;
                 if (cbody) {
                     cbody.setAllowGravity(false);
-                    cbody.setVelocityX(-this.currentSpeed * 1.3);
+                    cbody.setVelocityX(-this.currentSpeed * 1.2);
                     cbody.setSize(58, 22);
                 }
             }
         } else {
-            // Battle SSAFY Tank Shell
             const isHigh = Phaser.Math.Between(0, 1) === 1;
             const shellY = isHigh ? this.groundY - 75 : this.groundY - 26;
             const shell = this.bossProjectiles.create(bx, shellY, 'boss_projectile_shell') as Phaser.Physics.Arcade.Sprite;
@@ -931,7 +797,7 @@ export class Game extends Scene {
             const sbody = shell.body as Phaser.Physics.Arcade.Body;
             if (sbody) {
                 sbody.setAllowGravity(false);
-                sbody.setVelocityX(-this.currentSpeed * 1.45);
+                sbody.setVelocityX(-this.currentSpeed * 1.3);
                 sbody.setSize(38, 20);
             }
         }
@@ -950,15 +816,6 @@ export class Game extends Scene {
             pbody.setVelocityX(-this.currentSpeed);
             pbody.setSize(34, 34);
         }
-
-        // Bobbing sparkle
-        this.tweens.add({
-            targets: patch,
-            scale: 1.15,
-            duration: 300,
-            yoyo: true,
-            repeat: -1
-        });
     }
 
     private collectDebugPatch(patch: Phaser.Physics.Arcade.Sprite) {
@@ -967,31 +824,14 @@ export class Game extends Scene {
         this.score += 300;
         this.scoreText.setText(this.score.toLocaleString());
 
-        // Homing energy bolt from player to boss
         if (this.bossSprite && this.isBossActive) {
             const bolt = this.add.graphics().setDepth(25);
-            bolt.lineStyle(3, 0x38bdf8, 1);
+            bolt.lineStyle(2, 0x38bdf8, 0.7);
             bolt.lineBetween(this.player.x, this.player.y - 30, this.bossSprite.x, this.bossSprite.y);
             this.time.delayedCall(100, () => bolt.destroy());
 
-            // Boss hit reaction
             this.bossHp -= 25;
-            this.cameras.main.shake(80, 0.01);
-            this.bossSprite.setTint(0xffffff);
-            this.time.delayedCall(120, () => this.bossSprite?.clearTint());
-
-            // Floating Critical Hit text
-            const floatText = this.add.text(this.bossSprite.x - 30, this.bossSprite.y - 40, '💥 -25 HP!', {
-                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-                fontSize: '18px',
-                color: '#facc15',
-                stroke: '#0f172a',
-                strokeThickness: 3
-            }).setDepth(35);
-            this.tweens.add({ targets: floatText, y: floatText.y - 30, alpha: 0, duration: 500, onComplete: () => floatText.destroy() });
-
-            // Update Boss HUD
-            const nameLabel = this.currentBossType === 'iltassafy' ? '🎱 일타싸피 AI BOSS' : '⚔️ 배틀싸피 TANK BOSS';
+            const nameLabel = this.currentBossType === 'iltassafy' ? '일타싸피 AI BOSS' : '배틀싸피 TANK BOSS';
             this.bossHpText?.setText(`${nameLabel} - ${Math.max(0, this.bossHp)}%`);
             this.renderBossHpBar();
 
@@ -1009,7 +849,6 @@ export class Game extends Scene {
         this.currentHp -= 32;
         this.combo = 0;
         this.comboText.setText('');
-        this.cameras.main.shake(120, 0.015);
 
         if (this.currentHp <= 0) {
             this.currentHp = 0;
@@ -1020,92 +859,27 @@ export class Game extends Scene {
 
     private defeatBoss() {
         this.audioManager.playBossDefeat();
-        this.cameras.main.shake(300, 0.03);
 
         if (this.currentBossType) {
             this.bossDefeatedList.add(this.currentBossType);
         }
 
-        const bx = this.bossSprite ? this.bossSprite.x : this.scale.width - 150;
-        const by = this.bossSprite ? this.bossSprite.y : this.groundY - 100;
-
-        // Explode boss
         if (this.bossSprite) {
-            this.tweens.add({
-                targets: this.bossSprite,
-                scale: 1.4,
-                alpha: 0,
-                duration: 400,
-                onComplete: () => this.bossSprite?.destroy()
-            });
+            this.bossSprite.destroy();
         }
 
-        // Shower of 15 Gold Coins!
-        for (let i = 0; i < 15; i++) {
-            const coin = this.jellies.create(bx + Phaser.Math.Between(-80, 80), by + Phaser.Math.Between(-60, 60), 'item_coin') as Phaser.Physics.Arcade.Sprite;
-            this.setupItemPhysics(coin, 50, 'coin');
-            const cbody = coin.body as Phaser.Physics.Arcade.Body;
-            if (cbody) {
-                cbody.setVelocity(Phaser.Math.Between(-250, -50), Phaser.Math.Between(-300, 50));
-            }
-        }
-
-        // Defeat Banner Announcement
-        const { width, height } = this.scale;
-        const passBanner = this.add.container(width / 2, height / 2 - 80).setDepth(160);
-        const passBg = this.add.graphics();
-        passBg.fillStyle(0x0f172a, 0.96);
-        passBg.lineStyle(3, 0xfacc15);
-        passBg.fillRoundedRect(-300, -40, 600, 80, 16);
-        passBg.strokeRoundedRect(-300, -40, 600, 80, 16);
-
-        const passText = this.add.text(0, -8, '🏆 EVALUATION PASSED! [PASS A+]', {
-            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '24px',
-            color: '#facc15'
-        }).setOrigin(0.5);
-
-        const bonusText = this.add.text(0, 20, '+5,000 PTS & FEVER MODE ACTIVATED!', {
-            fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '16px',
-            color: '#38bdf8'
-        }).setOrigin(0.5);
-
-        passBanner.add([passBg, passText, bonusText]);
-        passBanner.setScale(0);
-
-        this.tweens.add({
-            targets: passBanner,
-            scale: 1,
-            duration: 350,
-            ease: 'Back.easeOut',
-            onComplete: () => {
-                this.time.delayedCall(2000, () => {
-                    this.tweens.add({
-                        targets: passBanner,
-                        alpha: 0,
-                        duration: 300,
-                        onComplete: () => passBanner.destroy()
-                    });
-                });
-            }
-        });
-
-        // Add 5,000 points & start Fever mode!
         this.score += 5000;
         this.scoreText.setText(this.score.toLocaleString());
         this.startFeverMode();
 
-        // Clean up boss HUD
         this.bossHpContainer?.destroy();
         this.bossHpContainer = undefined;
         this.isBossActive = false;
-        this.nextWaveTimer = 1500;
+        this.nextWaveTimer = 1200;
     }
 
-    // Temporary Magnetic Attraction
     private applyMagneticAttraction() {
-        const magnetRadius = this.isFeverActive ? 280 : 180;
+        const magnetRadius = this.isFeverActive ? 260 : 180;
         const px = this.player.x;
         const py = this.player.y - 32;
 
@@ -1115,8 +889,8 @@ export class Game extends Scene {
             const dist = Phaser.Math.Distance.Between(px, py, j.x, j.y);
             if (dist < magnetRadius) {
                 const angle = Phaser.Math.Angle.Between(j.x, j.y, px, py);
-                j.x += Math.cos(angle) * 600 * 0.016;
-                j.y += Math.sin(angle) * 600 * 0.016;
+                j.x += Math.cos(angle) * 550 * 0.016;
+                j.y += Math.sin(angle) * 550 * 0.016;
             }
         });
 
@@ -1126,14 +900,13 @@ export class Game extends Scene {
             const dist = Phaser.Math.Distance.Between(px, py, item.x, item.y);
             if (dist < magnetRadius) {
                 const angle = Phaser.Math.Angle.Between(item.x, item.y, px, py);
-                item.x += Math.cos(angle) * 520 * 0.016;
-                item.y += Math.sin(angle) * 520 * 0.016;
+                item.x += Math.cos(angle) * 500 * 0.016;
+                item.y += Math.sin(angle) * 500 * 0.016;
             }
         });
     }
 
     private spawnNextWave() {
-        // Focus heavily on real obstacle patterns (1, 2, 3, 5, 7, 8, 9) so stages are genuinely challenging!
         const patterns = [1, 2, 3, 5, 7, 8, 9, 1, 7, 8];
         if (this.waveCount > 0 && this.waveCount % 6 === 0) patterns.push(4, 6);
         const available = patterns.filter(p => p !== this.lastPatternIndex);
@@ -1176,11 +949,10 @@ export class Game extends Scene {
         }
 
         const baseInterval = this.currentStageConfig ? this.currentStageConfig.waveIntervalMs : 1100;
-        const speedRatio = Math.max(0.55, 500 / this.currentSpeed);
-        this.nextWaveTimer = Math.max(580, Math.min(baseInterval, waveDurationMs * speedRatio));
+        const speedRatio = Math.max(0.6, 460 / this.currentSpeed);
+        this.nextWaveTimer = Math.max(620, Math.min(baseInterval, waveDurationMs * speedRatio));
         this.waveCount++;
 
-        // Spawn S-S-A-F-Y Alphabet Capsule every 2 waves (if Arcade/Ultimate enabled)
         if (UpgradeManager.isArcadeDashEnabled() && this.waveCount % 2 === 0) {
             const nextIdx = this.collectedLetters.findIndex(v => !v);
             if (nextIdx !== -1) {
@@ -1198,26 +970,15 @@ export class Game extends Scene {
         }
     }
 
-    // AI Companion Bit-Drone Autonomous Assist (Shield Recharge OR Orbital Laser Obstacle Snipe!)
     private triggerDroneAutonomousAssist() {
         const dronePos = this.player.getDronePosition();
 
-        // 1. If player's shield is broken, priority is recharging the Hexagonal Plasma Shield!
         if (!this.player.hasShield) {
             this.player.activateShield();
             this.audioManager.playMagnet();
-            const txt = this.add.text(dronePos.x, dronePos.y - 24, '🤖 AI DRONE: 쉴드 재충전!', {
-                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-                fontSize: '16px',
-                color: '#22d3ee',
-                stroke: '#0f172a',
-                strokeThickness: 3
-            }).setOrigin(0.5).setDepth(60);
-            this.tweens.add({ targets: txt, y: txt.y - 40, alpha: 0, duration: 900, onComplete: () => txt.destroy() });
             return;
         }
 
-        // 2. Otherwise, lock onto the closest incoming obstacle on screen and vaporize it with an Orbital Laser!
         const { width } = this.scale;
         let targetObs: Phaser.Physics.Arcade.Sprite | null = null;
         let minDist = 9999;
@@ -1236,42 +997,26 @@ export class Game extends Scene {
         if (targetObs) {
             const obs = targetObs as Phaser.Physics.Arcade.Sprite;
             const beam = this.add.graphics().setDepth(45);
-            beam.lineStyle(5, 0x22d3ee, 0.95);
+            beam.lineStyle(2, 0x38bdf8, 0.55);
             beam.beginPath();
-            beam.moveTo(dronePos.x + 12, dronePos.y);
-            beam.lineTo(obs.x, obs.y);
-            beam.strokePath();
-            beam.lineStyle(2, 0xffffff, 1);
-            beam.beginPath();
-            beam.moveTo(dronePos.x + 12, dronePos.y);
+            beam.moveTo(dronePos.x + 10, dronePos.y);
             beam.lineTo(obs.x, obs.y);
             beam.strokePath();
 
             this.tweens.add({
                 targets: beam,
                 alpha: 0,
-                duration: 240,
+                duration: 180,
                 onComplete: () => beam.destroy()
             });
 
             const bonus = Math.round(350 * this.scoreBonusMultiplier);
             this.score += bonus;
             this.scoreText.setText(this.score.toLocaleString());
-
-            const pop = this.add.text(obs.x, obs.y - 10, `🤖 드론 요격! +${bonus}`, {
-                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-                fontSize: '18px',
-                color: '#22d3ee',
-                stroke: '#0f172a',
-                strokeThickness: 3
-            }).setOrigin(0.5).setDepth(55);
-            this.tweens.add({ targets: pop, y: pop.y - 45, alpha: 0, duration: 650, onComplete: () => pop.destroy() });
-
             obs.destroy();
         }
     }
 
-    // Pattern 0: Gold Coin Sprint (🪙)
     private spawnCoinSprintWave(): number {
         const { width } = this.scale;
         for (let i = 0; i < 6; i++) {
@@ -1281,10 +1026,9 @@ export class Game extends Scene {
         return 1700;
     }
 
-    // Pattern 1: Jump Arc over obstacle
     private spawnJumpArcWave(): number {
         const { width } = this.scale;
-        const obstacleX = width + 240;
+        const obstacleX = width + 220;
 
         const tex = Phaser.Math.Between(0, 1) === 0 ? 'obstacle_error' : 'obstacle_bug';
         const obs = this.obstacles.create(obstacleX, this.groundY - 24, tex) as Phaser.Physics.Arcade.Sprite;
@@ -1297,8 +1041,8 @@ export class Game extends Scene {
         }
 
         const arcOffsets = [
-            { x: -160, y: -30 }, { x: -105, y: -65 }, { x: -50, y: -95 },
-            { x: 0, y: -105 }, { x: 50, y: -95 }, { x: 105, y: -65 }, { x: 160, y: -30 }
+            { x: -110, y: -55 }, { x: -55, y: -90 },
+            { x: 0, y: -100 }, { x: 55, y: -90 }, { x: 110, y: -55 }
         ];
 
         arcOffsets.forEach(pt => {
@@ -1306,13 +1050,12 @@ export class Game extends Scene {
             this.setupItemPhysics(j, 100, 'grass');
         });
 
-        return 2200;
+        return 1900;
     }
 
-    // Pattern 2: Slide Tunnel under conflict banner
     private spawnSlideTunnelWave(): number {
         const { width } = this.scale;
-        const barrierX = width + 220;
+        const barrierX = width + 200;
 
         const obs = this.obstacles.create(barrierX, this.groundY - 68, 'obstacle_conflict') as Phaser.Physics.Arcade.Sprite;
         obs.setDepth(15);
@@ -1323,21 +1066,19 @@ export class Game extends Scene {
             body.setSize(58, 22);
         }
 
-        for (let i = -110; i <= 110; i += 45) {
+        for (let i = -90; i <= 90; i += 45) {
             const j = this.jellies.create(barrierX + i, this.groundY - 18, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
             this.setupItemPhysics(j, 100, 'grass');
         }
 
-        return 2000;
+        return 1800;
     }
 
-    // Pattern 3: Floating Upper Platform with Gold Coins (2-tier aerial path!)
     private spawnFloatingPlatformWave(): number {
         const { width } = this.scale;
         const platX = width + 200;
         const platY = this.groundY - 95;
 
-        // Platform
         const plat = this.floatingPlatforms.create(platX, platY, 'platform_tex') as Phaser.Physics.Arcade.Sprite;
         plat.setDepth(12);
         const body = plat.body as Phaser.Physics.Arcade.Body;
@@ -1348,13 +1089,11 @@ export class Game extends Scene {
             body.setSize(160, 24);
         }
 
-        // Coins on top of platform
         for (let i = -60; i <= 60; i += 40) {
             const c = this.jellies.create(platX + i, platY - 32, 'item_coin') as Phaser.Physics.Arcade.Sprite;
             this.setupItemPhysics(c, 50, 'coin');
         }
 
-        // Ground obstacle underneath
         const obs = this.obstacles.create(platX, this.groundY - 24, 'obstacle_bug') as Phaser.Physics.Arcade.Sprite;
         obs.setDepth(15);
         const obody = obs.body as Phaser.Physics.Arcade.Body;
@@ -1363,10 +1102,9 @@ export class Game extends Scene {
             obody.setVelocityX(-this.currentSpeed);
         }
 
-        return 2200;
+        return 1900;
     }
 
-    // Pattern 4: Magnet Power-Up Item (🧲)
     private spawnMagnetPowerupWave(): number {
         const { width } = this.scale;
         const mag = this.items.create(width + 180, this.groundY - 55, 'item_magnet') as Phaser.Physics.Arcade.Sprite;
@@ -1378,19 +1116,17 @@ export class Game extends Scene {
         }
         mag.setData('type', 'magnet');
 
-        // Gold coin trail behind magnet
-        for (let i = 1; i <= 5; i++) {
+        for (let i = 1; i <= 4; i++) {
             const c = this.jellies.create(width + 180 + (i * 45), this.groundY - 32, 'item_coin') as Phaser.Physics.Arcade.Sprite;
             this.setupItemPhysics(c, 50, 'coin');
         }
 
-        return 1900;
+        return 1750;
     }
 
-    // Pattern 5: High Double Jump QR Code Phone
     private spawnDoubleJumpQrWave(): number {
         const { width } = this.scale;
-        const centerX = width + 250;
+        const centerX = width + 220;
 
         const obs = this.obstacles.create(centerX, this.groundY - 24, 'obstacle_bug') as Phaser.Physics.Arcade.Sprite;
         obs.setDepth(15);
@@ -1404,19 +1140,12 @@ export class Game extends Scene {
         const qr = this.jellies.create(centerX, this.groundY - 145, 'jelly_qr') as Phaser.Physics.Arcade.Sprite;
         this.setupItemPhysics(qr, 300, 'qr');
 
-        const guides = [{ x: -130, y: -40 }, { x: -70, y: -90 }, { x: 70, y: -90 }, { x: 130, y: -40 }];
-        guides.forEach(g => {
-            const j = this.jellies.create(centerX + g.x, this.groundY + g.y, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
-            this.setupItemPhysics(j, 100, 'grass');
-        });
-
-        return 2200;
+        return 1900;
     }
 
-    // Pattern 6: Coffee break & Health refill
     private spawnCoffeeRestWave(): number {
         const { width } = this.scale;
-        const coffeeX = width + 200;
+        const coffeeX = width + 180;
 
         const coffee = this.items.create(coffeeX, this.groundY - 60, 'item_coffee') as Phaser.Physics.Arcade.Sprite;
         coffee.setDepth(16);
@@ -1427,21 +1156,14 @@ export class Game extends Scene {
         }
         coffee.setData('type', 'coffee');
 
-        [-80, -40, 40, 80].forEach(ox => {
-            const j = this.jellies.create(coffeeX + ox, this.groundY - 32, 'jelly_grass') as Phaser.Physics.Arcade.Sprite;
-            this.setupItemPhysics(j, 100, 'grass');
-        });
-
         return 1400;
     }
 
-    // Pattern 7: Jump -> Immediate Fast-Fall Slide Combo
     private spawnJumpSlideComboWave(): number {
         const { width } = this.scale;
         const firstX = width + 100;
-        const gap = Math.max(230, Math.round(this.currentSpeed * 0.46));
+        const gap = Math.max(220, Math.round(this.currentSpeed * 0.48));
 
-        // 1st: Ground Obstacle (Requires Jump)
         const obs1 = this.obstacles.create(firstX, this.groundY - 24, 'obstacle_error') as Phaser.Physics.Arcade.Sprite;
         obs1.setDepth(15);
         const b1 = obs1.body as Phaser.Physics.Arcade.Body;
@@ -1451,7 +1173,6 @@ export class Game extends Scene {
             b1.setSize(38, 38);
         }
 
-        // 2nd: Immediate Low Aerial Banner (Requires Fast-Fall + Slide!)
         const obs2 = this.obstacles.create(firstX + gap, this.groundY - 68, 'obstacle_conflict') as Phaser.Physics.Arcade.Sprite;
         obs2.setDepth(15);
         const b2 = obs2.body as Phaser.Physics.Arcade.Body;
@@ -1461,20 +1182,18 @@ export class Game extends Scene {
             b2.setSize(58, 22);
         }
 
-        // Guide coins showing the jump -> dive-slide trajectory
         const c1 = this.jellies.create(firstX, this.groundY - 95, 'item_coin') as Phaser.Physics.Arcade.Sprite;
         this.setupItemPhysics(c1, 50, 'coin');
         const c2 = this.jellies.create(firstX + gap, this.groundY - 18, 'item_coin') as Phaser.Physics.Arcade.Sprite;
         this.setupItemPhysics(c2, 50, 'coin');
 
-        return 1500;
+        return 1450;
     }
 
-    // Pattern 8: Double Ground Hurdles + High Speed Aerial Bug
     private spawnDoubleObstacleWave(): number {
         const { width } = this.scale;
         const startX = width + 90;
-        const spacing = Math.max(250, Math.round(this.currentSpeed * 0.5));
+        const spacing = Math.max(230, Math.round(this.currentSpeed * 0.52));
 
         [0, spacing].forEach((offset, idx) => {
             const tex = idx === 0 ? 'obstacle_bug' : 'obstacle_error';
@@ -1488,38 +1207,34 @@ export class Game extends Scene {
             }
         });
 
-        // High obstacle between them if stage >= 3 or infinite
         if (this.currentStageId >= 3 || this.gameMode === 'infinite') {
             const highBug = this.obstacles.create(startX + spacing / 2, this.groundY - 135, 'obstacle_bug') as Phaser.Physics.Arcade.Sprite;
-            highBug.setDepth(15).setTint(0xf43f5e);
+            highBug.setDepth(15);
             const hbody = highBug.body as Phaser.Physics.Arcade.Body;
             if (hbody) {
                 hbody.setAllowGravity(false);
-                hbody.setVelocityX(-this.currentSpeed * 1.12);
+                hbody.setVelocityX(-this.currentSpeed * 1.08);
                 hbody.setSize(34, 32);
             }
         }
 
-        return 1550;
+        return 1500;
     }
 
-    // Pattern 9: High-Speed Flying Bug Missile + Ground Trap
     private spawnFlyingBugSwarmWave(): number {
         const { width } = this.scale;
         const startX = width + 100;
 
-        // Fast-moving head-height bug (Must Slide under or Double-Jump over!)
         const flyBug = this.obstacles.create(startX, this.groundY - 64, 'obstacle_bug') as Phaser.Physics.Arcade.Sprite;
-        flyBug.setDepth(16).setTint(0xff6b6b);
+        flyBug.setDepth(16);
         const fbody = flyBug.body as Phaser.Physics.Arcade.Body;
         if (fbody) {
             fbody.setAllowGravity(false);
-            fbody.setVelocityX(-this.currentSpeed * 1.22);
+            fbody.setVelocityX(-this.currentSpeed * 1.15);
             fbody.setSize(36, 32);
         }
 
-        // Ground obstacle following behind
-        const groundObs = this.obstacles.create(startX + 270, this.groundY - 24, 'obstacle_error') as Phaser.Physics.Arcade.Sprite;
+        const groundObs = this.obstacles.create(startX + 250, this.groundY - 24, 'obstacle_error') as Phaser.Physics.Arcade.Sprite;
         groundObs.setDepth(15);
         const gbody = groundObs.body as Phaser.Physics.Arcade.Body;
         if (gbody) {
@@ -1555,7 +1270,6 @@ export class Game extends Scene {
     private createHUD() {
         const { width } = this.scale;
 
-        // Top Left: HP Bar & Stage Badge
         const barX = 30;
         const barY = 32;
 
@@ -1580,14 +1294,12 @@ export class Game extends Scene {
         this.hpBarFill = this.add.graphics().setDepth(50);
         this.renderHpBar();
 
-        // Magnet Power-up timer text under HP bar
-        this.magnetHudText = this.add.text(barX, barY + 26, '🧲 MAGNET: 6.0s', {
+        this.magnetHudText = this.add.text(barX, barY + 26, 'MAGNET: 6.0s', {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '13px',
             color: '#38bdf8'
         }).setDepth(50).setVisible(false);
 
-        // S-S-A-F-Y Alphabet Bonus Tracker & Hyper Dash Button (Arcade/Ultimate Edition)
         if (UpgradeManager.isArcadeDashEnabled()) {
             const letters = ['S', 'S', 'A', 'F', 'Y'];
             this.letterHudTexts = [];
@@ -1608,10 +1320,10 @@ export class Game extends Scene {
                 this.letterHudTexts.push(lTxt);
             });
 
-            this.dashHudText = this.add.text(barX, barY + 84, '⚡ [Shift / 클릭] HYPER DASH 준비완료!', {
+            this.dashHudText = this.add.text(barX, barY + 84, 'DASH [Shift] 준비완료', {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '13px',
-                color: '#22d3ee',
+                color: '#38bdf8',
                 backgroundColor: 'rgba(15, 23, 42, 0.85)',
                 padding: { x: 8, y: 4 }
             }).setDepth(55).setInteractive({ useHandCursor: true });
@@ -1621,51 +1333,49 @@ export class Game extends Scene {
             });
         }
 
-        // Top Center: Distance & Coins & Fever (or Stage Goal Progress in Stage Mode)
         if (this.gameMode === 'stage') {
-            this.stageGoalText = this.add.text(width / 2, 20, `🚩 STAGE ${this.currentStageId} : 0m / ${this.targetDistance}m`, {
+            this.stageGoalText = this.add.text(width / 2, 20, `STAGE ${this.currentStageId} : 0m / ${this.targetDistance}m`, {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '16px',
-                color: '#38bdf8'
+                color: '#e2e8f0'
             }).setOrigin(0.5, 0).setDepth(50);
 
             this.stageProgressBar = this.add.graphics().setDepth(50);
             this.renderStageProgressBar();
 
-            this.coinText = this.add.text(width / 2 + 155, 20, '🪙 0', {
+            this.coinText = this.add.text(width / 2 + 155, 20, '0 G', {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '18px',
-                color: '#facc15'
+                color: '#eab308'
             }).setOrigin(0, 0).setDepth(50);
 
             this.distanceText = this.add.text(0, 0, '', {}).setVisible(false);
         } else {
-            this.distanceText = this.add.text(width / 2 - 50, 24, '📍 0m', {
+            this.distanceText = this.add.text(width / 2 - 50, 24, '0m', {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '20px',
-                color: '#38bdf8'
+                color: '#e2e8f0'
             }).setOrigin(0.5, 0).setDepth(50);
 
-            this.coinText = this.add.text(width / 2 + 55, 24, '🪙 0', {
+            this.coinText = this.add.text(width / 2 + 55, 24, '0 G', {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '20px',
-                color: '#facc15'
+                color: '#eab308'
             }).setOrigin(0.5, 0).setDepth(50);
         }
 
-        this.feverText = this.add.text(width / 2, 54, '🔥 FEVER TIME! DOUBLE POINTS 🔥', {
+        this.feverText = this.add.text(width / 2, 54, 'FEVER TIME (점수 2배)', {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '15px',
-            color: '#facc15'
+            fontSize: '14px',
+            color: '#eab308'
         }).setOrigin(0.5, 0).setDepth(50).setVisible(false);
 
         this.feverBar = this.add.graphics().setDepth(50).setVisible(false);
 
-        // Top Right: Score, Best, Combo, [◀ 메인] Button & [❚❚] Pause Button
         this.scoreText = this.add.text(width - 190, 18, '0', {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '30px',
-            color: '#ffffff'
+            fontSize: '28px',
+            color: '#f8fafc'
         }).setOrigin(1, 0).setDepth(50);
 
         this.add.text(width - 190, 52, `BEST: ${this.highScore.toLocaleString()}`, {
@@ -1676,8 +1386,8 @@ export class Game extends Scene {
 
         this.comboText = this.add.text(width - 190, 74, '', {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '15px',
-            color: '#f97316'
+            fontSize: '14px',
+            color: '#94a3b8'
         }).setOrigin(1, 0).setDepth(50);
 
         // Direct Exit to Main Menu Button
@@ -1709,7 +1419,7 @@ export class Game extends Scene {
 
         const pauseIcon = this.add.text(0, 0, '❚❚', {
             fontFamily: 'Arial Black',
-            fontSize: '15px',
+            fontSize: '14px',
             color: '#38bdf8'
         }).setOrigin(0.5);
 
@@ -1725,7 +1435,6 @@ export class Game extends Scene {
         let barColor = 0x22c55e;
         if (hpRatio < 0.28) {
             barColor = 0xef4444;
-            if (Math.floor(Date.now() / 250) % 2 === 0) barColor = 0xb91c1c;
         } else if (hpRatio < 0.6) {
             barColor = 0xf59e0b;
         }
@@ -1751,7 +1460,7 @@ export class Game extends Scene {
         this.feverBar.fillStyle(0x0f172a, 0.8);
         this.feverBar.fillRoundedRect(bx, by, barW, barH, 3);
 
-        this.feverBar.fillStyle(0xfacc15, 1);
+        this.feverBar.fillStyle(0xeab308, 1);
         this.feverBar.fillRoundedRect(bx, by, barW * ratio, barH, 3);
     }
 
@@ -1763,8 +1472,6 @@ export class Game extends Scene {
 
         this.feverText.setVisible(true);
         this.feverBar.setVisible(true);
-
-        this.cameras.main.flash(200, 255, 230, 100);
     }
 
     private endFeverMode() {
@@ -1775,7 +1482,7 @@ export class Game extends Scene {
     }
 
     private collectJelly(jelly: Phaser.Physics.Arcade.Sprite) {
-        let points = jelly.getData('points') || 100;
+        const points = jelly.getData('points') || 100;
         const type = jelly.getData('type') || 'grass';
 
         this.combo++;
@@ -1805,36 +1512,9 @@ export class Game extends Scene {
         this.scoreText.setText(this.score.toLocaleString());
 
         if (this.combo >= 3) {
-            this.comboText.setText(`🔥 ${this.combo} COMBO! (x${multiplier})`);
-            this.comboText.setScale(1.2);
-            this.tweens.add({ targets: this.comboText, scale: 1.0, duration: 150 });
+            this.comboText.setText(`${this.combo} COMBO (x${multiplier})`);
         } else {
             this.comboText.setText('');
-        }
-
-        const floatColor = type === 'coin' ? '#facc15' : type === 'qr' ? '#38bdf8' : this.isFeverActive ? '#facc15' : '#4ade80';
-        const floatText = this.add.text(jelly.x, jelly.y, `+${totalEarned}`, {
-            fontFamily: 'Arial Black',
-            fontSize: '18px',
-            color: floatColor
-        }).setDepth(30);
-
-        this.tweens.add({
-            targets: floatText,
-            y: floatText.y - 45,
-            alpha: 0,
-            duration: 500,
-            onComplete: () => floatText.destroy()
-        });
-
-        if (this.textures.exists('particle_sparkle')) {
-            const sparkles = this.add.particles(jelly.x, jelly.y, 'particle_sparkle', {
-                speed: { min: 30, max: 80 },
-                scale: { start: 0.8, end: 0 },
-                lifespan: 250,
-                quantity: 4
-            });
-            this.time.delayedCall(250, () => sparkles.destroy());
         }
 
         jelly.destroy();
@@ -1844,57 +1524,27 @@ export class Game extends Scene {
         const type = item.getData('type');
 
         if (type === 'magnet') {
-            // Temporary 6.5s magnet power-up!
             this.player.activateMagnet(6.5);
-            const floatText = this.add.text(item.x, item.y, '🧲 MAGNET ON!', {
-                fontFamily: 'Arial Black',
-                fontSize: '22px',
-                color: '#38bdf8'
-            }).setDepth(30);
-            this.tweens.add({ targets: floatText, y: floatText.y - 50, alpha: 0, duration: 600, onComplete: () => floatText.destroy() });
         } else if (type === 'coffee') {
             this.coffeeCount++;
             this.currentHp = Math.min(this.maxHp, this.currentHp + 25);
             this.renderHpBar();
             this.audioManager.playCoffee();
-
-            const floatText = this.add.text(item.x, item.y, '+25 HP 회복!', {
-                fontFamily: 'Arial Black',
-                fontSize: '20px',
-                color: '#38bdf8'
-            }).setDepth(30);
-            this.tweens.add({ targets: floatText, y: floatText.y - 50, alpha: 0, duration: 600, onComplete: () => floatText.destroy() });
         } else if (type === 'fever') {
             this.startFeverMode();
-            const floatText = this.add.text(item.x, item.y, '⚡ FEVER BOOST!!', {
-                fontFamily: 'Arial Black',
-                fontSize: '22px',
-                color: '#facc15'
-            }).setDepth(30);
-            this.tweens.add({ targets: floatText, y: floatText.y - 50, alpha: 0, duration: 600, onComplete: () => floatText.destroy() });
         } else if (type === 'letter') {
             const idx = item.getData('letterIndex') ?? 0;
             this.collectedLetters[idx] = true;
             this.audioManager.playQr();
             if (this.letterHudTexts[idx]) {
-                this.letterHudTexts[idx].setColor('#facc15');
-                this.letterHudTexts[idx].setScale(1.35);
-                this.tweens.add({ targets: this.letterHudTexts[idx], scale: 1.0, duration: 220 });
+                this.letterHudTexts[idx].setColor('#eab308');
             }
             const letterBonus = Math.round(300 * this.scoreBonusMultiplier);
             this.score += letterBonus;
             this.scoreText.setText(this.score.toLocaleString());
 
-            // Check if all 5 S-S-A-F-Y letters are collected!
             if (this.collectedLetters.every(v => v)) {
                 this.triggerSsafyBonusTime();
-            } else {
-                const floatText = this.add.text(item.x, item.y, `🔤 알파벳 획득! +${letterBonus}`, {
-                    fontFamily: 'Arial Black',
-                    fontSize: '18px',
-                    color: '#facc15'
-                }).setDepth(30);
-                this.tweens.add({ targets: floatText, y: floatText.y - 45, alpha: 0, duration: 550, onComplete: () => floatText.destroy() });
             }
         }
 
@@ -1914,44 +1564,6 @@ export class Game extends Scene {
         this.renderHpBar();
         this.scoreText.setText(this.score.toLocaleString());
         this.startFeverMode();
-
-        const { width, height } = this.scale;
-        const banner = this.add.container(width / 2, height / 2 - 70).setDepth(180);
-        const bg = this.add.graphics();
-        bg.fillStyle(0x090d16, 0.95);
-        bg.lineStyle(3, 0xfacc15);
-        bg.fillRoundedRect(-290, -45, 580, 90, 18);
-        bg.strokeRoundedRect(-290, -45, 580, 90, 18);
-
-        const title = this.add.text(0, -12, '🌈 S·S·A·F·Y HYPER BONUS TIME! 🌈', {
-            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '24px',
-            color: '#facc15'
-        }).setOrigin(0.5);
-        const sub = this.add.text(0, 18, `+${bonusScore.toLocaleString()}점 · 🪙 +25 코인 · ❤️ +35 HP · 🛡️ 쉴드 충전!`, {
-            fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '16px',
-            color: '#22d3ee'
-        }).setOrigin(0.5);
-
-        banner.add([bg, title, sub]);
-        banner.setScale(0);
-        this.tweens.add({
-            targets: banner,
-            scale: 1,
-            duration: 320,
-            ease: 'Back.easeOut',
-            onComplete: () => {
-                this.time.delayedCall(1800, () => {
-                    this.tweens.add({
-                        targets: banner,
-                        alpha: 0,
-                        duration: 280,
-                        onComplete: () => banner.destroy()
-                    });
-                });
-            }
-        });
     }
 
     private handleHitObstacle(obs: Phaser.Physics.Arcade.Sprite) {
@@ -1959,31 +1571,12 @@ export class Game extends Scene {
             const smashBonus = Math.round(500 * this.scoreBonusMultiplier);
             this.score += smashBonus;
             this.scoreText.setText(this.score.toLocaleString());
-
-            const floatText = this.add.text(obs.x, obs.y, `⚡ +${smashBonus} 격파!`, {
-                fontFamily: 'Arial Black',
-                fontSize: '20px',
-                color: '#facc15'
-            }).setDepth(30);
-            this.tweens.add({ targets: floatText, y: floatText.y - 40, alpha: 0, duration: 500, onComplete: () => floatText.destroy() });
-
-            this.cameras.main.shake(80, 0.01);
             obs.destroy();
             return;
         }
 
-        // Hexagonal Plasma Shield Protection (Blocks 1 Hit & Preserves Combo!)
         if (this.player.hasShield) {
             this.player.breakShield();
-            this.cameras.main.flash(200, 34, 211, 238);
-            const shieldText = this.add.text(this.player.x, this.player.y - 60, '🛡️ SHIELD GUARD! (방어 성공)', {
-                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-                fontSize: '19px',
-                color: '#22d3ee',
-                stroke: '#0f172a',
-                strokeThickness: 4
-            }).setOrigin(0.5).setDepth(60);
-            this.tweens.add({ targets: shieldText, y: shieldText.y - 45, alpha: 0, duration: 750, onComplete: () => shieldText.destroy() });
             obs.destroy();
             return;
         }
@@ -1991,20 +1584,17 @@ export class Game extends Scene {
         const hitSuccess = this.player.hit();
         if (!hitSuccess) return;
 
-        // Cleanly dissipate the obstacle so it never pushes the player off-screen
         obs.disableBody(true, false);
         this.tweens.add({
             targets: obs,
             alpha: 0,
-            y: obs.y - 20,
-            duration: 220,
+            duration: 180,
             onComplete: () => obs.destroy()
         });
 
-        this.currentHp -= 20;
+        this.currentHp -= 32;
         this.combo = 0;
         this.comboText.setText('');
-        this.cameras.main.shake(120, 0.015);
 
         if (this.currentHp <= 0) {
             this.currentHp = 0;
@@ -2036,15 +1626,15 @@ export class Game extends Scene {
         this.pauseContainer.add(dim);
 
         const panel = this.add.graphics();
-        panel.fillStyle(0x0f172a, 0.95);
+        panel.fillStyle(0x0f172a, 0.96);
         panel.lineStyle(2, 0x38bdf8);
         panel.fillRoundedRect(width / 2 - 160, height / 2 - 140, 320, 280, 16);
         panel.strokeRoundedRect(width / 2 - 160, height / 2 - 140, 320, 280, 16);
         this.pauseContainer.add(panel);
 
-        const title = this.add.text(width / 2, height / 2 - 95, '⏸ 일시 정지', {
-            fontFamily: 'Arial Black',
-            fontSize: '28px',
+        const title = this.add.text(width / 2, height / 2 - 95, '일시 정지', {
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+            fontSize: '26px',
             color: '#38bdf8'
         }).setOrigin(0.5);
         this.pauseContainer.add(title);
@@ -2058,7 +1648,7 @@ export class Game extends Scene {
             this.scene.restart();
         });
 
-        const menuBtn = this.createPauseBtn(width / 2, height / 2 + 85, '메인 메뉴 (MENU)', () => {
+        const menuBtn = this.createPauseBtn(width / 2, height / 2 + 85, '메인 화면 (MAIN)', () => {
             this.pauseContainer?.destroy();
             this.audioManager.stopBgm();
             this.scene.start('MainMenu');
@@ -2114,11 +1704,10 @@ export class Game extends Scene {
         });
     }
 
-    // --- Stage Mode (1~30) Logic ---
     private updateStageProgressHUD() {
         if (!this.stageGoalText || this.targetDistance <= 0) return;
         const currentM = Math.min(this.targetDistance, Math.floor(this.distance));
-        this.stageGoalText.setText(`🚩 STAGE ${this.currentStageId} : ${currentM}m / ${this.targetDistance}m`);
+        this.stageGoalText.setText(`STAGE ${this.currentStageId} : ${currentM}m / ${this.targetDistance}m`);
         this.renderStageProgressBar();
     }
 
@@ -2132,11 +1721,9 @@ export class Game extends Scene {
         const bx = width / 2 - barW / 2;
         const by = 48;
 
-        // Background
         this.stageProgressBar.fillStyle(0x0f172a, 0.85);
         this.stageProgressBar.fillRoundedRect(bx, by, barW, barH, 4);
 
-        // Progress fill
         const ratio = Math.min(1, Math.max(0, this.distance / this.targetDistance));
         this.stageProgressBar.fillStyle(0x38bdf8, 1);
         if (ratio > 0) {
@@ -2166,33 +1753,17 @@ export class Game extends Scene {
         this.isStageCleared = true;
 
         this.audioManager.playStageClear();
-        this.cameras.main.flash(350, 74, 222, 128);
 
-        // Calculate Star Rating
         let stars = 1;
         if (this.currentHp >= 75) stars = 3;
         else if (this.currentHp >= 40) stars = 2;
 
-        // Save progress & unlock next stage
         StageManager.saveStageProgress(this.currentStageId, stars, this.score);
         SkinManager.addCoins(this.coinsCollected);
 
-        // Stop physics
         this.physics.pause();
         this.audioManager.stopBgm();
 
-        // Confetti explosion
-        if (this.textures.exists('particle_sparkle')) {
-            const confetti = this.add.particles(this.scale.width / 2, this.scale.height / 2 - 50, 'particle_sparkle', {
-                speed: { min: 100, max: 320 },
-                scale: { start: 1.2, end: 0 },
-                quantity: 40,
-                lifespan: 1200
-            });
-            this.time.delayedCall(1200, () => confetti.destroy());
-        }
-
-        // Show Stage Clear Modal
         this.showStageClearModal(stars);
     }
 
@@ -2206,35 +1777,33 @@ export class Game extends Scene {
         this.stageClearContainer.add(dim);
 
         const cardW = 540;
-        const cardH = 440;
+        const cardH = 420;
         const panel = this.add.graphics();
         panel.fillStyle(0x0f172a, 0.98);
-        panel.lineStyle(3, 0xfacc15);
-        panel.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 20);
-        panel.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 20);
+        panel.lineStyle(2, 0x38bdf8);
+        panel.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 18);
+        panel.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 18);
         this.stageClearContainer.add(panel);
 
-        const title = this.add.text(0, -cardH / 2 + 50, `🏆 STAGE ${this.currentStageId} CLEAR!`, {
-            fontFamily: '"Black Han Sans", "Permanent Marker", sans-serif',
-            fontSize: '32px',
-            color: '#facc15',
-            stroke: '#0f172a',
-            strokeThickness: 6
+        const title = this.add.text(0, -cardH / 2 + 50, `STAGE ${this.currentStageId} CLEAR`, {
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+            fontSize: '30px',
+            color: '#facc15'
         }).setOrigin(0.5);
 
-        const subtitle = this.add.text(0, -cardH / 2 + 92, this.currentStageConfig ? this.currentStageConfig.title : 'SSAFY 알고리즘 과제 완주!', {
+        const subtitle = this.add.text(0, -cardH / 2 + 92, this.currentStageConfig ? this.currentStageConfig.title : 'SSAFY 과제 완주', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '17px',
             color: '#38bdf8'
         }).setOrigin(0.5);
 
-        // Animated Stars
-        const starsText = stars === 3 ? '⭐⭐⭐' : stars === 2 ? '⭐⭐☆' : '⭐☆☆';
+        const starsText = stars === 3 ? '★ ★ ★' : stars === 2 ? '★ ★ ☆' : '★ ☆ ☆';
         const starsLabel = this.add.text(0, -cardH / 2 + 145, starsText, {
-            fontSize: '44px'
+            fontFamily: 'Arial Black',
+            fontSize: '36px',
+            color: '#eab308'
         }).setOrigin(0.5);
 
-        // Stats Box
         const statsBox = this.add.graphics();
         statsBox.fillStyle(0x1e293b, 0.85);
         statsBox.lineStyle(1, 0x475569);
@@ -2248,7 +1817,7 @@ export class Game extends Scene {
             color: '#4ade80'
         }).setOrigin(0.5);
 
-        const coinStat = this.add.text(105, 8, `획득 코인: 🪙 +${this.coinsCollected}`, {
+        const coinStat = this.add.text(105, 8, `획득 골드: +${this.coinsCollected} G`, {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '16px',
             color: '#fde047'
@@ -2262,7 +1831,6 @@ export class Game extends Scene {
 
         this.stageClearContainer.add([title, subtitle, starsLabel, hpStat, coinStat, scoreStat]);
 
-        // Action Buttons
         const btnY = cardH / 2 - 50;
 
         if (this.currentStageId < 30) {

@@ -23,16 +23,16 @@ export class MainMenu extends Scene {
         const { width, height } = this.scale;
         this.modalContainer = undefined;
 
-        // 1. Cyber City Background
+        // 1. Calm Eye-Comfort Dark Slate Background
         const bg = this.add.graphics();
-        bg.fillGradientStyle(0x070b14, 0x070b14, 0x131b31, 0x1e1b4b, 1);
+        bg.fillGradientStyle(0x0b1120, 0x0b1120, 0x111827, 0x111827, 1);
         bg.fillRect(0, 0, width, height);
 
         if (this.textures.exists('bg_s1_far')) {
-            this.add.image(width / 2, height - 260, 'bg_s1_far').setAlpha(0.45);
+            this.add.image(width / 2, height - 260, 'bg_s1_far').setAlpha(0.25);
         }
         if (this.textures.exists('bg_s1_near')) {
-            this.add.image(width / 2, height - 170, 'bg_s1_near').setAlpha(0.65);
+            this.add.image(width / 2, height - 170, 'bg_s1_near').setAlpha(0.32);
         }
 
         // Ground
@@ -40,60 +40,27 @@ export class MainMenu extends Scene {
             this.add.image(x, height - 30, 'ground_s1').setOrigin(0, 0.5);
         }
 
-        // Subtle Ambient Particles
-        if (this.textures.exists('particle_sparkle')) {
-            this.add.particles(0, 0, 'particle_sparkle', {
-                x: { min: 0, max: width },
-                y: { min: 60, max: height - 80 },
-                speedY: { min: -22, max: -8 },
-                speedX: { min: -8, max: 8 },
-                scale: { start: 0.4, end: 0 },
-                alpha: { start: 0.3, end: 0 },
-                lifespan: 3000,
-                frequency: 250,
-                quantity: 1
-            });
-        }
-
-        // 2. Runner Character & Companion Drone
+        // 2. Static Runner Character & Companion Drone (No bobbing or restless movement in lobby)
         this.createOrUpdateRunner();
         if (this.textures.exists('companion_drone')) {
-            const drone = this.add.image(210, height - 125, 'companion_drone').setScale(1.05);
-            this.tweens.add({
-                targets: drone,
-                y: height - 136,
-                duration: 900,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
+            this.add.image(210, height - 125, 'companion_drone').setAlpha(0.75);
         }
 
-        // 3. Left Section: Title & Main Navigation
+        // 3. Left Section: Clean Static Title & Main Navigation
         const leftX = 360;
 
-        const title = this.add.text(leftX, 118, 'SSAFY RUN', {
+        this.add.text(leftX, 118, 'SSAFY RUN', {
             fontFamily: '"Black Han Sans", sans-serif',
-            fontSize: '68px',
+            fontSize: '64px',
             color: '#38bdf8',
             stroke: '#0f172a',
-            strokeThickness: 9,
-            shadow: { offsetX: 4, offsetY: 6, color: '#0284c7', blur: 12, fill: true }
+            strokeThickness: 6
         }).setOrigin(0.5);
 
-        this.tweens.add({
-            targets: title,
-            y: 112,
-            duration: 1200,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-
-        this.add.text(leftX, 180, '9시 입실 마감 전까지 멀캠으로 돌파하라!', {
+        this.add.text(leftX, 178, '9시 입실 마감 전까지 멀캠으로 돌파하라', {
             fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '20px',
-            color: '#facc15'
+            fontSize: '19px',
+            color: '#e2e8f0'
         }).setOrigin(0.5);
 
         // High Score & Coin Balance Pill
@@ -103,7 +70,7 @@ export class MainMenu extends Scene {
         const badgeContainer = this.add.container(leftX, 232);
         const badgeBg = this.add.graphics();
         badgeBg.fillStyle(0x0f172a, 0.9);
-        badgeBg.lineStyle(2, 0xeab308);
+        badgeBg.lineStyle(1.5, 0x475569);
         badgeBg.fillRoundedRect(-165, -18, 330, 36, 18);
         badgeBg.strokeRoundedRect(-165, -18, 330, 36, 18);
         badgeContainer.add(badgeBg);
@@ -111,13 +78,13 @@ export class MainMenu extends Scene {
         const scoreText = this.add.text(-42, 0, `최고 기록: ${highScore.toLocaleString()}점`, {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '14px',
-            color: '#facc15'
+            color: '#cbd5e1'
         }).setOrigin(0.5);
 
         this.coinBadgeText = this.add.text(92, 0, `${coins.toLocaleString()} G`, {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '14px',
-            color: '#fde047'
+            color: '#eab308'
         }).setOrigin(0.5);
 
         badgeContainer.add([scoreText, this.coinBadgeText]);
@@ -144,19 +111,11 @@ export class MainMenu extends Scene {
             this.showHowToPlayModal();
         }, 98, 44, '15px');
 
-        const prompt = this.add.text(leftX, 482, '[Space] 무한 런 즉시 시작   ·   [Shift] 인게임 대시', {
+        this.add.text(leftX, 482, '[Space] 무한 런 시작   ·   [Shift] 인게임 대시', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '15px',
             color: '#94a3b8'
         }).setOrigin(0.5);
-
-        this.tweens.add({
-            targets: prompt,
-            alpha: 0.35,
-            duration: 850,
-            yoyo: true,
-            repeat: -1
-        });
 
         // 4. Right Section: Live Leaderboard Widget
         this.createLiveLeaderboardWidget(width - 360, 95);
@@ -196,29 +155,13 @@ export class MainMenu extends Scene {
     private createOrUpdateRunner() {
         const { height } = this.scale;
         const skinId = SkinManager.getEquippedSkin();
-        const animKey = `menu_run_${skinId}`;
-
-        if (!this.anims.exists(animKey)) {
-            this.anims.create({
-                key: animKey,
-                frames: [
-                    { key: `player_${skinId}_run_1` },
-                    { key: `player_${skinId}_run_2` },
-                    { key: `player_${skinId}_run_3` },
-                    { key: `player_${skinId}_run_4` }
-                ],
-                frameRate: 10,
-                repeat: -1
-            });
-        }
 
         if (this.runnerSprite) {
-            this.runnerSprite.play(animKey);
+            this.runnerSprite.setTexture(`player_${skinId}_run_1`);
         } else {
             this.runnerSprite = this.add.sprite(260, height - 55, `player_${skinId}_run_1`)
                 .setOrigin(0.5, 1)
-                .setScale(1.3);
-            this.runnerSprite.play(animKey);
+                .setScale(1.25);
         }
     }
 
@@ -230,28 +173,28 @@ export class MainMenu extends Scene {
 
         const bg = this.add.graphics();
         bg.fillStyle(0x0f172a, 0.95);
-        bg.lineStyle(2.5, 0x38bdf8, 0.9);
+        bg.lineStyle(2, 0x334155, 0.9);
         bg.fillRoundedRect(0, 0, boardW, boardH, 16);
         bg.strokeRoundedRect(0, 0, boardW, boardH, 16);
         this.liveRankContainer.add(bg);
 
         const header = this.add.text(boardW / 2, 30, '전국 명예의 전당', {
             fontFamily: '"Black Han Sans", sans-serif',
-            fontSize: '23px',
-            color: '#facc15'
+            fontSize: '22px',
+            color: '#e2e8f0'
         }).setOrigin(0.5);
 
         const subheader = this.add.text(boardW / 2, 54, '실시간 랭킹 동기화 중...', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '13px',
-            color: '#38bdf8'
+            color: '#94a3b8'
         }).setOrigin(0.5);
 
         this.liveRankContainer.add([header, subheader]);
 
         const result = await ScoreManager.fetchLeaderboard();
         subheader.setText(result.isOnline ? 'Firebase 실시간 랭킹 연동됨' : '로컬 랭킹 모드');
-        subheader.setColor(result.isOnline ? '#4ade80' : '#facc15');
+        subheader.setColor(result.isOnline ? '#4ade80' : '#94a3b8');
 
         const list = result.list.slice(0, 5);
         list.forEach((item, idx) => {
@@ -259,8 +202,8 @@ export class MainMenu extends Scene {
             const rankLabel = `${idx + 1}위.`;
 
             const rowBg = this.add.graphics();
-            rowBg.fillStyle(idx === 0 ? 0x854d0e : 0x1e293b, idx === 0 ? 0.75 : 0.6);
-            rowBg.lineStyle(1, idx === 0 ? 0xfacc15 : 0x334155, 0.8);
+            rowBg.fillStyle(0x1e293b, 0.7);
+            rowBg.lineStyle(1, idx === 0 ? 0xeab308 : 0x334155, 0.8);
             rowBg.fillRoundedRect(16, rowY, boardW - 32, 50, 8);
             rowBg.strokeRoundedRect(16, rowY, boardW - 32, 50, 8);
             this.liveRankContainer!.add(rowBg);
@@ -269,13 +212,13 @@ export class MainMenu extends Scene {
             const nameText = this.add.text(28, rowY + 16, `${rankLabel} ${item.name}`, {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '15px',
-                color: idx === 0 ? '#fef08a' : '#ffffff'
+                color: idx === 0 ? '#fde047' : '#f8fafc'
             }).setOrigin(0, 0.5);
 
             const detailText = this.add.text(28, rowY + 36, `${stageBadge} ${item.distance}m (${item.date})`, {
                 fontFamily: '"Do Hyeon", sans-serif',
                 fontSize: '12px',
-                color: '#facc15'
+                color: '#94a3b8'
             }).setOrigin(0, 0.5);
 
             const scoreText = this.add.text(boardW - 28, rowY + 25, `${item.score.toLocaleString()}점`, {
@@ -318,25 +261,24 @@ export class MainMenu extends Scene {
         const px = (width - panelW) / 2;
         const py = (height - panelH) / 2;
 
-        // Block clicks inside the panel from closing the modal
         const panelBlocker = this.add.zone(width / 2, height / 2, panelW, panelH).setOrigin(0.5).setInteractive();
         const panel = this.add.graphics();
-        panel.fillStyle(0x090d16, 0.98);
-        panel.lineStyle(3, 0x22d3ee);
+        panel.fillStyle(0x0f172a, 0.98);
+        panel.lineStyle(2, 0x38bdf8);
         panel.fillRoundedRect(px, py, panelW, panelH, 18);
         panel.strokeRoundedRect(px, py, panelW, panelH, 18);
         this.modalContainer.add([panelBlocker, panel]);
 
         const title = this.add.text(width / 2, py + 36, '스펙 강화 연구소 (TECH LAB)', {
             fontFamily: '"Black Han Sans", sans-serif',
-            fontSize: '28px',
-            color: '#22d3ee'
+            fontSize: '26px',
+            color: '#38bdf8'
         }).setOrigin(0.5);
 
         const subText = this.add.text(width / 2, py + 68, `보유 코인: ${SkinManager.getCoins().toLocaleString()} G   |   강화 능력치는 모든 스테이지에 영구 적용됩니다`, {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '15px',
-            color: '#facc15'
+            color: '#cbd5e1'
         }).setOrigin(0.5);
 
         this.modalContainer.add([title, subText]);
@@ -346,8 +288,8 @@ export class MainMenu extends Scene {
             width / 2,
             py + 110,
             canClaim ? '오늘의 무료 지원금 받기 (+600 G 즉시 지급)' : '오늘의 무료 지원금 수령 완료',
-            canClaim ? 0xeab308 : 0x334155,
-            canClaim ? 0xca8a04 : 0x334155,
+            canClaim ? 0x0284c7 : 0x334155,
+            canClaim ? 0x0369a1 : 0x334155,
             () => {
                 if (UpgradeManager.canClaimDailySupply()) {
                     UpgradeManager.claimDailySupply();
@@ -367,7 +309,7 @@ export class MainMenu extends Scene {
             const rowY = py + 148 + idx * 102;
             const cardBg = this.add.graphics();
             cardBg.fillStyle(0x1e293b, 0.9);
-            cardBg.lineStyle(1.5, 0x38bdf8, 0.85);
+            cardBg.lineStyle(1.5, 0x334155, 0.9);
             cardBg.fillRoundedRect(px + 34, rowY, panelW - 68, 88, 12);
             cardBg.strokeRoundedRect(px + 34, rowY, panelW - 68, 88, 12);
             this.modalContainer!.add(cardBg);
@@ -375,14 +317,14 @@ export class MainMenu extends Scene {
             const nameTxt = this.add.text(px + 54, rowY + 14, `${info.name}   [Lv.${info.level} / ${info.maxLevel}]`, {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '18px',
-                color: info.color
+                color: '#f8fafc'
             });
 
             const stars = '★'.repeat(info.level) + '☆'.repeat(info.maxLevel - info.level);
             const starTxt = this.add.text(px + 54, rowY + 38, `강화 단계: ${stars}`, {
                 fontFamily: 'Arial',
                 fontSize: '14px',
-                color: '#facc15'
+                color: '#eab308'
             });
 
             const descTxt = this.add.text(px + 54, rowY + 60, `${info.currentEffectText}  ▶  ${info.nextEffectText}`, {
@@ -452,21 +394,21 @@ export class MainMenu extends Scene {
         const panelBlocker = this.add.zone(width / 2, height / 2, panelW, panelH).setOrigin(0.5).setInteractive();
         const panel = this.add.graphics();
         panel.fillStyle(0x0f172a, 0.98);
-        panel.lineStyle(3, 0xa855f7);
+        panel.lineStyle(2, 0x475569);
         panel.fillRoundedRect(px, py, panelW, panelH, 16);
         panel.strokeRoundedRect(px, py, panelW, panelH, 16);
         this.modalContainer.add([panelBlocker, panel]);
 
         const title = this.add.text(width / 2, py + 36, '캐릭터 스킨 상점', {
             fontFamily: '"Black Han Sans", sans-serif',
-            fontSize: '28px',
-            color: '#c084fc'
+            fontSize: '26px',
+            color: '#f8fafc'
         }).setOrigin(0.5);
 
         const myCoinsText = this.add.text(width / 2, py + 68, `보유 코인: ${SkinManager.getCoins().toLocaleString()} G`, {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '16px',
-            color: '#facc15'
+            color: '#eab308'
         }).setOrigin(0.5);
 
         this.modalContainer.add([title, myCoinsText]);
@@ -478,8 +420,8 @@ export class MainMenu extends Scene {
             const isEquipped = SkinManager.getEquippedSkin() === skin.id;
 
             const cardBg = this.add.graphics();
-            cardBg.fillStyle(isEquipped ? 0x3b0764 : 0x1e293b, 0.85);
-            cardBg.lineStyle(1.5, isEquipped ? 0xc084fc : 0x475569, 0.8);
+            cardBg.fillStyle(0x1e293b, 0.85);
+            cardBg.lineStyle(1.5, isEquipped ? 0x38bdf8 : 0x334155, 0.85);
             cardBg.fillRoundedRect(px + 30, rowY, panelW - 60, 68, 10);
             cardBg.strokeRoundedRect(px + 30, rowY, panelW - 60, 68, 10);
             this.modalContainer!.add(cardBg);
@@ -490,7 +432,7 @@ export class MainMenu extends Scene {
             const nameText = this.add.text(px + 120, rowY + 16, skin.name, {
                 fontFamily: '"Black Han Sans", sans-serif',
                 fontSize: '18px',
-                color: skin.color
+                color: '#f8fafc'
             });
 
             const descText = this.add.text(px + 120, rowY + 42, skin.description, {
@@ -559,7 +501,7 @@ export class MainMenu extends Scene {
         const drawBtn = (color: number) => {
             bg.clear();
             bg.fillStyle(color, 0.95);
-            bg.lineStyle(2, 0x38bdf8, 0.8);
+            bg.lineStyle(1.5, 0x475569, 0.9);
             bg.fillRoundedRect(-w / 2, -h / 2, w, h, 12);
             bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 12);
         };
@@ -581,12 +523,10 @@ export class MainMenu extends Scene {
 
         hitZone.on('pointerover', () => {
             drawBtn(hoverColor);
-            container.setScale(1.03);
         });
 
         hitZone.on('pointerout', () => {
             drawBtn(normalColor);
-            container.setScale(1.0);
         });
 
         hitZone.on('pointerdown', () => {
@@ -645,7 +585,7 @@ export class MainMenu extends Scene {
         const panelBlocker = this.add.zone(width / 2, height / 2, panelW, panelH).setOrigin(0.5).setInteractive();
         const panel = this.add.graphics();
         panel.fillStyle(0x0f172a, 0.98);
-        panel.lineStyle(3, 0x38bdf8);
+        panel.lineStyle(2, 0x475569);
         panel.fillRoundedRect(px, py, panelW, panelH, 16);
         panel.strokeRoundedRect(px, py, panelW, panelH, 16);
         this.modalContainer.add([panelBlocker, panel]);
@@ -653,7 +593,7 @@ export class MainMenu extends Scene {
         const title = this.add.text(width / 2, py + 40, '게임 조작 및 시스템 가이드', {
             fontFamily: '"Black Han Sans", sans-serif',
             fontSize: '26px',
-            color: '#38bdf8'
+            color: '#f8fafc'
         }).setOrigin(0.5);
         this.modalContainer.add(title);
 
@@ -662,7 +602,7 @@ export class MainMenu extends Scene {
             '• 1단 점프 / 2단 점프 : Space, W, ↑ 키 (모바일: 화면 우측 터치)',
             '• 슬라이드 / 공중 급강하 : S, ↓ 키 길게 누르기 (모바일: 화면 좌측 터치)',
             '• 초음속 대시 스킬 : Shift 또는 E 키 (쿨타임마다 무적 돌파 & 장애물 파괴)',
-            '• 메인 화면 복귀 / 일시정지 : ESC 키 또는 좌측 상단 [◀ 메인] 버튼',
+            '• 메인 화면 복귀 / 일시정지 : ESC 키 또는 우측 상단 [◀ 메인] 버튼',
             '',
             '[스테이지 캠페인 & 난이도]',
             '• 1단계부터 30단계까지 갈수록 주행 속도가 빨라지고 복합 장애물이 출현합니다.',
@@ -706,22 +646,22 @@ export class MainMenu extends Scene {
         const panelBlocker = this.add.zone(width / 2, height / 2, panelW, panelH).setOrigin(0.5).setInteractive();
         const panel = this.add.graphics();
         panel.fillStyle(0x0f172a, 0.98);
-        panel.lineStyle(3, 0xfacc15);
+        panel.lineStyle(2, 0x475569);
         panel.fillRoundedRect(px, py, panelW, panelH, 16);
         panel.strokeRoundedRect(px, py, panelW, panelH, 16);
         this.modalContainer.add([panelBlocker, panel]);
 
         const title = this.add.text(width / 2, py + 40, '전국 명예의 전당 (TOP 10)', {
             fontFamily: '"Black Han Sans", sans-serif',
-            fontSize: '28px',
-            color: '#facc15'
+            fontSize: '26px',
+            color: '#f8fafc'
         }).setOrigin(0.5);
         this.modalContainer.add(title);
 
         const loadingText = this.add.text(width / 2, py + 240, '실시간 랭킹 동기화 중...', {
             fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '20px',
-            color: '#38bdf8'
+            fontSize: '18px',
+            color: '#94a3b8'
         }).setOrigin(0.5);
         this.modalContainer.add(loadingText);
 
@@ -735,8 +675,8 @@ export class MainMenu extends Scene {
             const rowY = py + 85 + idx * 46;
 
             const rowBg = this.add.graphics();
-            rowBg.fillStyle(idx === 0 ? 0x854d0e : 0x1e293b, idx < 3 ? 0.8 : 0.5);
-            rowBg.lineStyle(1.5, idx === 0 ? 0xfacc15 : 0x334155, 0.9);
+            rowBg.fillStyle(0x1e293b, 0.7);
+            rowBg.lineStyle(1, idx === 0 ? 0xeab308 : 0x334155, 0.8);
             rowBg.fillRoundedRect(px + 30, rowY - 16, panelW - 60, 40, 8);
             rowBg.strokeRoundedRect(px + 30, rowY - 16, panelW - 60, 40, 8);
             this.modalContainer!.add(rowBg);
@@ -745,7 +685,7 @@ export class MainMenu extends Scene {
             const rowText = this.add.text(px + 45, rowY + 4, `${idx + 1}위.  ${item.name}  ${stageBadge}`, {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '16px',
-                color: idx === 0 ? '#fef08a' : '#ffffff'
+                color: idx === 0 ? '#fde047' : '#ffffff'
             }).setOrigin(0, 0.5);
 
             const statsText = this.add.text(px + panelW - 45, rowY + 4, `${item.score.toLocaleString()}점  (${item.distance}m / ${item.date})`, {

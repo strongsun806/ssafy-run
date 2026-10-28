@@ -23,8 +23,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     public dashTimeRemaining: number = 0;
     public dashCooldownRemaining: number = 0;
 
-    // Temporary Magnet Power-Up State (자석 효과는 이제 일시적!)
-    public magnetTimeRemaining: number = 0; // seconds
+    // Temporary Magnet Power-Up State
+    public magnetTimeRemaining: number = 0;
 
     private groundY: number;
     private audioManager: AudioManager;
@@ -33,18 +33,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Advanced Input Buffering & Coyote Time
     private jumpBufferTime: number = 0;
     private coyoteTime: number = 0;
-    private wasOnGround: boolean = false;
 
     // Touch control states
     private touchJumpTriggered: boolean = false;
     private touchSlideHeld: boolean = false;
 
-    // Particle Emitters & Cyber Visuals
-    private dustEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
+    // Calm Visual Indicators
     private magnetRing?: Phaser.GameObjects.Graphics;
     private shieldRing?: Phaser.GameObjects.Graphics;
     private companionDrone?: Phaser.GameObjects.Image;
-    private afterimageTimer: number = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number, groundY: number) {
         const equipped = SkinManager.getEquippedSkin();
@@ -57,7 +54,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         scene.physics.add.existing(this);
 
         this.setOrigin(0.5, 1);
-        this.setCollideWorldBounds(false); // Allow falling into pits!
+        this.setCollideWorldBounds(false);
 
         const body = this.body as Phaser.Physics.Arcade.Body;
         if (body) {
@@ -75,15 +72,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         this.setupAnimations();
-        this.setupParticles();
 
-        // Magnet & Shield Aura Graphics
+        // Calm, non-pulsing aura graphics
         this.magnetRing = scene.add.graphics().setDepth(18);
         this.shieldRing = scene.add.graphics().setDepth(22);
 
-        // Autonomous Companion Bit-Drone
+        // Steady Companion Drone
         if (scene.textures.exists('companion_drone')) {
-            this.companionDrone = scene.add.image(x - 38, y - 58, 'companion_drone').setDepth(21);
+            this.companionDrone = scene.add.image(x - 38, y - 56, 'companion_drone')
+                .setDepth(21)
+                .setAlpha(0.75);
         }
 
         this.play(`player_${this.skinId}_anim_run`);
@@ -100,34 +98,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                     { key: `player_${this.skinId}_run_3` },
                     { key: `player_${this.skinId}_run_4` }
                 ],
-                frameRate: 12,
+                frameRate: 10,
                 repeat: -1
             });
-        }
-    }
-
-    private setupParticles() {
-        if (this.scene.textures.exists('particle_dust')) {
-            this.dustEmitter = this.scene.add.particles(0, 0, 'particle_dust', {
-                speed: { min: 25, max: 70 },
-                angle: { min: 140, max: 180 },
-                scale: { start: 0.8, end: 0 },
-                alpha: { start: 0.6, end: 0 },
-                lifespan: 280,
-                quantity: 1,
-                frequency: 160,
-                emitting: true
-            });
-            this.dustEmitter.startFollow(this, -16, 0);
         }
     }
 
     public resetJump() {
         this.jumpCount = 0;
         this.coyoteTime = 100;
-        if (this.dustEmitter && !this.wasOnGround) {
-            this.dustEmitter.explode(4, this.x - 10, this.y);
-        }
     }
 
     public requestTouchJump() {
@@ -139,7 +118,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.touchSlideHeld = isPressed;
     }
 
-    // Activate temporary magnet (e.g. 6.5s)
     public activateMagnet(duration: number = 6.5) {
         this.magnetTimeRemaining = Math.max(this.magnetTimeRemaining, duration);
         this.audioManager.playMagnet();
@@ -153,8 +131,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.hasShield = false;
         this.shieldRing?.clear();
         this.isInvincible = true;
-        this.spawnJumpShockwave();
-        this.scene.time.delayedCall(1200, () => {
+        this.setAlpha(0.65);
+        this.scene.time.delayedCall(1000, () => {
+            this.setAlpha(1);
             this.isInvincible = false;
         });
     }
@@ -167,7 +146,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.dashTimeRemaining = 1.25;
         this.dashCooldownRemaining = 7.5;
         this.audioManager.playDoubleJump();
-        this.spawnJumpShockwave();
         return true;
     }
 
@@ -180,16 +158,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     public setFever(fever: boolean) {
         this.isFever = fever;
-        if (fever) {
-            this.setTint(0xfde047);
-            if (this.anims.currentAnim) {
-                this.anims.timeScale = 1.6;
-            }
-        } else {
-            this.clearTint();
-            if (this.anims.currentAnim) {
-                this.anims.timeScale = 1.0;
-            }
+        if (this.anims.currentAnim) {
+            this.anims.timeScale = fever ? 1.15 : 1.0;
         }
     }
 
@@ -199,7 +169,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         const body = this.body as Phaser.Physics.Arcade.Body;
         if (!body) return;
 
-        // Strict horizontal lock: Prevent collision push or velocity from ejecting player off-screen
+        // Strict horizontal lock
         this.setX(180);
         this.setVelocityX(0);
 
@@ -230,7 +200,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.scene.events.emit('request-hyper-dash');
         }
 
-        // Render Plasma Shield & Dash Shock-Cone
+        // Render calm Shield & Dash outline
         this.renderShieldAndDashAura();
 
         const isOnGround = body.blocked.down || body.touching.down;
@@ -278,17 +248,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.audioManager.playDoubleJump();
                 this.anims.stop();
                 this.setTexture(`player_${this.skinId}_jump`);
-                this.spawnJumpShockwave();
-
-                if (this.scene.textures.exists('particle_sparkle')) {
-                    const spark = this.scene.add.particles(this.x, this.y - 20, 'particle_sparkle', {
-                        speed: { min: 50, max: 140 },
-                        lifespan: 300,
-                        scale: { start: 1, end: 0 },
-                        quantity: 6
-                    });
-                    this.scene.time.delayedCall(350, () => spark.destroy());
-                }
             }
         }
 
@@ -313,7 +272,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
 
         if (isSlideHeld && !isOnGround && body.velocity.y > -200) {
-            this.setVelocityY(1050); // Instant dive drop!
+            this.setVelocityY(1050);
         }
 
         if (isSlideHeld) {
@@ -351,29 +310,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        if (this.dustEmitter) {
-            this.dustEmitter.emitting = isOnGround;
-        }
-
-        // 6. Companion Bit-Drone Smooth Hover Follow
+        // 6. Companion Drone Steady Follow (No wobble, no bobbing)
         if (this.companionDrone) {
-            const hoverOffset = Math.sin(Date.now() / 220) * 6;
-            const targetX = this.x - 42;
-            const targetY = this.y - (this.isSliding ? 32 : 58) + hoverOffset;
+            const targetX = this.x - 40;
+            const targetY = this.y - (this.isSliding ? 32 : 56);
             this.companionDrone.x = Phaser.Math.Linear(this.companionDrone.x, targetX, 0.25);
             this.companionDrone.y = Phaser.Math.Linear(this.companionDrone.y, targetY, 0.25);
-            this.companionDrone.setRotation(Math.sin(Date.now() / 350) * 0.12);
         }
-
-        // 7. Cyber Phantom Afterimage Trail (During Double Jump, Slide, Dash, or Fever)
-        this.afterimageTimer += delta;
-        const interval = this.isDashing ? 28 : 55;
-        if ((this.isDashing || this.isFever || !isOnGround || this.isSliding) && this.afterimageTimer >= interval) {
-            this.afterimageTimer = 0;
-            this.spawnAfterimage();
-        }
-
-        this.wasOnGround = isOnGround;
     }
 
     private renderShieldAndDashAura() {
@@ -383,83 +326,32 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         const cx = this.x;
         const cy = this.y - (this.isSliding ? 18 : 34);
 
+        // Static, soft translucent circle (No spinning hexagon, no pulsing)
         if (this.hasShield) {
-            const rot = Date.now() / 420;
-            const radius = 42 + Math.sin(Date.now() / 160) * 2.5;
-            this.shieldRing.lineStyle(2.5, 0x22d3ee, 0.85);
-            this.shieldRing.fillStyle(0x06b6d4, 0.14);
-            this.shieldRing.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const angle = rot + (i * Math.PI) / 3;
-                const vx = cx + Math.cos(angle) * radius;
-                const vy = cy + Math.sin(angle) * radius;
-                if (i === 0) this.shieldRing.moveTo(vx, vy);
-                else this.shieldRing.lineTo(vx, vy);
-            }
-            this.shieldRing.closePath();
-            this.shieldRing.fillPath();
-            this.shieldRing.strokePath();
+            this.shieldRing.lineStyle(2, 0x38bdf8, 0.4);
+            this.shieldRing.fillStyle(0x38bdf8, 0.06);
+            this.shieldRing.fillCircle(cx, cy, 38);
+            this.shieldRing.strokeCircle(cx, cy, 38);
         }
 
         if (this.isDashing) {
-            this.shieldRing.lineStyle(3.5, 0x38bdf8, 0.95);
+            this.shieldRing.lineStyle(2.5, 0x38bdf8, 0.65);
             this.shieldRing.beginPath();
-            this.shieldRing.moveTo(cx - 10, cy - 36);
-            this.shieldRing.lineTo(cx + 46, cy);
-            this.shieldRing.lineTo(cx - 10, cy + 36);
+            this.shieldRing.moveTo(cx + 8, cy - 28);
+            this.shieldRing.lineTo(cx + 38, cy);
+            this.shieldRing.lineTo(cx + 8, cy + 28);
             this.shieldRing.strokePath();
         }
-    }
-
-    private spawnAfterimage() {
-        const ghost = this.scene.add.image(this.x, this.y, this.texture.key)
-            .setOrigin(0.5, 1)
-            .setDepth(this.depth - 1)
-            .setAlpha(this.isFever ? 0.45 : 0.28)
-            .setTint(this.isFever ? 0xfacc15 : 0x38bdf8);
-
-        this.scene.tweens.add({
-            targets: ghost,
-            x: ghost.x - 42,
-            alpha: 0,
-            duration: 180,
-            ease: 'Linear',
-            onComplete: () => ghost.destroy()
-        });
-    }
-
-    private spawnJumpShockwave() {
-        const ring = this.scene.add.graphics().setDepth(this.depth - 1);
-        ring.lineStyle(3, 0x38bdf8, 0.85);
-        ring.strokeEllipse(0, 0, 32, 12);
-        ring.setPosition(this.x, this.y - 6);
-
-        this.scene.tweens.add({
-            targets: ring,
-            scaleX: 2.2,
-            scaleY: 1.8,
-            alpha: 0,
-            duration: 260,
-            ease: 'Cubic.easeOut',
-            onComplete: () => ring.destroy()
-        });
     }
 
     private renderMagnetAura() {
         if (!this.magnetRing) return;
         this.magnetRing.clear();
 
-        const pulse = 1 + Math.sin(Date.now() / 150) * 0.08;
-        const radius = 65 * pulse;
-
-        this.magnetRing.lineStyle(2, 0x38bdf8, 0.7);
-        this.magnetRing.strokeCircle(this.x, this.y - 32, radius);
-
-        this.magnetRing.lineStyle(1.5, 0x60a5fa, 0.4);
-        this.magnetRing.strokeCircle(this.x, this.y - 32, radius + 15);
+        this.magnetRing.lineStyle(1.5, 0x38bdf8, 0.35);
+        this.magnetRing.strokeCircle(this.x, this.y - 32, 56);
     }
 
-    // Rescue from pit (SSAFY Emergency Rescue Drone)
     public rescueFromPit(onComplete: () => void) {
         if (this.isRescuing) return;
         this.isRescuing = true;
@@ -472,69 +364,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             body.setVelocity(0, 0);
         }
 
-        // 1. Drone spawns from high above
         const drone = this.scene.add.sprite(this.x, -60, 'rescue_drone')
-            .setDepth(200)
-            .setScale(1.15);
+            .setDepth(200);
 
-        // Dynamic tractor beam graphics
-        const beam = this.scene.add.graphics().setDepth(199);
-
-        // Status badge: "🚨 SSAFY RESCUE!"
-        const rescueText = this.scene.add.text(this.x, -50, '🚨 SSAFY RESCUE!', {
-            fontFamily: 'Arial Black',
-            fontSize: '14px',
-            color: '#facc15',
-            stroke: '#0f172a',
-            strokeThickness: 3
-        }).setOrigin(0.5).setDepth(201);
-
-        // Drone swoops down above the falling player
         this.scene.tweens.add({
             targets: drone,
-            y: this.y - 85,
-            duration: 320,
+            y: this.y - 75,
+            duration: 280,
             ease: 'Quad.easeOut',
-            onUpdate: () => {
-                rescueText.setPosition(drone.x, drone.y - 36);
-                beam.clear();
-                beam.fillStyle(0x38bdf8, 0.35);
-                beam.beginPath();
-                beam.moveTo(drone.x - 12, drone.y + 20);
-                beam.lineTo(drone.x + 12, drone.y + 20);
-                beam.lineTo(this.x + 30, this.y);
-                beam.lineTo(this.x - 30, this.y);
-                beam.closePath();
-                beam.fill();
-                beam.lineStyle(2, 0x38bdf8, 0.85);
-                beam.stroke();
-            },
             onComplete: () => {
-                // Lift player up to safe ground level together with drone hovering above
                 this.scene.tweens.add({
                     targets: this,
                     y: this.groundY,
-                    duration: 550,
-                    ease: 'Back.easeOut',
+                    duration: 450,
+                    ease: 'Quad.easeOut',
                     onUpdate: () => {
-                        drone.y = this.y - 85;
-                        rescueText.setPosition(drone.x, drone.y - 36);
-                        beam.clear();
-                        beam.fillStyle(0x38bdf8, 0.45);
-                        beam.beginPath();
-                        beam.moveTo(drone.x - 12, drone.y + 20);
-                        beam.lineTo(drone.x + 12, drone.y + 20);
-                        beam.lineTo(this.x + 30, this.y);
-                        beam.lineTo(this.x - 30, this.y);
-                        beam.closePath();
-                        beam.fill();
-                        beam.lineStyle(2, 0x06b6d4, 0.95);
-                        beam.stroke();
+                        drone.y = this.y - 75;
                     },
                     onComplete: () => {
-                        beam.destroy();
-                        rescueText.destroy();
-
                         if (body) {
                             body.setAllowGravity(true);
                             this.setVelocityY(0);
@@ -542,28 +389,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                         }
                         this.isRescuing = false;
 
-                        // Drone zooms swiftly away into the sky!
                         this.scene.tweens.add({
                             targets: drone,
-                            x: this.x + 380,
-                            y: -100,
-                            duration: 480,
+                            x: this.x + 280,
+                            y: -90,
+                            duration: 400,
                             ease: 'Quad.easeIn',
                             onComplete: () => drone.destroy()
                         });
 
-                        // 2.0s invincibility flash
-                        this.scene.tweens.add({
-                            targets: this,
-                            alpha: 0.25,
-                            yoyo: true,
-                            repeat: 6,
-                            duration: 150,
-                            onComplete: () => {
-                                this.setAlpha(1);
-                                this.isInvincible = false;
-                                onComplete();
-                            }
+                        // Calm dim during brief invincibility (no rapid strobing)
+                        this.setAlpha(0.6);
+                        this.scene.time.delayedCall(1200, () => {
+                            this.setAlpha(1);
+                            this.isInvincible = false;
+                            onComplete();
                         });
                     }
                 });
@@ -580,23 +420,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.isInvincible = true;
         this.audioManager.playHit();
 
-        this.scene.tweens.add({
-            targets: this,
-            alpha: 0.25,
-            yoyo: true,
-            repeat: 5,
-            duration: 100,
-            onComplete: () => {
-                this.setAlpha(1);
-                this.isInvincible = false;
-            }
+        // Calm dim instead of rapid alpha strobe
+        this.setAlpha(0.55);
+        this.scene.time.delayedCall(900, () => {
+            this.setAlpha(1);
+            this.isInvincible = false;
         });
 
         return true;
     }
 
     public destroy(fromScene?: boolean) {
-        if (this.dustEmitter) this.dustEmitter.destroy();
         if (this.magnetRing) this.magnetRing.destroy();
         if (this.shieldRing) this.shieldRing.destroy();
         super.destroy(fromScene);
