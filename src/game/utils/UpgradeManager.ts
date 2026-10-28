@@ -1,4 +1,4 @@
-﻿import { SkinManager } from './SkinManager';
+import { SkinManager } from './SkinManager';
 
 export interface UpgradeStatInfo {
     id: 'hp' | 'score' | 'drone';
@@ -89,18 +89,18 @@ export class UpgradeManager {
         const data = this.loadData();
         const curLv = data[id];
         if (curLv >= this.MAX_LEVEL) {
-            return { success: false, message: '?대? 理쒕? ?덈꺼(MAX)???꾨떖?덉뒿?덈떎!' };
+            return { success: false, message: '이미 최대 레벨(MAX)에 도달했습니다!' };
         }
         const cost = this.getUpgradeCost(curLv);
         const coins = SkinManager.getCoins();
         if (coins < cost) {
-            return { success: false, message: `肄붿씤??遺議깊빀?덈떎! (?꾩슂: ?첌 ${cost})` };
+            return { success: false, message: `코인이 부족합니다! (필요: 🪙 ${cost})` };
         }
 
         SkinManager.addCoins(-cost);
         data[id] = curLv + 1;
         this.saveData(data);
-        return { success: true, message: `??媛뺥솕 ?깃났! Lv.${data[id]} ?ъ꽦!` };
+        return { success: true, message: `⚡ 강화 성공! Lv.${data[id]} 달성!` };
     }
 
     // Gameplay Computed Buffs
@@ -124,41 +124,41 @@ export class UpgradeManager {
         return [
             {
                 id: 'hp',
-                name: '硫섑깉 肄붿뼱 利앺룺 (MAX HP)',
-                icon: '?ㅿ툘',
+                name: '멘탈 코어 증폭 (MAX HP)',
+                icon: '❤️',
                 level: data.hp,
                 maxLevel: this.MAX_LEVEL,
                 cost: this.getUpgradeCost(data.hp),
-                currentEffectText: `理쒕? 硫섑깉 泥대젰 ${100 + (data.hp - 1) * 10} HP`,
-                nextEffectText: data.hp < this.MAX_LEVEL ? `?ㅼ쓬 ?덈꺼: ${100 + data.hp * 10} HP (+10)` : '理쒓퀬 ?④퀎 ?꾨떖 (MAX)',
+                currentEffectText: `최대 멘탈 체력 ${100 + (data.hp - 1) * 10} HP`,
+                nextEffectText: data.hp < this.MAX_LEVEL ? `다음 레벨: ${100 + data.hp * 10} HP (+10)` : '최고 단계 도달 (MAX)',
                 color: '#4ade80'
             },
             {
                 id: 'score',
-                name: '?뚭퀬由ъ쬁 ?곗궛 利앺룺 (SCORE%)',
-                icon: '?뭿',
+                name: '알고리즘 연산 증폭 (SCORE%)',
+                icon: '💎',
                 level: data.score,
                 maxLevel: this.MAX_LEVEL,
                 cost: this.getUpgradeCost(data.score),
-                currentEffectText: `紐⑤뱺 ?띾뱷 ?먯닔 +${Math.round((data.score - 1) * 8)}% 異붽? 蹂대꼫??,
-                nextEffectText: data.score < this.MAX_LEVEL ? `?ㅼ쓬 ?덈꺼: +${Math.round(data.score * 8)}% (+8%)` : '理쒓퀬 ?④퀎 ?꾨떖 (MAX)',
+                currentEffectText: `모든 획득 점수 +${Math.round((data.score - 1) * 8)}% 추가 보너스`,
+                nextEffectText: data.score < this.MAX_LEVEL ? `다음 레벨: +${Math.round(data.score * 8)}% (+8%)` : '최고 단계 도달 (MAX)',
                 color: '#38bdf8'
             },
             {
                 id: 'drone',
-                name: 'AI 鍮꾪듃 ?쒕줎 & 諛⑹뼱留??ㅻ쾭?대윮',
-                icon: '?쨼',
+                name: 'AI 비트 드론 & 방어막 오버클럭',
+                icon: '🤖',
                 level: data.drone,
                 maxLevel: this.MAX_LEVEL,
                 cost: this.getUpgradeCost(data.drone),
-                currentEffectText: `異쒓꺽 ???대뱶 遺??쨌 ${Math.max(7, 16 - (data.drone - 1))}珥덈쭏???μ븷臾??붽꺽/?대뱶 異⑹쟾`,
-                nextEffectText: data.drone < this.MAX_LEVEL ? `?ㅼ쓬 ?덈꺼: 荑⑦???${Math.max(7, 16 - data.drone)}珥덈줈 ?⑥텞 (-1珥?` : '理쒓퀬 ?④퀎 ?꾨떖 (MAX)',
+                currentEffectText: `출격 시 쉴드 부여 · ${Math.max(7, 16 - (data.drone - 1))}초마다 장애물 요격/쉴드 충전`,
+                nextEffectText: data.drone < this.MAX_LEVEL ? `다음 레벨: 쿨타임 ${Math.max(7, 16 - data.drone)}초로 단축 (-1초)` : '최고 단계 도달 (MAX)',
                 color: '#c084fc'
             }
         ];
     }
 
-    // Daily Free Supply Drop (+500 Coins once per day)
+    // Daily Free Supply Drop (+600 Coins once per day)
     public static canClaimDailySupply(): boolean {
         try {
             const today = new Date().toISOString().slice(0, 10);
@@ -181,6 +181,3 @@ export class UpgradeManager {
         return reward;
     }
 }
-
-
-
