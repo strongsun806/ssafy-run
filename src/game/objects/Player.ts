@@ -31,9 +31,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     private touchJumpTriggered: boolean = false;
     private touchSlideHeld: boolean = false;
 
-    // Particle Emitters
+    // Particle Emitters & Cyber Visuals
     private dustEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
     private magnetRing?: Phaser.GameObjects.Graphics;
+    private companionDrone?: Phaser.GameObjects.Image;
+    private afterimageTimer: number = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number, groundY: number) {
         const equipped = SkinManager.getEquippedSkin();
@@ -66,6 +68,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Magnet Aura Graphic
         this.magnetRing = scene.add.graphics().setDepth(18);
+
+        // Autonomous Companion Bit-Drone
+        if (scene.textures.exists('companion_drone')) {
+            this.companionDrone = scene.add.image(x - 38, y - 58, 'companion_drone').setDepth(21);
+        }
 
         this.play(`player_${this.skinId}_anim_run`);
     }
@@ -206,6 +213,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 this.audioManager.playDoubleJump();
                 this.anims.stop();
                 this.setTexture(`player_${this.skinId}_jump`);
+                this.spawnJumpShockwave();
 
                 if (this.scene.textures.exists('particle_sparkle')) {
                     const spark = this.scene.add.particles(this.x, this.y - 20, 'particle_sparkle', {
@@ -282,7 +290,58 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.dustEmitter.emitting = isOnGround;
         }
 
+        // 6. Companion Bit-Drone Smooth Hover Follow
+        if (this.companionDrone) {
+            const hoverOffset = Math.sin(Date.now() / 220) * 6;
+            const targetX = this.x - 42;
+            const targetY = this.y - (this.isSliding ? 32 : 58) + hoverOffset;
+            this.companionDrone.x = Phaser.Math.Linear(this.companionDrone.x, targetX, 0.25);
+            this.companionDrone.y = Phaser.Math.Linear(this.companionDrone.y, targetY, 0.25);
+            this.companionDrone.setRotation(Math.sin(Date.now() / 350) * 0.12);
+        }
+
+        // 7. Cyber Phantom Afterimage Trail (During Double Jump, Slide, or Fever)
+        this.afterimageTimer += delta;
+        if ((this.isFever || !isOnGround || this.isSliding) && this.afterimageTimer >= 55) {
+            this.afterimageTimer = 0;
+            this.spawnAfterimage();
+        }
+
         this.wasOnGround = isOnGround;
+    }
+
+    private spawnAfterimage() {
+        const ghost = this.scene.add.image(this.x, this.y, this.texture.key)
+            .setOrigin(0.5, 1)
+            .setDepth(this.depth - 1)
+            .setAlpha(this.isFever ? 0.45 : 0.28)
+            .setTint(this.isFever ? 0xfacc15 : 0x38bdf8);
+
+        this.scene.tweens.add({
+            targets: ghost,
+            x: ghost.x - 42,
+            alpha: 0,
+            duration: 180,
+            ease: 'Linear',
+            onComplete: () => ghost.destroy()
+        });
+    }
+
+    private spawnJumpShockwave() {
+        const ring = this.scene.add.graphics().setDepth(this.depth - 1);
+        ring.lineStyle(3, 0x38bdf8, 0.85);
+        ring.strokeEllipse(0, 0, 32, 12);
+        ring.setPosition(this.x, this.y - 6);
+
+        this.scene.tweens.add({
+            targets: ring,
+            scaleX: 2.2,
+            scaleY: 1.8,
+            alpha: 0,
+            duration: 260,
+            ease: 'Cubic.easeOut',
+            onComplete: () => ring.destroy()
+        });
     }
 
     private renderMagnetAura() {

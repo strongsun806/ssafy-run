@@ -37,8 +37,34 @@ export class MainMenu extends Scene {
             this.add.image(x, height - 30, 'ground_s1').setOrigin(0, 0.5);
         }
 
-        // 2. Trainee Runner Animation with Equipped Skin
+        // Ambient Floating Cyber Motes (Steam Indie Atmosphere)
+        if (this.textures.exists('particle_sparkle')) {
+            this.add.particles(0, 0, 'particle_sparkle', {
+                x: { min: 0, max: width },
+                y: { min: 60, max: height - 80 },
+                speedY: { min: -25, max: -10 },
+                speedX: { min: -10, max: 10 },
+                scale: { start: 0.45, end: 0 },
+                alpha: { start: 0.35, end: 0 },
+                lifespan: 3200,
+                frequency: 220,
+                quantity: 1
+            });
+        }
+
+        // 2. Trainee Runner Animation with Equipped Skin & Companion Drone
         this.createOrUpdateRunner();
+        if (this.textures.exists('companion_drone')) {
+            const drone = this.add.image(118, height - 122, 'companion_drone').setScale(1.1);
+            this.tweens.add({
+                targets: drone,
+                y: height - 134,
+                duration: 900,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        }
 
         // 3. Left Section: Title & Controls & Start
         const leftX = 360;
@@ -477,7 +503,7 @@ export class MainMenu extends Scene {
         panel.strokeRoundedRect(px, py, panelW, panelH, 16);
         this.modalContainer.add(panel);
 
-        const title = this.add.text(width / 2, py + 42, '📖 SSAFY RUN 쿠키런 모드 가이드', {
+        const title = this.add.text(width / 2, py + 42, '📖 SSAFY RUN: CYBER SPRINT 가이드', {
             fontFamily: 'Arial Black',
             fontSize: '26px',
             color: '#38bdf8'

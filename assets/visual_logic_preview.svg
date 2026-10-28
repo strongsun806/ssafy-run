@@ -38,16 +38,16 @@
   <g transform="translate(640, 68)">
     <rect x="-200" y="0" width="400" height="28" rx="14" fill="#4338ca" fill-opacity="0.45" stroke="#818cf8" stroke-width="1"/>
     <text x="0" y="19" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="bold" fill="#a5b4fc" text-anchor="middle">
-      🐱 SCRATCH CODING BREAK · 스크래치 알고리즘
+      🧩 NEO LOGIC STUDIO · 비주얼 알고리즘
     </text>
   </g>
 
   <!-- Title & Subtitle -->
   <text x="640" y="125" font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="900" fill="#facc15" text-anchor="middle">
-    🎱 일타싸피 스크래치: 목적구 포켓인 코딩
+    🎱 일타싸피 비주얼 코딩: 목적구 포켓인
   </text>
   <text x="640" y="152" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">
-    지친 손가락을 쉬어가세요! 🧠 스크래치 카테고리 블록을 조립해 공을 넣고 멘탈(HP) 100% 회복 &amp; 골든 피버를 획득하세요!
+    지친 손가락을 쉬어가세요! 🧠 비주얼 카테고리 블록을 조립해 공을 넣고 멘탈(HP) 100% 회복 &amp; 골든 피버를 획득하세요!
   </text>
 
   <!-- Skip Button (Top Right) -->
@@ -62,7 +62,7 @@
   <g transform="translate(115, 175)">
     <rect width="455" height="470" rx="14" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
     <text x="18" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="bold" fill="#38bdf8">
-      🎬 LIVE SIMULATION STAGE (스크래치 실행 무대)
+      🎬 LIVE SIMULATION STAGE (실시간 시뮬레이션 무대)
     </text>
 
     <!-- Table Felt -->
@@ -88,7 +88,7 @@
     <circle cx="225" cy="235" r="13" fill="#eab308" stroke="#713f12" stroke-width="2"/>
     <circle cx="265" cy="170" r="13" fill="#ef4444" stroke="#7f1d1d" stroke-width="2"/>
 
-    <!-- Scratch Speech Bubble above Cue Ball -->
+    <!-- Speech Bubble above Cue Ball -->
     <g transform="translate(105, 275)">
       <rect x="-85" y="-16" width="170" height="32" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
       <polygon points="-5,16 5,16 0,23" fill="#ffffff"/>
@@ -110,7 +110,7 @@
     </text>
   </g>
 
-  <!-- ================= RIGHT: SCRATCH IDE PANEL ================= -->
+  <!-- ================= RIGHT: VISUAL LOGIC IDE PANEL ================= -->
   <g transform="translate(600, 175)">
     <!-- 1. Category Tabs -->
     <g transform="translate(0, 0)">
@@ -136,7 +136,7 @@
     <!-- 2. Block Palette Container -->
     <rect x="0" y="32" width="490" height="160" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
 
-    <!-- Palette Scratch Blocks -->
+    <!-- Palette Logic Blocks -->
     <!-- Block 1: Event Flag Hat -->
     <g transform="translate(10, 42)">
       <rect width="230" height="32" rx="6" fill="#eab308"/>
@@ -179,10 +179,10 @@
       <text x="28" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">홀컵 닿았는가? 감지</text>
     </g>
 
-    <!-- 3. Scratch Workspace Stack Header -->
+    <!-- 3. Workspace Stack Header -->
     <g transform="translate(0, 205)">
       <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="bold" fill="#facc15">
-        🧩 스크래치 스택 (조립된 코드 블록)
+        🧩 알고리즘 스택 (조립된 코드 블록)
       </text>
 
       <g transform="translate(310, -15)">
@@ -237,20 +237,20 @@
 
     <!-- 4. Status Text -->
     <text x="245" y="415" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="bold" fill="#4ade80" text-anchor="middle">
-      ✨ 완벽한 스크래치 알고리즘입니다! 아래 실행 버튼을 눌러보세요!
+      ✨ 완벽한 비주얼 알고리즘입니다! 아래 실행 버튼을 눌러보세요!
     </text>
 
-    <!-- 5. Big Scratch Run Button -->
+    <!-- 5. Big Run Button -->
     <g transform="translate(10, 430)">
       <rect width="470" height="46" rx="12" fill="url(#runBtnGrad)" stroke="#4ade80" stroke-width="2" filter="url(#neonGlow)"/>
       <text x="235" y="29" font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" font-size="19" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="1">
-        🚩 스크래치 알고리즘 실행 (Run Code)
+        🚩 비주얼 알고리즘 실행 (Run Code)
       </text>
     </g>
   </g>
 
   <!-- Bottom Tip -->
   <text x="640" y="665" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#64748b" text-anchor="middle">
-    💡 스크래치(Scratch) 카테고리별 다채로운 블록을 자유롭게 조립하며 지친 손가락을 쉬어가세요!
+    💡 5대 카테고리별 다채로운 비주얼 블록을 자유롭게 조립하며 지친 손가락을 쉬어가세요!
   </text>
 </svg>

@@ -1,7 +1,7 @@
 {
   "name": "ssafy-run",
-  "description": "SSAFY RUN: OvenBreak - 싸피인을 위한 웹 기반 횡스크롤 러닝 액션 게임",
-  "version": "1.0.0",
+  "description": "SSAFY RUN: CYBER SPRINT - 싸피인을 위한 웹 기반 하이퍼 러닝 액션 게임",
+  "version": "1.5.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/strongsun806/ssafy-run.git"

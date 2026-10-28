@@ -8,6 +8,8 @@ export interface SkinDef {
     badgeColor: string;
     pantsColor: string;
     sneakerColor: string;
+    scarfColor: string;
+    glowColor: string;
 }
 
 export class SkinManager {
@@ -18,58 +20,68 @@ export class SkinManager {
     public static readonly SKINS: SkinDef[] = [
         {
             id: 'default',
-            name: '기본 싸피생 (Blue)',
-            description: 'SSAFY 공식 블루 후드와 사원증을 착용한 모범 교육생',
+            name: '네오 러너 (Neo Blue)',
+            description: 'SSAFY 시그니처 블루 테크웨어와 네온 머플러를 장착한 기본 러너',
             price: 0,
             color: '#38bdf8',
             hoodieColor: '#2563eb',
             badgeColor: '#f97316',
             pantsColor: '#1e293b',
-            sneakerColor: '#ef4444'
+            sneakerColor: '#ef4444',
+            scarfColor: '#38bdf8',
+            glowColor: '#0284c7'
         },
         {
             id: 'red_hoodie',
-            name: '열정의 불꽃 (Red)',
-            description: '1일 1커밋의 불타는 열정을 담은 강렬한 레드 에디션',
+            name: '크림슨 블레이즈 (Blaze)',
+            description: '1일 1커밋의 불타는 투지와 플라즈마 화염 스카프를 두른 에디션',
             price: 600,
             color: '#ef4444',
             hoodieColor: '#dc2626',
             badgeColor: '#facc15',
             pantsColor: '#0f172a',
-            sneakerColor: '#f97316'
+            sneakerColor: '#f97316',
+            scarfColor: '#fb923c',
+            glowColor: '#ef4444'
         },
         {
             id: 'cyber_agent',
-            name: '네온 사이버 요원 (Cyber)',
-            description: '버그를 암살하는 딥블랙 & 네온 시안 사이버 수트',
+            name: '고스트 넷러너 (Netrunner)',
+            description: '버그를 단숨에 베어내는 딥블랙 & 시안 바이저 택티컬 요원',
             price: 1500,
             color: '#06b6d4',
             hoodieColor: '#0f172a',
             badgeColor: '#06b6d4',
             pantsColor: '#18181b',
-            sneakerColor: '#06b6d4'
+            sneakerColor: '#22d3ee',
+            scarfColor: '#06b6d4',
+            glowColor: '#22d3ee'
         },
         {
             id: 'gold_master',
-            name: '골든 마스터 (Gold)',
-            description: '수석 수료생에게만 허락된 눈부신 순금 왕관 에디션',
+            name: '아크 마스터 (Arc Gold)',
+            description: '최우수 수료생에게만 허락된 황금 헤일로(광배)와 로얄 망토',
             price: 3000,
             color: '#eab308',
             hoodieColor: '#ca8a04',
             badgeColor: '#fde047',
-            pantsColor: '#78350f',
-            sneakerColor: '#facc15'
+            pantsColor: '#451a03',
+            sneakerColor: '#facc15',
+            scarfColor: '#fef08a',
+            glowColor: '#eab308'
         },
         {
             id: 'panda_pajama',
-            name: '판다 잠옷생 (Panda)',
-            description: '새벽 코딩으로 지쳐 귀여운 동물 잠옷을 입고 뛰는 교육생',
+            name: '네온 판다 크루 (Panda)',
+            description: '심야 해커톤의 귀여운 지배자! 네온 대나무 에너지 슈트',
             price: 4500,
             color: '#a855f7',
-            hoodieColor: '#e2e8f0',
+            hoodieColor: '#f8fafc',
             badgeColor: '#10b981',
             pantsColor: '#0f172a',
-            sneakerColor: '#10b981'
+            sneakerColor: '#10b981',
+            scarfColor: '#c084fc',
+            glowColor: '#a855f7'
         }
     ];
 

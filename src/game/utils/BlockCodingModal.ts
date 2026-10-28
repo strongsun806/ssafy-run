@@ -3,7 +3,7 @@ import { AudioManager } from './AudioManager';
 
 export type BlockCategory = 'all' | 'event' | 'motion' | 'control' | 'looks' | 'sensing';
 
-export interface ScratchBlockDef {
+export interface LogicBlockDef {
     id: string;
     category: BlockCategory;
     text: string;
@@ -22,7 +22,7 @@ export class BlockCodingModal {
     private onComplete: (scoreBonus: number, coinBonus: number) => void;
 
     private container!: Phaser.GameObjects.Container;
-    private placedBlocks: ScratchBlockDef[] = [];
+    private placedBlocks: LogicBlockDef[] = [];
     private blockWorkspaceContainer!: Phaser.GameObjects.Container;
     private paletteContainer!: Phaser.GameObjects.Container;
     private statusText!: Phaser.GameObjects.Text;
@@ -54,7 +54,7 @@ export class BlockCodingModal {
         this.createModal();
     }
 
-    private getAllBlocks(): ScratchBlockDef[] {
+    private getAllBlocks(): LogicBlockDef[] {
         if (this.type === 'iltassafy') {
             return [
                 // Event (Yellow)
@@ -128,15 +128,15 @@ export class BlockCodingModal {
         badgeBg.fillRoundedRect(-180, -cardH / 2 + 14, 360, 24, 12);
         badgeBg.strokeRoundedRect(-180, -cardH / 2 + 14, 360, 24, 12);
 
-        const badgeText = this.scene.add.text(0, -cardH / 2 + 26, '🐱 SCRATCH CODING BREAK · 스크래치 알고리즘', {
+        const badgeText = this.scene.add.text(0, -cardH / 2 + 26, '🧩 NEO LOGIC STUDIO · 비주얼 알고리즘', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '13px',
             color: '#a5b4fc'
         }).setOrigin(0.5);
 
         const titleText = this.type === 'iltassafy'
-            ? '🎱 일타싸피 스크래치: 목적구 포켓인 코딩'
-            : '⚔️ 배틀싸피 스크래치: 사이버 탱크 사격 코딩';
+            ? '🎱 일타싸피 비주얼 코딩: 목적구 포켓인'
+            : '⚔️ 배틀싸피 비주얼 코딩: 사이버 탱크 사격';
 
         const title = this.scene.add.text(0, -cardH / 2 + 58, titleText, {
             fontFamily: '"Black Han Sans", "Permanent Marker", sans-serif',
@@ -145,8 +145,8 @@ export class BlockCodingModal {
         }).setOrigin(0.5);
 
         const subText = this.type === 'iltassafy'
-            ? '스크래치 블록을 조립하여 공을 포켓에 넣고 멘탈(HP) 100% 회복 & 골든 피버를 획득하세요!'
-            : '스크래치 블록을 조립하여 적 탱크를 격파하고 멘탈(HP) 100% 회복 & 골든 피버를 획득하세요!';
+            ? '비주얼 블록을 조립하여 공을 포켓에 넣고 멘탈(HP) 100% 회복 & 골든 피버를 획득하세요!'
+            : '비주얼 블록을 조립하여 적 탱크를 격파하고 멘탈(HP) 100% 회복 & 골든 피버를 획득하세요!';
 
         const subtitle = this.scene.add.text(0, -cardH / 2 + 88, subText, {
             fontFamily: '"Do Hyeon", sans-serif',
@@ -164,8 +164,8 @@ export class BlockCodingModal {
         // Left Panel: Simulation Viewport
         this.createSimulationPanel(-cardW / 2 + 25, -cardH / 2 + 115, 450, 460);
 
-        // Right Panel: Scratch IDE (Palette + Stack)
-        this.createScratchIdePanel(15, -cardH / 2 + 115, 500, 465);
+        // Right Panel: Visual Logic IDE (Palette + Stack)
+        this.createLogicIdePanel(15, -cardH / 2 + 115, 500, 465);
 
         // Auto-place initial Flag block
         const flagBlock = this.getAllBlocks().find(b => b.id === 'event_flag');
@@ -198,7 +198,7 @@ export class BlockCodingModal {
         panelBg.strokeRoundedRect(0, 0, w, h, 14);
         this.simContainer.add(panelBg);
 
-        const label = this.scene.add.text(15, 12, '🎬 LIVE SIMULATION STAGE (스크래치 실행 무대)', {
+        const label = this.scene.add.text(15, 12, '🎬 LIVE SIMULATION STAGE (실시간 시뮬레이션 무대)', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '12px',
             color: '#38bdf8'
@@ -334,7 +334,7 @@ export class BlockCodingModal {
         this.simContainer.add(this.enemyTank);
     }
 
-    // Scratch Character Speech Bubble
+    // Character Speech Bubble
     private showSpeechBubble(x: number, y: number, text: string) {
         if (this.speechBubble) {
             this.speechBubble.destroy();
@@ -370,12 +370,12 @@ export class BlockCodingModal {
         });
     }
 
-    // --- Right Panel: Scratch IDE ---
-    private createScratchIdePanel(x: number, y: number, w: number, h: number) {
+    // --- Right Panel: Visual Logic IDE ---
+    private createLogicIdePanel(x: number, y: number, w: number, h: number) {
         const ideContainer = this.scene.add.container(x, y);
         this.container.add(ideContainer);
 
-        // 1. Scratch Category Tabs
+        // 1. Category Tabs
         const categories: { id: BlockCategory; label: string; color: number }[] = [
             { id: 'all', label: '🌈 전체', color: 0x64748b },
             { id: 'event', label: '🟡 이벤트', color: 0xeab308 },
@@ -392,7 +392,7 @@ export class BlockCodingModal {
             ideContainer.add(tabBtn);
         });
 
-        // 2. Scratch Block Palette Box
+        // 2. Block Palette Box
         const palBox = this.scene.add.graphics();
         palBox.fillStyle(0x0f172a, 0.9);
         palBox.lineStyle(1, 0x1e293b);
@@ -406,7 +406,7 @@ export class BlockCodingModal {
 
         // 3. Workspace Section Header
         const wsY = 205;
-        const wsTitle = this.scene.add.text(0, wsY, '🧩 스크래치 스택 (조립된 코드 블록)', {
+        const wsTitle = this.scene.add.text(0, wsY, '🧩 알고리즘 스택 (조립된 코드 블록)', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '15px',
             color: '#facc15'
@@ -426,7 +426,7 @@ export class BlockCodingModal {
 
         ideContainer.add([wsTitle, autoBtn, resetBtn]);
 
-        // 4. Scratch Workspace Canvas
+        // 4. Workspace Canvas
         const wsBox = this.scene.add.graphics();
         wsBox.fillStyle(0x020617, 0.95);
         wsBox.lineStyle(1.5, 0x334155);
@@ -446,8 +446,8 @@ export class BlockCodingModal {
         }).setOrigin(0.5);
         ideContainer.add(this.statusText);
 
-        // 6. Scratch Run Button (Green Flag Button)
-        const runBtn = this.createScratchRunButton(w / 2, wsY + 242, w - 20, 46, '🚩 스크래치 알고리즘 실행 (Run Code)', () => {
+        // 6. Run Button
+        const runBtn = this.createLogicRunButton(w / 2, wsY + 242, w - 20, 46, '🚩 알고리즘 컴파일 & 실행 (Run Code)', () => {
             this.executeAlgorithm();
         });
         ideContainer.add(runBtn);
@@ -497,20 +497,20 @@ export class BlockCodingModal {
             const bx = col * 242;
             const by = row * 36;
 
-            const chip = this.createScratchPaletteBlock(bx, by, 236, 32, blk);
+            const chip = this.createLogicPaletteBlock(bx, by, 236, 32, blk);
             this.paletteContainer.add(chip);
         });
     }
 
-    // Scratch Puzzle Block Shape
-    private createScratchPaletteBlock(x: number, y: number, w: number, h: number, blk: ScratchBlockDef) {
+    // Puzzle Block Shape
+    private createLogicPaletteBlock(x: number, y: number, w: number, h: number, blk: LogicBlockDef) {
         const c = this.scene.add.container(x, y);
 
         const bg = this.scene.add.graphics();
         bg.fillStyle(blk.color, 0.95);
         bg.lineStyle(1, 0xffffff, 0.35);
 
-        // Scratch block notch
+        // Block notch
         if (blk.category === 'event') {
             // Hat curved top
             bg.fillRoundedRect(0, 4, w, h - 4, 6);
@@ -557,10 +557,10 @@ export class BlockCodingModal {
         return c;
     }
 
-    private addBlockToWorkspace(blk: ScratchBlockDef) {
+    private addBlockToWorkspace(blk: LogicBlockDef) {
         if (this.isSimulating) return;
         if (this.placedBlocks.length >= 7) {
-            this.statusText.setText('⚠️ 스크래치 스택이 가득 찼습니다! (최대 7개)');
+            this.statusText.setText('⚠️ 알고리즘 스택이 가득 찼습니다! (최대 7개)');
             this.statusText.setColor('#f87171');
             return;
         }
@@ -581,7 +581,7 @@ export class BlockCodingModal {
         this.placedBlocks = [...corrects];
         this.audioManager.playBlockClick();
         this.renderWorkspaceBlocks();
-        this.statusText.setText('✨ 정답 스크래치 블록들이 알맞게 조립되었습니다! [실행 버튼]을 누르세요!');
+        this.statusText.setText('✨ 정답 블록들이 알맞게 조립되었습니다! [실행 버튼]을 누르세요!');
         this.statusText.setColor('#4ade80');
     }
 
@@ -598,7 +598,7 @@ export class BlockCodingModal {
             return;
         }
 
-        // Render stacked scratch blocks vertically
+        // Render stacked blocks vertically
         this.placedBlocks.forEach((blk, idx) => {
             const col = idx < 4 ? 0 : 1;
             const row = idx < 4 ? idx : idx - 4;
@@ -675,14 +675,14 @@ export class BlockCodingModal {
         if (this.isSimulating) return;
 
         if (this.placedBlocks.length < 2) {
-            this.statusText.setText('⚠️ 스크래치 블록을 최소 2개 이상 조립해주세요!');
+            this.statusText.setText('⚠️ 블록을 최소 2개 이상 조립해주세요!');
             this.statusText.setColor('#f87171');
             this.audioManager.playCompileFail();
             return;
         }
 
         this.isSimulating = true;
-        this.statusText.setText('⚙️ 스크래치 알고리즘 순차 실행 및 연산 중...');
+        this.statusText.setText('⚙️ 비주얼 알고리즘 순차 실행 및 연산 중...');
         this.statusText.setColor('#38bdf8');
 
         // Check if all correct blocks are included and no fail blocks
@@ -693,7 +693,7 @@ export class BlockCodingModal {
 
         const isSuccess = !hasWrong && hasAll;
 
-        // Step by step Scratch execution simulation
+        // Step by step execution simulation
         this.runStepByStep(0, isSuccess);
     }
 
@@ -722,7 +722,7 @@ export class BlockCodingModal {
             });
         }
 
-        // Show Scratch Speech Bubble if specified
+        // Show Speech Bubble if specified
         if (blk.speechText) {
             if (this.type === 'iltassafy' && this.cueBall) {
                 this.showSpeechBubble(this.cueBall.x, this.cueBall.y, blk.speechText);
@@ -833,10 +833,10 @@ export class BlockCodingModal {
 
     private handleMiniGameSuccess() {
         this.audioManager.playCompileSuccess();
-        this.statusText.setText('🎉 SCRATCH PASS (200 OK)! 스크래치 알고리즘 100점 만점!');
+        this.statusText.setText('🎉 COMPILER PASS (200 OK)! 비주얼 알고리즘 100점 만점!');
         this.statusText.setColor('#4ade80');
 
-        // Scratch Celebration Banner
+        // Celebration Banner
         const banner = this.scene.add.container(0, 0);
         const bg = this.scene.add.graphics();
         bg.fillStyle(0x0f172a, 0.96);
@@ -844,7 +844,7 @@ export class BlockCodingModal {
         bg.fillRoundedRect(-250, -52, 500, 104, 16);
         bg.strokeRoundedRect(-250, -52, 500, 104, 16);
 
-        const title = this.scene.add.text(0, -18, '✨ 스크래치 알고리즘 PASS! 멘탈 완전 회복! ✨', {
+        const title = this.scene.add.text(0, -18, '✨ 비주얼 알고리즘 PASS! 멘탈 완전 회복! ✨', {
             fontFamily: '"Black Han Sans", sans-serif',
             fontSize: '20px',
             color: '#4ade80'
@@ -915,8 +915,8 @@ export class BlockCodingModal {
         return c;
     }
 
-    // Helper: Scratch Big Run Button (Green Flag)
-    private createScratchRunButton(x: number, y: number, w: number, h: number, text: string, onClick: () => void) {
+    // Helper: Big Run Button
+    private createLogicRunButton(x: number, y: number, w: number, h: number, text: string, onClick: () => void) {
         const c = this.scene.add.container(x, y);
         const bg = this.scene.add.graphics();
         bg.fillStyle(0x16a34a, 1);

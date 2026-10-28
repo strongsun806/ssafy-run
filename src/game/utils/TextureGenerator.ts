@@ -57,164 +57,217 @@ export class TextureGenerator {
         const bounce = (frame === 1 || frame === 3) ? -2 : 0;
         const cy = 38 + bounce;
 
-        // Backpack
+        // 1. Dynamic Flowing Cyber Scarf / Energy Tail (Behind character)
+        const wave = Math.sin(frame * 1.6) * 4;
+        ctx.save();
+        ctx.strokeStyle = skin.scarfColor || skin.color;
+        ctx.lineWidth = 6;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(26, cy - 12);
+        ctx.quadraticCurveTo(12, cy - 16 + wave, 3, cy - 8 - wave);
+        ctx.stroke();
+
+        // Scarf inner neon highlight
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(26, cy - 12);
+        ctx.quadraticCurveTo(12, cy - 16 + wave, 5, cy - 8 - wave);
+        ctx.stroke();
+        ctx.restore();
+
+        // 2. Techwear Jetpack / Cyber Backpack
         ctx.fillStyle = '#0f172a';
         ctx.beginPath();
-        ctx.roundRect(14, cy - 14, 12, 22, 4);
+        ctx.roundRect(13, cy - 13, 13, 22, 4);
+        ctx.fill();
+        ctx.strokeStyle = skin.color;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        // Thruster core glow on backpack
+        ctx.fillStyle = skin.scarfColor || '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(16, cy - 2, 3, 0, Math.PI * 2);
         ctx.fill();
 
-        // Left Arm (back)
+        // 3. Left Arm (back)
         ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
-        if (frame === 1) {
-            ctx.ellipse(22, cy - 2, 6, 12, -0.4, 0, Math.PI * 2);
+        if (frame === 1 || frame === 2) {
+            ctx.ellipse(22, cy - 2, 6, 12, -0.45, 0, Math.PI * 2);
         } else {
-            ctx.ellipse(36, cy - 2, 6, 12, 0.4, 0, Math.PI * 2);
+            ctx.ellipse(38, cy - 2, 6, 12, 0.45, 0, Math.PI * 2);
         }
         ctx.fill();
 
-        // Legs & Shoes
+        // 4. Legs & Hover-Sole Sneakers
         ctx.fillStyle = skin.pantsColor;
         if (frame === 1) {
             ctx.fillRect(32, cy + 12, 8, 16);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(32, cy + 24, 8, 4);
             ctx.fillStyle = skin.sneakerColor;
-            ctx.fillRect(34, cy + 28, 14, 8);
+            ctx.fillRect(33, cy + 27, 15, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(33, cy + 33, 15, 2.5); // Glowing Hover Sole
 
             ctx.fillStyle = skin.pantsColor;
             ctx.fillRect(20, cy + 10, 8, 14);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(20, cy + 20, 8, 4);
             ctx.fillStyle = skin.sneakerColor;
-            ctx.fillRect(16, cy + 24, 12, 8);
+            ctx.fillRect(15, cy + 23, 13, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(15, cy + 29, 13, 2.5);
         } else if (frame === 2) {
             ctx.fillRect(28, cy + 12, 8, 18);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(28, cy + 26, 8, 4);
             ctx.fillStyle = skin.sneakerColor;
-            ctx.fillRect(28, cy + 30, 13, 8);
+            ctx.fillRect(28, cy + 29, 14, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(28, cy + 35, 14, 2.5);
 
             ctx.fillStyle = skin.pantsColor;
-            ctx.fillRect(24, cy + 10, 8, 16);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(24, cy + 22, 8, 4);
+            ctx.fillRect(23, cy + 10, 8, 16);
             ctx.fillStyle = skin.sneakerColor;
-            ctx.fillRect(22, cy + 26, 12, 8);
+            ctx.fillRect(21, cy + 25, 13, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(21, cy + 31, 13, 2.5);
         } else if (frame === 3) {
             ctx.fillRect(20, cy + 12, 8, 16);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(20, cy + 24, 8, 4);
             ctx.fillStyle = skin.sneakerColor;
-            ctx.fillRect(16, cy + 28, 14, 8);
+            ctx.fillRect(15, cy + 27, 15, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(15, cy + 33, 15, 2.5);
 
             ctx.fillStyle = skin.pantsColor;
             ctx.fillRect(32, cy + 10, 8, 14);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(32, cy + 20, 8, 4);
             ctx.fillStyle = skin.sneakerColor;
-            ctx.fillRect(34, cy + 24, 12, 8);
+            ctx.fillRect(34, cy + 23, 13, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(34, cy + 29, 13, 2.5);
         } else {
             ctx.fillRect(26, cy + 12, 8, 18);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(26, cy + 26, 8, 4);
             ctx.fillStyle = skin.sneakerColor;
-            ctx.fillRect(26, cy + 30, 13, 8);
+            ctx.fillRect(26, cy + 29, 14, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(26, cy + 35, 14, 2.5);
 
             ctx.fillStyle = skin.pantsColor;
             ctx.fillRect(22, cy + 10, 8, 16);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(22, cy + 22, 8, 4);
             ctx.fillStyle = skin.sneakerColor;
-            ctx.fillRect(20, cy + 26, 12, 8);
+            ctx.fillRect(19, cy + 25, 13, 8);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(19, cy + 31, 13, 2.5);
         }
 
-        // Torso Hoodie
+        // 5. Techwear Torso Jacket
         ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
         ctx.roundRect(22, cy - 14, 22, 28, 6);
         ctx.fill();
         ctx.strokeStyle = skin.color;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.8;
         ctx.stroke();
 
-        // Ribbon & ID Card
+        // Holographic Lanyard & SSAFY Pass
         ctx.strokeStyle = skin.badgeColor;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2.2;
         ctx.beginPath();
         ctx.moveTo(27, cy - 12);
-        ctx.lineTo(33, cy + 4);
-        ctx.lineTo(39, cy - 12);
+        ctx.lineTo(34, cy + 3);
+        ctx.lineTo(40, cy - 12);
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(30, cy + 4, 8, 10);
-        ctx.fillStyle = skin.hoodieColor;
-        ctx.fillRect(31, cy + 6, 6, 3);
+        ctx.fillRect(31, cy + 3, 8, 10);
+        ctx.fillStyle = skin.color;
+        ctx.fillRect(32, cy + 5, 6, 4);
 
-        // Head
+        // 6. Expressive Anime Head
         ctx.fillStyle = '#fed7aa';
         ctx.beginPath();
-        ctx.arc(34, cy - 23, 11, 0, Math.PI * 2);
+        ctx.arc(34, cy - 23, 11.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Hair / Special Headgear
+        // Subtle anime cheek blush
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.35)';
+        ctx.beginPath();
+        ctx.arc(40, cy - 20, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 7. Hair & Signature Headgear
         if (skin.id === 'gold_master') {
-            // Golden Crown
+            // Radiant Floating Halo + Crown
+            ctx.strokeStyle = '#fef08a';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(34, cy - 41, 11, 3, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
             ctx.fillStyle = '#facc15';
             ctx.beginPath();
-            ctx.moveTo(26, cy - 28);
-            ctx.lineTo(29, cy - 38);
-            ctx.lineTo(34, cy - 32);
-            ctx.lineTo(39, cy - 38);
-            ctx.lineTo(42, cy - 28);
+            ctx.moveTo(25, cy - 29);
+            ctx.lineTo(28, cy - 39);
+            ctx.lineTo(34, cy - 33);
+            ctx.lineTo(40, cy - 39);
+            ctx.lineTo(43, cy - 29);
             ctx.closePath();
             ctx.fill();
             ctx.fillStyle = '#ef4444';
-            ctx.fillRect(33, cy - 30, 3, 3);
+            ctx.fillRect(33, cy - 32, 3, 3);
         } else if (skin.id === 'panda_pajama') {
-            // Panda Hood Ears
+            // 3D Panda Ears & Hood
             ctx.fillStyle = '#0f172a';
             ctx.beginPath();
-            ctx.arc(26, cy - 34, 5, 0, Math.PI * 2);
-            ctx.arc(42, cy - 34, 5, 0, Math.PI * 2);
+            ctx.arc(25, cy - 34, 5.5, 0, Math.PI * 2);
+            ctx.arc(43, cy - 34, 5.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(25, cy - 34, 2.5, 0, Math.PI * 2);
+            ctx.arc(43, cy - 34, 2.5, 0, Math.PI * 2);
             ctx.fill();
         } else if (skin.id === 'cyber_agent') {
-            // Cyber Visor
+            // Spiky Hair + Glowing Tactical Visor
             ctx.fillStyle = '#0f172a';
             ctx.beginPath();
-            ctx.arc(33, cy - 25, 12, Math.PI * 0.9, Math.PI * 2.1);
+            ctx.arc(33, cy - 25, 12.5, Math.PI * 0.85, Math.PI * 2.15);
+            ctx.lineTo(20, cy - 30);
             ctx.fill();
+
             ctx.fillStyle = '#06b6d4';
-            ctx.fillRect(35, cy - 26, 12, 6);
+            ctx.fillRect(33, cy - 27, 14, 6);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(36, cy - 26, 8, 2);
         } else {
-            // Classic Dark Hair
+            // Dynamic Windswept Anime Hair + Cyber Headset
             ctx.fillStyle = '#0f172a';
             ctx.beginPath();
-            ctx.arc(33, cy - 25, 12, Math.PI * 0.9, Math.PI * 2.1);
-            ctx.lineTo(44, cy - 24);
+            ctx.arc(33, cy - 25, 12.5, Math.PI * 0.85, Math.PI * 2.15);
+            ctx.lineTo(46, cy - 25);
             ctx.lineTo(36, cy - 22);
+            ctx.lineTo(19, cy - 28);
+            ctx.fill();
+
+            // Cyber Headset Earpiece
+            ctx.fillStyle = skin.color;
+            ctx.beginPath();
+            ctx.arc(29, cy - 23, 3.5, 0, Math.PI * 2);
             ctx.fill();
         }
 
-        // Eye
+        // 8. Anime Eye with Specular Catchlight
         if (skin.id !== 'cyber_agent') {
             ctx.fillStyle = '#0f172a';
-            ctx.fillRect(37, cy - 24, 3, 3);
+            ctx.fillRect(37, cy - 25, 4, 4.5);
             ctx.fillStyle = skin.color;
-            ctx.fillRect(38, cy - 23, 2, 2);
+            ctx.fillRect(38, cy - 24, 2.5, 3);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(37.5, cy - 25, 1.5, 1.5); // Eye sparkle
         }
 
-        // Sweat drop
-        ctx.fillStyle = '#38bdf8';
-        ctx.beginPath();
-        ctx.arc(43, cy - 26, 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Front Arm
+        // 9. Front Arm
         ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
-        if (frame === 1) {
+        if (frame === 1 || frame === 2) {
             ctx.ellipse(38, cy - 1, 6, 12, 0.5, 0, Math.PI * 2);
         } else {
             ctx.ellipse(24, cy - 1, 6, 12, -0.5, 0, Math.PI * 2);
@@ -226,20 +279,43 @@ export class TextureGenerator {
         ctx.clearRect(0, 0, 64, 80);
         const cy = 34;
 
+        // Flowing Scarf Trailing Downward on Jump
+        ctx.save();
+        ctx.strokeStyle = skin.scarfColor || skin.color;
+        ctx.lineWidth = 6.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(25, cy - 10);
+        ctx.quadraticCurveTo(10, cy + 2, 4, cy + 16);
+        ctx.stroke();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+
+        // Jetpack with booster flame
         ctx.fillStyle = '#0f172a';
         ctx.beginPath();
-        ctx.roundRect(14, cy - 12, 12, 22, 4);
+        ctx.roundRect(13, cy - 12, 13, 22, 4);
+        ctx.fill();
+
+        // Booster Jet Flame
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.moveTo(15, cy + 10);
+        ctx.lineTo(19, cy + 24);
+        ctx.lineTo(23, cy + 10);
         ctx.fill();
 
         // Tucked Legs
         ctx.fillStyle = skin.pantsColor;
         ctx.fillRect(20, cy + 12, 16, 8);
         ctx.fillRect(28, cy + 18, 14, 8);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(36, cy + 18, 8, 4);
         ctx.fillStyle = skin.sneakerColor;
-        ctx.fillRect(38, cy + 22, 12, 8);
-        ctx.fillRect(20, cy + 18, 12, 8);
+        ctx.fillRect(38, cy + 22, 13, 8);
+        ctx.fillRect(20, cy + 18, 13, 8);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(38, cy + 28, 13, 2.5);
 
         // Torso
         ctx.fillStyle = skin.hoodieColor;
@@ -247,7 +323,7 @@ export class TextureGenerator {
         ctx.roundRect(22, cy - 14, 22, 28, 6);
         ctx.fill();
         ctx.strokeStyle = skin.color;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.8;
         ctx.stroke();
 
         ctx.strokeStyle = skin.badgeColor;
@@ -264,90 +340,182 @@ export class TextureGenerator {
         // Head
         ctx.fillStyle = '#fed7aa';
         ctx.beginPath();
-        ctx.arc(34, cy - 23, 11, 0, Math.PI * 2);
+        ctx.arc(34, cy - 23, 11.5, 0, Math.PI * 2);
         ctx.fill();
 
         if (skin.id === 'gold_master') {
             ctx.fillStyle = '#facc15';
             ctx.beginPath();
-            ctx.moveTo(26, cy - 28);
-            ctx.lineTo(29, cy - 38);
+            ctx.moveTo(25, cy - 28);
+            ctx.lineTo(28, cy - 38);
             ctx.lineTo(34, cy - 32);
-            ctx.lineTo(39, cy - 38);
-            ctx.lineTo(42, cy - 28);
+            ctx.lineTo(40, cy - 38);
+            ctx.lineTo(43, cy - 28);
             ctx.closePath();
             ctx.fill();
         } else if (skin.id === 'cyber_agent') {
             ctx.fillStyle = '#0f172a';
             ctx.beginPath();
-            ctx.arc(33, cy - 25, 12, Math.PI * 0.8, Math.PI * 2.2);
+            ctx.arc(33, cy - 25, 12.5, Math.PI * 0.8, Math.PI * 2.2);
             ctx.fill();
             ctx.fillStyle = '#06b6d4';
-            ctx.fillRect(36, cy - 26, 12, 6);
+            ctx.fillRect(34, cy - 27, 14, 6);
         } else {
             ctx.fillStyle = '#0f172a';
             ctx.beginPath();
-            ctx.arc(33, cy - 25, 12, Math.PI * 0.8, Math.PI * 2.2);
+            ctx.arc(33, cy - 25, 12.5, Math.PI * 0.8, Math.PI * 2.2);
             ctx.lineTo(45, cy - 28);
             ctx.fill();
         }
 
-        // Arm raised
+        if (skin.id !== 'cyber_agent') {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(37, cy - 25, 4, 4.5);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(37.5, cy - 25, 1.5, 1.5);
+        }
+
+        // Heroic Raised Arm
         ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
-        ctx.ellipse(38, cy - 8, 6, 12, 0.8, 0, Math.PI * 2);
+        ctx.ellipse(38, cy - 9, 6, 12, 0.8, 0, Math.PI * 2);
         ctx.fill();
     }
 
     private static drawTraineeSlide(ctx: CanvasRenderingContext2D, skin: typeof SkinManager.SKINS[0]) {
         ctx.clearRect(0, 0, 80, 48);
 
+        // Friction Sparks & Neon Trail
+        ctx.fillStyle = skin.scarfColor || '#38bdf8';
+        ctx.fillRect(2, 18, 28, 5);
         ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(2, 42, 20, 3);
+        ctx.fillRect(2, 42, 24, 3);
         ctx.fillStyle = skin.sneakerColor;
-        ctx.fillRect(10, 44, 25, 2);
+        ctx.fillRect(10, 44, 28, 2);
 
         ctx.fillStyle = skin.pantsColor;
         ctx.fillRect(12, 24, 28, 10);
         ctx.fillStyle = skin.sneakerColor;
-        ctx.fillRect(8, 26, 14, 8);
+        ctx.fillRect(6, 26, 15, 8);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(6, 32, 15, 2);
 
         ctx.fillStyle = skin.hoodieColor;
         ctx.beginPath();
-        ctx.roundRect(32, 16, 26, 18, 4);
+        ctx.roundRect(32, 16, 26, 18, 5);
         ctx.fill();
         ctx.strokeStyle = skin.color;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.8;
         ctx.stroke();
 
         ctx.fillStyle = '#fed7aa';
         ctx.beginPath();
-        ctx.arc(62, 22, 10, 0, Math.PI * 2);
+        ctx.arc(62, 22, 10.5, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#0f172a';
         ctx.beginPath();
-        ctx.arc(60, 20, 11, Math.PI * 0.9, Math.PI * 2.1);
-        ctx.lineTo(48, 16);
+        ctx.arc(60, 20, 11.5, Math.PI * 0.9, Math.PI * 2.1);
+        ctx.lineTo(46, 15);
         ctx.fill();
+
+        if (skin.id === 'cyber_agent') {
+            ctx.fillStyle = '#06b6d4';
+            ctx.fillRect(60, 18, 12, 5);
+        } else {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(64, 20, 3.5, 3.5);
+        }
 
         ctx.fillStyle = skin.hoodieColor;
         ctx.fillRect(44, 28, 20, 6);
     }
 
     private static generateStageTextures(scene: Phaser.Scene) {
-        // --- STAGE 1: 테헤란로 출근길 (Seoul Dawn City) ---
+        // --- Companion AI Bit-Drone Sprite ---
+        if (!scene.textures.exists('companion_drone')) {
+            const canvas = scene.textures.createCanvas('companion_drone', 40, 40);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                // Outer hovering ring
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(20, 22, 16, 6, -0.2, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Core spherical drone body
+                const grad = ctx.createRadialGradient(18, 16, 2, 20, 20, 12);
+                grad.addColorStop(0, '#38bdf8');
+                grad.addColorStop(0.5, '#0284c7');
+                grad.addColorStop(1, '#0f172a');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(20, 18, 11, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#bae6fd';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Cute glowing visor eye
+                ctx.fillStyle = '#fef08a';
+                ctx.fillRect(21, 15, 6, 4);
+
+                // Antenna
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(20, 7);
+                ctx.lineTo(20, 2);
+                ctx.stroke();
+                ctx.fillStyle = '#4ade80';
+                ctx.beginPath();
+                ctx.arc(20, 2, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                canvas.refresh();
+            }
+        }
+
+        // --- STAGE 1: 네오 테헤란로 출근길 (Neo-Seoul Cyber Dawn) ---
         if (!scene.textures.exists('bg_s1_far')) {
             const canvas = scene.textures.createCanvas('bg_s1_far', 1280, 400);
             if (canvas) {
                 const ctx = canvas.getContext();
-                ctx.fillStyle = '#111827';
-                const buildings = [{ x: 0, w: 120, h: 220 }, { x: 130, w: 140, h: 280 }, { x: 290, w: 90, h: 180 }, { x: 400, w: 160, h: 310 }, { x: 580, w: 130, h: 240 }, { x: 730, w: 110, h: 270 }, { x: 860, w: 140, h: 220 }, { x: 1020, w: 150, h: 300 }, { x: 1190, w: 90, h: 200 }];
-                buildings.forEach(b => {
+
+                // Giant Synthwave Cyber Moon in background
+                const moonGrad = ctx.createLinearGradient(920, 30, 920, 190);
+                moonGrad.addColorStop(0, 'rgba(56, 189, 248, 0.28)');
+                moonGrad.addColorStop(0.5, 'rgba(168, 85, 247, 0.22)');
+                moonGrad.addColorStop(1, 'rgba(236, 72, 153, 0.05)');
+                ctx.fillStyle = moonGrad;
+                ctx.beginPath();
+                ctx.arc(920, 110, 75, 0, Math.PI * 2);
+                ctx.fill();
+
+                const buildings = [
+                    { x: 0, w: 120, h: 220 }, { x: 130, w: 140, h: 290 },
+                    { x: 290, w: 95, h: 190 }, { x: 400, w: 165, h: 325 },
+                    { x: 580, w: 130, h: 250 }, { x: 730, w: 115, h: 280 },
+                    { x: 860, w: 140, h: 225 }, { x: 1020, w: 155, h: 310 },
+                    { x: 1190, w: 90, h: 210 }
+                ];
+                buildings.forEach((b, idx) => {
+                    ctx.fillStyle = '#0f172a';
                     ctx.fillRect(b.x, 400 - b.h, b.w, b.h);
-                    ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
-                    ctx.fillRect(b.x, 400 - b.h, b.w, 4);
-                    ctx.fillStyle = '#111827';
+                    // Neon roof trim
+                    ctx.fillStyle = idx % 2 === 0 ? 'rgba(56, 189, 248, 0.45)' : 'rgba(168, 85, 247, 0.45)';
+                    ctx.fillRect(b.x, 400 - b.h, b.w, 3);
+
+                    // Illuminated skyscraper windows
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.14)';
+                    for (let wy = 400 - b.h + 18; wy < 380; wy += 22) {
+                        for (let wx = b.x + 14; wx < b.x + b.w - 18; wx += 20) {
+                            if ((wx + wy) % 3 !== 0) {
+                                ctx.fillRect(wx, wy, 8, 10);
+                            }
+                        }
+                    }
                 });
                 canvas.refresh();
             }
@@ -356,14 +524,27 @@ export class TextureGenerator {
             const canvas = scene.textures.createCanvas('bg_s1_near', 1280, 280);
             if (canvas) {
                 const ctx = canvas.getContext();
-                ctx.fillStyle = '#1e293b';
-                const blocks = [{ x: 40, w: 190, h: 230, label: 'SSAFY' }, { x: 260, w: 150, h: 180, label: '9:00 AM' }, { x: 440, w: 230, h: 250, label: 'MULTICAMPUS' }, { x: 700, w: 160, h: 200, label: 'SEOUL' }, { x: 890, w: 210, h: 230, label: 'COMMIT' }, { x: 1120, w: 160, h: 210, label: 'MULTICAMPUS' }];
+                const blocks = [
+                    { x: 40, w: 190, h: 230, label: 'SSAFY CAMPUS', color: '#38bdf8' },
+                    { x: 260, w: 150, h: 180, label: '08:59 AM', color: '#facc15' },
+                    { x: 440, w: 230, h: 250, label: 'CYBER SPRINT', color: '#a855f7' },
+                    { x: 700, w: 160, h: 200, label: '200 OK', color: '#4ade80' },
+                    { x: 890, w: 210, h: 230, label: '1 DAY 1 COMMIT', color: '#38bdf8' },
+                    { x: 1120, w: 150, h: 210, label: 'DEV LAB', color: '#f43f5e' }
+                ];
                 blocks.forEach(b => {
+                    ctx.fillStyle = '#172033';
                     ctx.fillRect(b.x, 280 - b.h, b.w, b.h);
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.font = 'bold 15px sans-serif';
-                    ctx.fillText(b.label, b.x + 20, 280 - b.h + 28);
-                    ctx.fillStyle = '#1e293b';
+                    ctx.strokeStyle = b.color;
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeRect(b.x, 280 - b.h, b.w, 38);
+
+                    // Glowing holographic signboard
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                    ctx.fillRect(b.x + 8, 280 - b.h + 6, b.w - 16, 26);
+                    ctx.fillStyle = b.color;
+                    ctx.font = 'bold 14px sans-serif';
+                    ctx.fillText(b.label, b.x + 18, 280 - b.h + 24);
                 });
                 canvas.refresh();
             }

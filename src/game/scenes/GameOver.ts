@@ -202,7 +202,7 @@ export class GameOver extends Scene {
     }
 
     private shareScore() {
-        const text = `🏃‍♂️ [SSAFY RUN: OvenBreak]\n지각 위기에서 살아남아 ${this.score.toLocaleString()}점을 달성했습니다! (달린 거리: ${this.distance}m, 코인: 🪙${this.coins})\n너도 멀캠으로 출근해볼래? 🎮\nhttps://strongsun806.github.io/ssafy-run/`;
+        const text = `🏃‍♂️ [SSAFY RUN: CYBER SPRINT]\n지각 위기에서 살아남아 ${this.score.toLocaleString()}점을 달성했습니다! (달린 거리: ${this.distance}m, 코인: 🪙${this.coins})\n너도 멀캠으로 출근해볼래? 🎮\nhttps://strongsun806.github.io/ssafy-run/`;
 
         if (navigator.clipboard) {
             navigator.clipboard.writeText(text).then(() => {

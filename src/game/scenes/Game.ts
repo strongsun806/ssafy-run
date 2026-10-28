@@ -531,7 +531,7 @@ export class Game extends Scene {
         }
     }
 
-    // Falling into Pit: Takes 30 HP damage & Cookie Run style SSAFY Rescue Drone lifts player up!
+    // Falling into Pit: Takes 30 HP damage & SSAFY Emergency Rescue Drone lifts player up!
     private handleFallIntoPit() {
         this.currentHp -= 30;
         this.combo = 0;
@@ -1156,7 +1156,7 @@ export class Game extends Scene {
         return 2000;
     }
 
-    // Pattern 3: Floating Upper Platform with Gold Coins (Cookie Run style 2-tier path!)
+    // Pattern 3: Floating Upper Platform with Gold Coins (2-tier aerial path!)
     private spawnFloatingPlatformWave(): number {
         const { width } = this.scale;
         const platX = width + 200;
