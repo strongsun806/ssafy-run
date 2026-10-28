@@ -147,6 +147,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         const body = this.body as Phaser.Physics.Arcade.Body;
         if (!body) return;
 
+        // Strict horizontal lock: Prevent collision push or velocity from ejecting player off-screen
+        this.setX(180);
+        this.setVelocityX(0);
+
         const deltaSec = delta / 1000;
 
         // Magnet timer decay
@@ -409,6 +413,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     public hit(): boolean {
         if (this.isInvincible || this.isFever || this.isRescuing) return false;
+
+        this.setX(180);
+        this.setVelocityX(0);
 
         this.isInvincible = true;
         this.audioManager.playHit();

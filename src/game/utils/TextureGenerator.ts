@@ -9,6 +9,7 @@ export class TextureGenerator {
         this.generateObstacleTextures(scene);
         this.generateParticleTextures(scene);
         this.generateUiTextures(scene);
+        this.generateBossTextures(scene);
     }
 
     private static generateAllPlayerSkins(scene: Phaser.Scene) {
@@ -371,34 +372,28 @@ export class TextureGenerator {
             const canvas = scene.textures.createCanvas('ground_s1', 128, 75);
             if (canvas) {
                 const ctx = canvas.getContext();
-                // 1. Deep foundation stone
-                ctx.fillStyle = '#0f172a';
+                // 1. Smooth gradient foundation (Calm, non-dizzying)
+                const grad = ctx.createLinearGradient(0, 0, 0, 75);
+                grad.addColorStop(0, '#1e293b');
+                grad.addColorStop(0.3, '#172033');
+                grad.addColorStop(1, '#0a0f1d');
+                ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, 128, 75);
 
-                // 2. Urban sidewalk paving stones
-                ctx.fillStyle = '#1e293b';
-                ctx.fillRect(0, 12, 128, 63);
-                ctx.fillStyle = '#334155';
-                for (let x = 0; x < 128; x += 32) {
-                    ctx.fillRect(x, 14, 30, 24);
-                    ctx.fillRect(x + 16, 40, 30, 30);
-                }
-                ctx.strokeStyle = '#0f172a';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(0, 12, 128, 63);
+                // 2. Soft horizontal panel seam (Very subtle, low contrast)
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+                ctx.fillRect(0, 32, 128, 1);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+                ctx.fillRect(0, 33, 128, 1);
 
-                // 3. Lush green lawn trim on top
-                ctx.fillStyle = '#15803d';
-                ctx.fillRect(0, 0, 128, 12);
+                // 3. Crisp vibrant lawn border on top
+                ctx.fillStyle = '#16a34a';
+                ctx.fillRect(0, 0, 128, 8);
                 ctx.fillStyle = '#22c55e';
-                ctx.fillRect(0, 0, 128, 6);
-                // Grass blade tufts
+                ctx.fillRect(0, 0, 128, 4);
                 ctx.fillStyle = '#86efac';
-                for (let x = 4; x < 128; x += 12) {
-                    ctx.beginPath();
-                    ctx.moveTo(x, 6); ctx.lineTo(x + 3, 0); ctx.lineTo(x + 6, 6);
-                    ctx.fill();
-                }
+                ctx.fillRect(0, 0, 128, 1.5);
+
                 canvas.refresh();
             }
         }
@@ -442,23 +437,28 @@ export class TextureGenerator {
             const canvas = scene.textures.createCanvas('ground_s2', 128, 75);
             if (canvas) {
                 const ctx = canvas.getContext();
-                ctx.fillStyle = '#1c1917'; // Concrete stairs base
+                // 1. Smooth dark slate-concrete gradient
+                const grad = ctx.createLinearGradient(0, 0, 0, 75);
+                grad.addColorStop(0, '#262626');
+                grad.addColorStop(0.35, '#1c1917');
+                grad.addColorStop(1, '#0c0a09');
+                ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, 128, 75);
-                // Metal treads
-                ctx.fillStyle = '#292524';
-                ctx.fillRect(0, 14, 128, 61);
-                // Yellow & Black hazard stripes on top rim
-                ctx.fillStyle = '#eab308';
-                ctx.fillRect(0, 0, 128, 14);
-                ctx.fillStyle = '#1c1917';
-                for (let i = 0; i < 128; i += 24) {
-                    ctx.beginPath();
-                    ctx.moveTo(i, 0); ctx.lineTo(i + 14, 14); ctx.lineTo(i + 7, 14); ctx.lineTo(i - 7, 0);
-                    ctx.fill();
-                }
-                // White caution line
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 13, 128, 2);
+
+                // 2. Subtle horizontal metal expansion strip
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.fillRect(0, 34, 128, 1);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fillRect(0, 35, 128, 1);
+
+                // 3. Clean solid amber caution edge on top (Calm, non-strobing)
+                ctx.fillStyle = '#b45309';
+                ctx.fillRect(0, 0, 128, 8);
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(0, 0, 128, 4);
+                ctx.fillStyle = '#fef08a';
+                ctx.fillRect(0, 0, 128, 1.5);
+
                 canvas.refresh();
             }
         }
@@ -508,21 +508,26 @@ export class TextureGenerator {
             const canvas = scene.textures.createCanvas('ground_s3', 128, 75);
             if (canvas) {
                 const ctx = canvas.getContext();
-                ctx.fillStyle = '#03172e';
+                // 1. Futuristic cyber dark blue gradient
+                const grad = ctx.createLinearGradient(0, 0, 0, 75);
+                grad.addColorStop(0, '#0c1e36');
+                grad.addColorStop(0.4, '#061324');
+                grad.addColorStop(1, '#020610');
+                ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, 128, 75);
-                // Glowing cyan laser rim
+
+                // 2. Soft horizontal laser line
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+                ctx.fillRect(0, 36, 128, 1.5);
+
+                // 3. Glowing cyan neon rail on top
+                ctx.fillStyle = '#0284c7';
+                ctx.fillRect(0, 0, 128, 8);
                 ctx.fillStyle = '#06b6d4';
-                ctx.fillRect(0, 0, 128, 6);
-                ctx.fillStyle = '#38bdf8';
-                ctx.fillRect(0, 0, 128, 2);
-                // Hexagonal grid server floor
-                ctx.strokeStyle = '#0284c7';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(4, 12, 56, 58);
-                ctx.strokeRect(68, 12, 56, 58);
-                ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
-                ctx.fillRect(8, 16, 48, 50);
-                ctx.fillRect(72, 16, 48, 50);
+                ctx.fillRect(0, 0, 128, 4);
+                ctx.fillStyle = '#67e8f9';
+                ctx.fillRect(0, 0, 128, 1.5);
+
                 canvas.refresh();
             }
         }
@@ -1092,6 +1097,247 @@ export class TextureGenerator {
                 ctx.font = 'bold 12px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText('SLIDE', 45, 78);
+                canvas.refresh();
+            }
+        }
+    }
+
+    private static generateBossTextures(scene: Phaser.Scene) {
+        // 1. [일타싸피] Billiards AI Boss (96x96)
+        if (!scene.textures.exists('boss_iltassafy')) {
+            const canvas = scene.textures.createCanvas('boss_iltassafy', 96, 96);
+            if (canvas) {
+                const ctx = canvas.getContext();
+
+                // Thruster glows (bottom)
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+                ctx.beginPath();
+                ctx.arc(32, 86, 12, 0, Math.PI * 2);
+                ctx.arc(64, 86, 12, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Thruster nozzles
+                ctx.fillStyle = '#334155';
+                ctx.fillRect(26, 76, 12, 10);
+                ctx.fillRect(58, 76, 12, 10);
+
+                // Main 8-Ball Body Sphere (3D glossy sphere)
+                const ballGrad = ctx.createRadialGradient(38, 38, 8, 48, 48, 44);
+                ballGrad.addColorStop(0, '#475569');
+                ballGrad.addColorStop(0.35, '#1e293b');
+                ballGrad.addColorStop(0.85, '#0f172a');
+                ballGrad.addColorStop(1, '#020617');
+                ctx.fillStyle = ballGrad;
+                ctx.beginPath();
+                ctx.arc(48, 48, 42, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Outer Cyber Armor Ring
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Center White Circle for Number 8
+                ctx.fillStyle = '#f8fafc';
+                ctx.beginPath();
+                ctx.arc(48, 48, 20, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Number 8 in Center
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 24px "Black Han Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('8', 48, 49);
+
+                // Menacing Robotic Eye / Red Scanner Lens on top
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(48, 22, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fecaca';
+                ctx.beginPath();
+                ctx.arc(48, 22, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Mechanical Billiard Cue Arms (left & right)
+                ctx.fillStyle = '#d97706';
+                ctx.fillRect(4, 44, 14, 6);
+                ctx.fillRect(78, 44, 14, 6);
+                ctx.fillStyle = '#fef08a';
+                ctx.fillRect(14, 44, 4, 6);
+                ctx.fillRect(78, 44, 4, 6);
+
+                canvas.refresh();
+            }
+        }
+
+        // 2. [배틀싸피] Cyber Battle Tank Boss (124x82)
+        if (!scene.textures.exists('boss_battlessafy')) {
+            const canvas = scene.textures.createCanvas('boss_battlessafy', 124, 82);
+            if (canvas) {
+                const ctx = canvas.getContext();
+
+                // 1. Treads / Tracks at bottom
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.roundRect(16, 52, 96, 26, 12);
+                ctx.fill();
+                ctx.strokeStyle = '#0284c7';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Tread wheels
+                for (let wx = 28; wx <= 100; wx += 18) {
+                    ctx.fillStyle = '#0f172a';
+                    ctx.beginPath();
+                    ctx.arc(wx, 65, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.beginPath();
+                    ctx.arc(wx, 65, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // 2. Armored Chassis (Navy & Gunmetal)
+                const hullGrad = ctx.createLinearGradient(20, 26, 104, 52);
+                hullGrad.addColorStop(0, '#334155');
+                hullGrad.addColorStop(1, '#0f172a');
+                ctx.fillStyle = hullGrad;
+                ctx.beginPath();
+                ctx.roundRect(24, 28, 86, 26, 6);
+                ctx.fill();
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // SSAFY Military Emblem
+                ctx.fillStyle = '#f59e0b';
+                ctx.font = 'bold 10px monospace';
+                ctx.fillText('BATTLE-AI', 38, 44);
+
+                // 3. Heavy Turret Dome on top
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.arc(70, 24, 18, Math.PI, 0, false);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Dual Plasma Cannons (facing leftwards toward player)
+                ctx.fillStyle = '#475569';
+                ctx.fillRect(8, 14, 48, 7);
+                ctx.fillRect(8, 24, 48, 7);
+                // Glowing muzzle tips
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(4, 13, 6, 9);
+                ctx.fillRect(4, 23, 6, 9);
+
+                // Radar Dish on rear
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(92, 12, 10, -Math.PI / 4, (Math.PI * 3) / 4);
+                ctx.stroke();
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(90, 4, 3, 3);
+
+                canvas.refresh();
+            }
+        }
+
+        // 3. Projectile: Bouncing Billiard Ball 🎱 (36x36)
+        if (!scene.textures.exists('boss_projectile_ball')) {
+            const canvas = scene.textures.createCanvas('boss_projectile_ball', 36, 36);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                // Red fireball aura
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
+                ctx.beginPath();
+                ctx.arc(18, 18, 17, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Solid glowing billiard ball
+                const grad = ctx.createRadialGradient(14, 14, 3, 18, 18, 14);
+                grad.addColorStop(0, '#fef08a');
+                grad.addColorStop(0.3, '#f59e0b');
+                grad.addColorStop(1, '#dc2626');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(18, 18, 14, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                canvas.refresh();
+            }
+        }
+
+        // 4. Projectile: Heavy Cyber Missile / Rocket 🚀 (42x24)
+        if (!scene.textures.exists('boss_projectile_shell')) {
+            const canvas = scene.textures.createCanvas('boss_projectile_shell', 42, 24);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                // Flame plume behind
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath();
+                ctx.moveTo(34, 12); ctx.lineTo(42, 6); ctx.lineTo(40, 12); ctx.lineTo(42, 18);
+                ctx.closePath();
+                ctx.fill();
+
+                // Rocket body
+                ctx.fillStyle = '#e2e8f0';
+                ctx.beginPath();
+                ctx.roundRect(8, 5, 26, 14, 4);
+                ctx.fill();
+
+                // Warhead tip
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.moveTo(8, 5); ctx.lineTo(0, 12); ctx.lineTo(8, 19);
+                ctx.closePath();
+                ctx.fill();
+
+                canvas.refresh();
+            }
+        }
+
+        // 5. Item: 🧩 Algorithm Debug Patch (38x38)
+        if (!scene.textures.exists('item_debug_patch')) {
+            const canvas = scene.textures.createCanvas('item_debug_patch', 38, 38);
+            if (canvas) {
+                const ctx = canvas.getContext();
+
+                // Glowing outer shield
+                ctx.fillStyle = 'rgba(168, 85, 247, 0.35)';
+                ctx.beginPath();
+                ctx.arc(19, 19, 18, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Puzzle Piece Body
+                const grad = ctx.createLinearGradient(6, 6, 32, 32);
+                grad.addColorStop(0, '#c084fc');
+                grad.addColorStop(0.5, '#a855f7');
+                grad.addColorStop(1, '#7e22ce');
+                ctx.fillStyle = grad;
+
+                ctx.beginPath();
+                ctx.roundRect(7, 7, 24, 24, 6);
+                ctx.fill();
+                ctx.strokeStyle = '#f8fafc';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Code icon </>
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 13px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('</>', 19, 19);
+
                 canvas.refresh();
             }
         }

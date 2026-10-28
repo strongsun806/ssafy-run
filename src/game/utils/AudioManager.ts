@@ -356,6 +356,79 @@ export class AudioManager {
         });
     }
 
+    public playBossWarning() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        // Urgent two-tone alarm siren
+        [784, 587.33, 784, 587.33].forEach((freq, idx) => {
+            const osc = this.ctx!.createOscillator();
+            const gain = this.ctx!.createGain();
+            const now = this.ctx!.currentTime + idx * 0.18;
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, now);
+
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+
+            osc.connect(gain);
+            gain.connect(this.ctx!.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.18);
+        });
+    }
+
+    public playBossHit() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const now = this.ctx.currentTime;
+
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.15);
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.15);
+    }
+
+    public playBossDefeat() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        const fanfare = [523.25, 659.25, 783.99, 1046.5];
+        fanfare.forEach((freq, idx) => {
+            const osc = this.ctx!.createOscillator();
+            const gain = this.ctx!.createGain();
+            const now = this.ctx!.currentTime + idx * 0.12;
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now);
+
+            gain.gain.setValueAtTime(0.22, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+            osc.connect(gain);
+            gain.connect(this.ctx!.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.3);
+        });
+    }
+
     public startBgm() {
         if (this.isMuted || this.isBgmPlaying) return;
         this.initContext();

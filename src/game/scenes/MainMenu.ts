@@ -44,27 +44,27 @@ export class MainMenu extends Scene {
         const leftX = 360;
 
         const title = this.add.text(leftX, 120, 'SSAFY RUN', {
-            fontFamily: 'Arial Black',
-            fontSize: '66px',
+            fontFamily: '"Black Han Sans", "Permanent Marker", sans-serif',
+            fontSize: '68px',
             color: '#38bdf8',
-            stroke: '#0369a1',
-            strokeThickness: 8,
-            shadow: { offsetX: 0, offsetY: 6, color: '#0284c7', blur: 14, fill: true }
+            stroke: '#0f172a',
+            strokeThickness: 9,
+            shadow: { offsetX: 4, offsetY: 6, color: '#0284c7', blur: 12, fill: true }
         }).setOrigin(0.5);
 
         this.tweens.add({
             targets: title,
-            y: 115,
+            y: 114,
             duration: 1200,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
 
-        this.add.text(leftX, 185, '⏰ 지각 위기! 9시 입실 전까지 멀캠을 향해 질주하라!', {
-            fontFamily: 'Arial',
-            fontSize: '18px',
-            color: '#cbd5e1'
+        this.add.text(leftX, 185, '⚡ 지각 위기! 9시 입실 전까지 멀캠으로 질주하라! ⚡', {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '19px',
+            color: '#facc15'
         }).setOrigin(0.5);
 
         // My High Score & Coin Balance Badges
@@ -80,13 +80,13 @@ export class MainMenu extends Scene {
         badgeContainer.add(badgeBg);
 
         const scoreText = this.add.text(-35, 0, `👑 최고: ${highScore.toLocaleString()}점`, {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '14px',
             color: '#facc15'
         }).setOrigin(0.5);
 
         this.coinBadgeText = this.add.text(90, 0, `🪙 ${coins}`, {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '14px',
             color: '#fde047'
         }).setOrigin(0.5);
@@ -96,20 +96,20 @@ export class MainMenu extends Scene {
         // Start Game Button
         this.createButton(leftX, 310, '▶ 게임 시작 (START)', 0x2563eb, 0x1d4ed8, () => {
             this.startGame();
-        }, 280, 56, '24px');
+        }, 280, 56, '22px');
 
         // Shop / Dressing Room Button (🛍️ 캐릭터 꾸미기 상점!)
-        this.createButton(leftX - 80, 385, '🛍️ 스킨 상점', 0x7c3aed, 0x6d28d9, () => {
+        this.createButton(leftX - 82, 385, '🛍️ 스킨 상점', 0x7c3aed, 0x6d28d9, () => {
             this.showShopModal();
-        }, 130, 44, '15px');
+        }, 145, 46, '15px');
 
         // How to Play Button
-        this.createButton(leftX + 80, 385, '📖 조작 & 팁', 0x334155, 0x475569, () => {
+        this.createButton(leftX + 82, 385, '📖 플레이 방법', 0x334155, 0x475569, () => {
             this.showHowToPlayModal();
-        }, 130, 44, '15px');
+        }, 145, 46, '15px');
 
         const prompt = this.add.text(leftX, 450, '[Space] 키나 화면 터치로 즉시 시작', {
-            fontFamily: 'Arial',
+            fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '15px',
             color: '#94a3b8'
         }).setOrigin(0.5);
@@ -388,10 +388,16 @@ export class MainMenu extends Scene {
         drawBtn(normalColor);
 
         const label = this.add.text(0, 0, text, {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: fontSize,
             color: '#ffffff'
         }).setOrigin(0.5);
+
+        // Auto-scale text to strictly fit within button bounds
+        const maxTextWidth = w - 18;
+        if (label.width > maxTextWidth) {
+            label.setScale(maxTextWidth / label.width);
+        }
 
         container.add([bg, label]);
         container.setSize(w, h);

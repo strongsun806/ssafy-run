@@ -12,7 +12,7 @@ html, body {
     height: 100%;
     overflow: hidden;
     background-color: #0a0e1a;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Black Han Sans', 'Do Hyeon', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     touch-action: none;
 }
 

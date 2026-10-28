@@ -66,6 +66,21 @@ export class Game extends Scene {
     private feverBar!: Phaser.GameObjects.Graphics;
     private feverText!: Phaser.GameObjects.Text;
 
+    // Boss Encounter System (일타싸피, 배틀싸피)
+    private isBossActive: boolean = false;
+    private currentBossType: 'iltassafy' | 'battlessafy' | null = null;
+    private bossSprite?: Phaser.Physics.Arcade.Sprite;
+    private bossHp: number = 0;
+    private bossMaxHp: number = 100;
+    private bossHpContainer?: Phaser.GameObjects.Container;
+    private bossHpFill?: Phaser.GameObjects.Graphics;
+    private bossHpText?: Phaser.GameObjects.Text;
+    private bossAttackTimer: number = 0;
+    private bossPatchTimer: number = 0;
+    private bossProjectiles!: Phaser.Physics.Arcade.Group;
+    private bossPatches!: Phaser.Physics.Arcade.Group;
+    private bossDefeatedList: Set<string> = new Set();
+
     // HUD Elements
     private scoreText!: Phaser.GameObjects.Text;
     private coinText!: Phaser.GameObjects.Text;
@@ -114,6 +129,11 @@ export class Game extends Scene {
         this.isPaused = false;
         this.nextWaveTimer = 800;
         this.highScore = ScoreManager.getHighScore();
+
+        // Reset Boss State
+        this.isBossActive = false;
+        this.currentBossType = null;
+        this.bossDefeatedList.clear();
 
         this.groundY = height - 75;
         this.lastPitDistance = 0;
@@ -169,6 +189,17 @@ export class Game extends Scene {
         this.items = this.physics.add.group();
         this.physics.add.overlap(this.player, this.items, (_p, i) => {
             this.collectSpecialItem(i as Phaser.Physics.Arcade.Sprite);
+        });
+
+        // Boss Projectiles & Debug Patches
+        this.bossProjectiles = this.physics.add.group();
+        this.physics.add.overlap(this.player, this.bossProjectiles, (_p, proj) => {
+            this.handleHitBossProjectile(proj as Phaser.Physics.Arcade.Sprite);
+        });
+
+        this.bossPatches = this.physics.add.group();
+        this.physics.add.overlap(this.player, this.bossPatches, (_p, patch) => {
+            this.collectDebugPatch(patch as Phaser.Physics.Arcade.Sprite);
         });
 
         // 5. HUD
@@ -335,6 +366,9 @@ export class Game extends Scene {
         // Check Stage Transitions (Stage 1 -> Stage 2 -> Stage 3)
         this.checkStageProgression();
 
+        // Check Boss Encounters (일타싸피, 배틀싸피)
+        this.checkBossProgression();
+
         // Mental HP natural decay
         this.currentHp -= this.hpDrainRate * deltaSec;
         if (this.currentHp <= 0) {
@@ -362,10 +396,14 @@ export class Game extends Scene {
             this.magnetHudText.setVisible(false);
         }
 
-        // Wave generator
-        this.nextWaveTimer -= delta;
-        if (this.nextWaveTimer <= 0) {
-            this.spawnNextWave();
+        // Wave generator (Paused during Boss Encounter)
+        if (this.isBossActive) {
+            this.updateBoss(deltaSec, delta);
+        } else {
+            this.nextWaveTimer -= delta;
+            if (this.nextWaveTimer <= 0) {
+                this.spawnNextWave();
+            }
         }
 
         // Player update
@@ -385,6 +423,8 @@ export class Game extends Scene {
         this.cleanOffscreen(this.jellies);
         this.cleanOffscreen(this.items);
         this.cleanOffscreen(this.floatingPlatforms);
+        this.cleanOffscreen(this.bossProjectiles);
+        this.cleanOffscreen(this.bossPatches);
     }
 
     // Segmented Ground Management (Supports Gaps & Pits with 100% Physics Sync)
@@ -397,7 +437,6 @@ export class Game extends Scene {
             const seg = this.groundSegments[i];
             seg.x -= shift;
             seg.tile.x = seg.x;
-            seg.tile.tilePositionX += shift;
             seg.body.x = seg.x + seg.width / 2;
 
             const physBody = seg.body.body as Phaser.Physics.Arcade.Body;
@@ -556,6 +595,388 @@ export class Game extends Scene {
         });
 
         this.stageText.setText(`STAGE ${newStage}`);
+    }
+
+    // --- Boss Encounter System (SSAFY Evaluation Boss Battles) ---
+    private checkBossProgression() {
+        if (this.isBossActive) return;
+
+        // Boss 1: [일타싸피] Billiards AI Evaluation Boss at 350m
+        if (this.distance >= 350 && !this.bossDefeatedList.has('iltassafy')) {
+            this.startBossEncounter('iltassafy');
+        }
+        // Boss 2: [배틀싸피] Battle Tank Algorithm Boss at 850m
+        else if (this.distance >= 850 && !this.bossDefeatedList.has('battlessafy')) {
+            this.startBossEncounter('battlessafy');
+        }
+    }
+
+    private startBossEncounter(type: 'iltassafy' | 'battlessafy') {
+        this.isBossActive = true;
+        this.currentBossType = type;
+        this.bossHp = 100;
+        this.bossMaxHp = 100;
+        this.bossAttackTimer = 2200;
+        this.bossPatchTimer = 1200;
+
+        this.audioManager.playBossWarning();
+        this.cameras.main.flash(400, 239, 68, 68);
+
+        const { width, height } = this.scale;
+
+        // Big Warning Siren Banner
+        const alertContainer = this.add.container(width / 2, height / 2 - 80).setDepth(160);
+        const alertBg = this.add.graphics();
+        alertBg.fillStyle(0x0f172a, 0.96);
+        alertBg.lineStyle(3, 0xef4444);
+        alertBg.fillRoundedRect(-320, -45, 640, 90, 16);
+        alertBg.strokeRoundedRect(-320, -45, 640, 90, 16);
+
+        const titleText = type === 'iltassafy'
+            ? '🚨 [긴급 평가] 일타싸피 당구 AI 보스 침공! 🚨'
+            : '🚨 [최종 배틀] 배틀싸피 사이버 탱크 보스 출현! 🚨';
+
+        const alertTitle = this.add.text(0, -12, titleText, {
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+            fontSize: '22px',
+            color: '#ef4444'
+        }).setOrigin(0.5);
+
+        const alertSub = this.add.text(0, 20, '🧩 디버그 패치를 모아 알고리즘 보스를 공략하라!', {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '16px',
+            color: '#facc15'
+        }).setOrigin(0.5);
+
+        alertContainer.add([alertBg, alertTitle, alertSub]);
+        alertContainer.setScale(0);
+
+        this.tweens.add({
+            targets: alertContainer,
+            scale: 1,
+            duration: 350,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                this.time.delayedCall(2200, () => {
+                    this.tweens.add({
+                        targets: alertContainer,
+                        alpha: 0,
+                        scale: 0.8,
+                        duration: 300,
+                        onComplete: () => alertContainer.destroy()
+                    });
+                });
+            }
+        });
+
+        // Spawn Boss Sprite on Right Screen Edge
+        const bossTex = type === 'iltassafy' ? 'boss_iltassafy' : 'boss_battlessafy';
+        this.bossSprite = this.physics.add.sprite(width + 120, this.groundY - 110, bossTex);
+        this.bossSprite.setDepth(18);
+        const bBody = this.bossSprite.body as Phaser.Physics.Arcade.Body;
+        if (bBody) {
+            bBody.setAllowGravity(false);
+            bBody.setImmovable(true);
+        }
+
+        // Float into arena
+        this.tweens.add({
+            targets: this.bossSprite,
+            x: width - 130,
+            duration: 1000,
+            ease: 'Cubic.easeOut',
+            onComplete: () => {
+                // Hover bobbing motion
+                this.tweens.add({
+                    targets: this.bossSprite,
+                    y: this.groundY - 135,
+                    duration: 1200,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.easeInOut'
+                });
+            }
+        });
+
+        // Create Boss HP Bar HUD (top center)
+        this.createBossHUD(type);
+    }
+
+    private createBossHUD(type: 'iltassafy' | 'battlessafy') {
+        const { width } = this.scale;
+        this.bossHpContainer = this.add.container(width / 2, 58).setDepth(60);
+
+        const bg = this.add.graphics();
+        bg.fillStyle(0x0f172a, 0.9);
+        bg.lineStyle(2, 0xef4444);
+        bg.fillRoundedRect(-150, -22, 300, 44, 10);
+        bg.strokeRoundedRect(-150, -22, 300, 44, 10);
+
+        const nameLabel = type === 'iltassafy' ? '🎱 일타싸피 AI BOSS' : '⚔️ 배틀싸피 TANK BOSS';
+        this.bossHpText = this.add.text(0, -9, `${nameLabel} - 100%`, {
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+            fontSize: '13px',
+            color: '#facc15'
+        }).setOrigin(0.5);
+
+        this.bossHpFill = this.add.graphics();
+        this.renderBossHpBar();
+
+        this.bossHpContainer.add([bg, this.bossHpFill, this.bossHpText]);
+    }
+
+    private renderBossHpBar() {
+        if (!this.bossHpFill) return;
+        this.bossHpFill.clear();
+
+        const barW = 260;
+        const barH = 10;
+        const bx = -barW / 2;
+        const by = 4;
+
+        // Background
+        this.bossHpFill.fillStyle(0x1e293b, 1);
+        this.bossHpFill.fillRoundedRect(bx, by, barW, barH, 3);
+
+        // Fill
+        const ratio = Math.max(0, this.bossHp / this.bossMaxHp);
+        const color = ratio > 0.5 ? 0xef4444 : 0xf97316;
+        this.bossHpFill.fillStyle(color, 1);
+        if (ratio > 0) {
+            this.bossHpFill.fillRoundedRect(bx, by, barW * ratio, barH, 3);
+        }
+    }
+
+    private updateBoss(deltaSec: number, delta: number) {
+        if (!this.bossSprite || !this.isBossActive) return;
+
+        // Boss Attack Timer
+        this.bossAttackTimer -= delta;
+        if (this.bossAttackTimer <= 0) {
+            this.executeBossAttack();
+            this.bossAttackTimer = Phaser.Math.Between(2200, 3000);
+        }
+
+        // Spawn Debug Patches (Counters)
+        this.bossPatchTimer -= delta;
+        if (this.bossPatchTimer <= 0) {
+            this.spawnDebugPatch();
+            this.bossPatchTimer = Phaser.Math.Between(1500, 2000);
+        }
+    }
+
+    private executeBossAttack() {
+        if (!this.bossSprite || !this.isBossActive) return;
+
+        const { width } = this.scale;
+        const bx = this.bossSprite.x - 20;
+        const by = this.bossSprite.y;
+
+        if (this.currentBossType === 'iltassafy') {
+            const attackType = Phaser.Math.Between(0, 1);
+            if (attackType === 0) {
+                // Bouncing cue ball
+                const ball = this.bossProjectiles.create(bx, by, 'boss_projectile_ball') as Phaser.Physics.Arcade.Sprite;
+                ball.setDepth(16);
+                const bbody = ball.body as Phaser.Physics.Arcade.Body;
+                if (bbody) {
+                    bbody.setAllowGravity(true);
+                    bbody.setBounce(0.9, 0.85);
+                    bbody.setVelocityX(-this.currentSpeed * 1.35);
+                    bbody.setVelocityY(-200);
+                    bbody.setSize(30, 30);
+                }
+                this.physics.add.collider(ball, this.groundColliderGroup);
+            } else {
+                // Low altitude laser cue - requires slide!
+                const cue = this.obstacles.create(width + 100, this.groundY - 55, 'obstacle_conflict') as Phaser.Physics.Arcade.Sprite;
+                cue.setDepth(16);
+                const cbody = cue.body as Phaser.Physics.Arcade.Body;
+                if (cbody) {
+                    cbody.setAllowGravity(false);
+                    cbody.setVelocityX(-this.currentSpeed * 1.3);
+                    cbody.setSize(58, 22);
+                }
+            }
+        } else {
+            // Battle SSAFY Tank Shell
+            const isHigh = Phaser.Math.Between(0, 1) === 1;
+            const shellY = isHigh ? this.groundY - 75 : this.groundY - 26;
+            const shell = this.bossProjectiles.create(bx, shellY, 'boss_projectile_shell') as Phaser.Physics.Arcade.Sprite;
+            shell.setDepth(16);
+            const sbody = shell.body as Phaser.Physics.Arcade.Body;
+            if (sbody) {
+                sbody.setAllowGravity(false);
+                sbody.setVelocityX(-this.currentSpeed * 1.45);
+                sbody.setSize(38, 20);
+            }
+        }
+    }
+
+    private spawnDebugPatch() {
+        const { width } = this.scale;
+        const isJumpHeight = Phaser.Math.Between(0, 1) === 1;
+        const patchY = isJumpHeight ? this.groundY - 80 : this.groundY - 32;
+
+        const patch = this.bossPatches.create(width + 40, patchY, 'item_debug_patch') as Phaser.Physics.Arcade.Sprite;
+        patch.setDepth(16);
+        const pbody = patch.body as Phaser.Physics.Arcade.Body;
+        if (pbody) {
+            pbody.setAllowGravity(false);
+            pbody.setVelocityX(-this.currentSpeed);
+            pbody.setSize(34, 34);
+        }
+
+        // Bobbing sparkle
+        this.tweens.add({
+            targets: patch,
+            scale: 1.15,
+            duration: 300,
+            yoyo: true,
+            repeat: -1
+        });
+    }
+
+    private collectDebugPatch(patch: Phaser.Physics.Arcade.Sprite) {
+        patch.destroy();
+        this.audioManager.playBossHit();
+        this.score += 300;
+        this.scoreText.setText(this.score.toLocaleString());
+
+        // Homing energy bolt from player to boss
+        if (this.bossSprite && this.isBossActive) {
+            const bolt = this.add.graphics().setDepth(25);
+            bolt.lineStyle(3, 0x38bdf8, 1);
+            bolt.lineBetween(this.player.x, this.player.y - 30, this.bossSprite.x, this.bossSprite.y);
+            this.time.delayedCall(100, () => bolt.destroy());
+
+            // Boss hit reaction
+            this.bossHp -= 25;
+            this.cameras.main.shake(80, 0.01);
+            this.bossSprite.setTint(0xffffff);
+            this.time.delayedCall(120, () => this.bossSprite?.clearTint());
+
+            // Floating Critical Hit text
+            const floatText = this.add.text(this.bossSprite.x - 30, this.bossSprite.y - 40, '💥 -25 HP!', {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '18px',
+                color: '#facc15',
+                stroke: '#0f172a',
+                strokeThickness: 3
+            }).setDepth(35);
+            this.tweens.add({ targets: floatText, y: floatText.y - 30, alpha: 0, duration: 500, onComplete: () => floatText.destroy() });
+
+            // Update Boss HUD
+            const nameLabel = this.currentBossType === 'iltassafy' ? '🎱 일타싸피 AI BOSS' : '⚔️ 배틀싸피 TANK BOSS';
+            this.bossHpText?.setText(`${nameLabel} - ${Math.max(0, this.bossHp)}%`);
+            this.renderBossHpBar();
+
+            if (this.bossHp <= 0) {
+                this.defeatBoss();
+            }
+        }
+    }
+
+    private handleHitBossProjectile(proj: Phaser.Physics.Arcade.Sprite) {
+        proj.destroy();
+        const hitSuccess = this.player.hit();
+        if (!hitSuccess) return;
+
+        this.currentHp -= 20;
+        this.combo = 0;
+        this.comboText.setText('');
+        this.cameras.main.shake(120, 0.015);
+
+        if (this.currentHp <= 0) {
+            this.currentHp = 0;
+            this.renderHpBar();
+            this.triggerGameOver();
+        }
+    }
+
+    private defeatBoss() {
+        this.audioManager.playBossDefeat();
+        this.cameras.main.shake(300, 0.03);
+
+        if (this.currentBossType) {
+            this.bossDefeatedList.add(this.currentBossType);
+        }
+
+        const bx = this.bossSprite ? this.bossSprite.x : this.scale.width - 150;
+        const by = this.bossSprite ? this.bossSprite.y : this.groundY - 100;
+
+        // Explode boss
+        if (this.bossSprite) {
+            this.tweens.add({
+                targets: this.bossSprite,
+                scale: 1.4,
+                alpha: 0,
+                duration: 400,
+                onComplete: () => this.bossSprite?.destroy()
+            });
+        }
+
+        // Shower of 15 Gold Coins!
+        for (let i = 0; i < 15; i++) {
+            const coin = this.jellies.create(bx + Phaser.Math.Between(-80, 80), by + Phaser.Math.Between(-60, 60), 'item_coin') as Phaser.Physics.Arcade.Sprite;
+            this.setupItemPhysics(coin, 50, 'coin');
+            const cbody = coin.body as Phaser.Physics.Arcade.Body;
+            if (cbody) {
+                cbody.setVelocity(Phaser.Math.Between(-250, -50), Phaser.Math.Between(-300, 50));
+            }
+        }
+
+        // Defeat Banner Announcement
+        const { width, height } = this.scale;
+        const passBanner = this.add.container(width / 2, height / 2 - 80).setDepth(160);
+        const passBg = this.add.graphics();
+        passBg.fillStyle(0x0f172a, 0.96);
+        passBg.lineStyle(3, 0xfacc15);
+        passBg.fillRoundedRect(-300, -40, 600, 80, 16);
+        passBg.strokeRoundedRect(-300, -40, 600, 80, 16);
+
+        const passText = this.add.text(0, -8, '🏆 EVALUATION PASSED! [PASS A+]', {
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+            fontSize: '24px',
+            color: '#facc15'
+        }).setOrigin(0.5);
+
+        const bonusText = this.add.text(0, 20, '+5,000 PTS & FEVER MODE ACTIVATED!', {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '16px',
+            color: '#38bdf8'
+        }).setOrigin(0.5);
+
+        passBanner.add([passBg, passText, bonusText]);
+        passBanner.setScale(0);
+
+        this.tweens.add({
+            targets: passBanner,
+            scale: 1,
+            duration: 350,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                this.time.delayedCall(2000, () => {
+                    this.tweens.add({
+                        targets: passBanner,
+                        alpha: 0,
+                        duration: 300,
+                        onComplete: () => passBanner.destroy()
+                    });
+                });
+            }
+        });
+
+        // Add 5,000 points & start Fever mode!
+        this.score += 5000;
+        this.scoreText.setText(this.score.toLocaleString());
+        this.startFeverMode();
+
+        // Clean up boss HUD
+        this.bossHpContainer?.destroy();
+        this.bossHpContainer = undefined;
+        this.isBossActive = false;
+        this.nextWaveTimer = 1500;
     }
 
     // Temporary Magnetic Attraction
@@ -815,13 +1236,13 @@ export class Game extends Scene {
         const barY = 32;
 
         this.stageText = this.add.text(barX, barY - 20, 'STAGE 1', {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '14px',
             color: '#facc15'
         }).setDepth(50);
 
         this.hpText = this.add.text(barX + 85, barY - 20, 'MENTAL HP: 100%', {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '13px',
             color: '#cbd5e1'
         }).setDepth(50);
@@ -837,26 +1258,26 @@ export class Game extends Scene {
 
         // Magnet Power-up timer text under HP bar
         this.magnetHudText = this.add.text(barX, barY + 26, '🧲 MAGNET: 6.0s', {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '13px',
             color: '#38bdf8'
         }).setDepth(50).setVisible(false);
 
         // Top Center: Distance & Coins & Fever
         this.distanceText = this.add.text(width / 2 - 50, 24, '📍 0m', {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '20px',
             color: '#38bdf8'
         }).setOrigin(0.5, 0).setDepth(50);
 
         this.coinText = this.add.text(width / 2 + 55, 24, '🪙 0', {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '20px',
             color: '#facc15'
         }).setOrigin(0.5, 0).setDepth(50);
 
         this.feverText = this.add.text(width / 2, 54, '🔥 FEVER TIME! DOUBLE POINTS 🔥', {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '15px',
             color: '#facc15'
         }).setOrigin(0.5, 0).setDepth(50).setVisible(false);
@@ -865,19 +1286,19 @@ export class Game extends Scene {
 
         // Top Right: Score & Best & Combo & Pause Button
         this.scoreText = this.add.text(width - 110, 20, '0', {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '32px',
             color: '#ffffff'
         }).setOrigin(1, 0).setDepth(50);
 
         this.add.text(width - 110, 56, `BEST: ${this.highScore.toLocaleString()}`, {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '14px',
             color: '#94a3b8'
         }).setOrigin(1, 0).setDepth(50);
 
         this.comboText = this.add.text(width - 110, 80, '', {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '16px',
             color: '#f97316'
         }).setOrigin(1, 0).setDepth(50);
@@ -1081,10 +1502,20 @@ export class Game extends Scene {
         const hitSuccess = this.player.hit();
         if (!hitSuccess) return;
 
+        // Cleanly dissipate the obstacle so it never pushes the player off-screen
+        obs.disableBody(true, false);
+        this.tweens.add({
+            targets: obs,
+            alpha: 0,
+            y: obs.y - 20,
+            duration: 220,
+            onComplete: () => obs.destroy()
+        });
+
         this.currentHp -= 20;
         this.combo = 0;
         this.comboText.setText('');
-        this.cameras.main.shake(100, 0.012);
+        this.cameras.main.shake(120, 0.015);
 
         if (this.currentHp <= 0) {
             this.currentHp = 0;
@@ -1156,10 +1587,15 @@ export class Game extends Scene {
         bg.strokeRoundedRect(-120, -18, 240, 36, 8);
 
         const txt = this.add.text(0, 0, label, {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '15px',
             color: '#ffffff'
         }).setOrigin(0.5);
+
+        // Auto-scale text if it exceeds button width
+        if (txt.width > 220) {
+            txt.setScale(220 / txt.width);
+        }
 
         container.add([bg, txt]);
         container.setSize(240, 36);

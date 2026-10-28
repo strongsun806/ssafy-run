@@ -53,11 +53,12 @@ export class GameOver extends Scene {
 
         // Header Title
         const headerTitle = this.add.text(width / 2, 55, 'GAME OVER', {
-            fontFamily: 'Arial Black',
-            fontSize: '52px',
+            fontFamily: '"Black Han Sans", "Permanent Marker", sans-serif',
+            fontSize: '56px',
             color: '#ef4444',
-            stroke: '#7f1d1d',
-            strokeThickness: 8
+            stroke: '#0f172a',
+            strokeThickness: 9,
+            shadow: { offsetX: 3, offsetY: 5, color: '#7f1d1d', blur: 10, fill: true }
         }).setOrigin(0.5);
 
         this.tweens.add({
@@ -72,7 +73,7 @@ export class GameOver extends Scene {
         // Evaluation Rank
         const evalRank = this.getEvaluationRank(this.score);
         this.add.text(width / 2, 110, evalRank, {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '20px',
             color: '#facc15'
         }).setOrigin(0.5);
@@ -128,20 +129,20 @@ export class GameOver extends Scene {
 
         // Leaderboard Registration Prompt
         const savePrompt = this.add.text(width / 2, cy + 252, '🏆 전국 명예의 전당(실시간 랭킹)에 내 닉네임을 등록하세요!', {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '15px',
             color: '#facc15'
         }).setOrigin(0.5);
 
         const regBtn = this.createButton(width / 2, cy + 292, '✨ 내 닉네임 등록 (REGISTER)', 0x0284c7, 0x0369a1, () => {
             this.promptRegisterLeaderboard(savePrompt, regBtn);
-        }, 260, 40, '15px');
+        }, 280, 42, '15px');
 
         // Total Coins Owned Badge inside Card Bottom
         const totalCoins = SkinManager.getCoins();
         this.add.text(width / 2, cy + 342, `내 보유 코인: 🪙 ${totalCoins.toLocaleString()} (상점에서 스킨 구매 가능!)`, {
-            fontFamily: 'Arial',
-            fontSize: '13px',
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '14px',
             color: '#fef08a'
         }).setOrigin(0.5);
 
@@ -150,15 +151,15 @@ export class GameOver extends Scene {
 
         this.createButton(width / 2 - 200, btnY, '🔄 다시 도전 (RETRY)', 0x2563eb, 0x1d4ed8, () => {
             this.scene.start('Game');
-        }, 170, 50, '16px');
+        }, 185, 50, '15px');
 
-        this.createButton(width / 2 - 10, btnY, '🏠 메인 메뉴 (MENU)', 0x334155, 0x475569, () => {
+        this.createButton(width / 2, btnY, '🏠 메인 메뉴 (MENU)', 0x334155, 0x475569, () => {
             this.scene.start('MainMenu');
-        }, 160, 50, '16px');
+        }, 175, 50, '15px');
 
-        this.createButton(width / 2 + 180, btnY, '📋 점수 공유 (SHARE)', 0x059669, 0x047857, () => {
+        this.createButton(width / 2 + 195, btnY, '📋 점수 공유 (SHARE)', 0x059669, 0x047857, () => {
             this.shareScore();
-        }, 160, 50, '16px');
+        }, 175, 50, '15px');
 
         if (this.input.keyboard) {
             this.input.keyboard.once('keydown-SPACE', () => {
@@ -257,10 +258,16 @@ export class GameOver extends Scene {
         draw(normalColor);
 
         const lbl = this.add.text(0, 0, text, {
-            fontFamily: 'Arial Black',
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: fontSize,
             color: '#ffffff'
         }).setOrigin(0.5);
+
+        // Auto-scale text to strictly fit within button bounds
+        const maxTextWidth = w - 18;
+        if (lbl.width > maxTextWidth) {
+            lbl.setScale(maxTextWidth / lbl.width);
+        }
 
         container.add([bg, lbl]);
         container.setSize(w, h);
