@@ -19,7 +19,7 @@ export class UpgradeManager {
     private static readonly DAILY_BONUS_KEY = 'ssafy_run_daily_supply_v1';
     private static readonly EDITION_KEY = 'ssafy_run_edition_v1';
     public static readonly MAX_LEVEL = 10;
-    public static DEFAULT_EDITION: BuildEdition = 'arcade';
+    public static DEFAULT_EDITION: BuildEdition = 'ultimate';
 
     public static getEdition(): BuildEdition {
         try {
@@ -181,5 +181,6 @@ export class UpgradeManager {
         return reward;
     }
 }
+
 
 
