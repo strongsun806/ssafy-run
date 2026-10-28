@@ -1,0 +1,236 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050811"/>
+      <stop offset="50%" stop-color="#0b1329"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+    <linearGradient id="feltGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#064e3b"/>
+    </linearGradient>
+    <linearGradient id="runBtnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#bgGrad)"/>
+
+  <!-- Dim overlay lines -->
+  <g stroke="#1e293b" stroke-width="1" opacity="0.3">
+    <line x1="0" y1="120" x2="1280" y2="120"/>
+    <line x1="0" y1="240" x2="1280" y2="240"/>
+    <line x1="0" y1="360" x2="1280" y2="360"/>
+    <line x1="0" y1="480" x2="1280" y2="480"/>
+    <line x1="0" y1="600" x2="1280" y2="600"/>
+  </g>
+
+  <!-- Main Modal Card Frame -->
+  <rect x="120" y="50" width="1040" height="620" rx="20" fill="#090f1d" stroke="#38bdf8" stroke-width="2" opacity="0.98"/>
+
+  <!-- Top Badge -->
+  <g transform="translate(640, 75)">
+    <rect x="-180" y="0" width="360" height="26" rx="13" fill="#0284c7" fill-opacity="0.3" stroke="#38bdf8" stroke-width="1"/>
+    <text x="0" y="18" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#38bdf8" text-anchor="middle">
+      🧩 SSAFY BREAK TIME · 중간 쉬어가는 블록코딩
+    </text>
+  </g>
+
+  <!-- Title & Subtitle -->
+  <text x="640" y="132" font-family="'Impact', 'Arial Black', sans-serif" font-size="28" font-weight="900" fill="#facc15" text-anchor="middle">
+    🎱 일타싸피 알고리즘: 목적구 포켓인 (Billiards AI)
+  </text>
+  <text x="640" y="160" font-family="'Pretendard', sans-serif" font-size="15" fill="#94a3b8" text-anchor="middle">
+    지친 손가락을 잠시 쉬어가세요! 🧠 블록을 순서대로 조립해 목적구를 홀컵에 넣고 멘탈을 100% 회복하세요!
+  </text>
+
+  <!-- Skip Button (Top Right) -->
+  <g transform="translate(1010, 85)">
+    <rect width="120" height="36" rx="8" fill="#334155"/>
+    <text x="60" y="23" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">
+      ⚡ 즉시 패스
+    </text>
+  </g>
+
+  <!-- ================= LEFT: BILLIARDS SIMULATION VIEWPORT ================= -->
+  <g transform="translate(145, 185)">
+    <!-- Viewport Frame -->
+    <rect width="470" height="400" rx="14" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="18" y="26" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#38bdf8">
+      📺 ALGORITHM SIMULATION VIEWPORT
+    </text>
+
+    <!-- Billiard Table Cushion (Wood) -->
+    <rect x="25" y="45" width="420" height="330" rx="16" fill="url(#feltGrad)" stroke="#78350f" stroke-width="10"/>
+
+    <!-- Pockets (6 Holes) -->
+    <circle cx="45" cy="65" r="14" fill="#020617"/>
+    <circle cx="235" cy="55" r="14" fill="#020617"/>
+    <circle cx="425" cy="65" r="14" fill="#020617"/>
+    <circle cx="45" cy="355" r="14" fill="#020617"/>
+    <circle cx="235" cy="365" r="14" fill="#020617"/>
+    <circle cx="425" cy="355" r="14" fill="#020617"/>
+
+    <!-- Glowing Target Pocket (Top-Right Hole) -->
+    <circle cx="425" cy="65" r="24" fill="none" stroke="#facc15" stroke-width="3" filter="url(#neonGlow)"/>
+    <g transform="translate(385, 95)">
+      <rect width="70" height="22" rx="4" fill="#0f172a" stroke="#facc15" stroke-width="1"/>
+      <text x="35" y="16" font-family="'Impact', sans-serif" font-size="12" fill="#facc15" text-anchor="middle">🎯 GOAL</text>
+    </g>
+
+    <!-- Cue Ball (White) -->
+    <circle cx="110" cy="270" r="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+    <text x="110" y="274" font-size="9" font-weight="bold" fill="#0f172a" text-anchor="middle">수구</text>
+
+    <!-- Obstacle Ball (Yellow) -->
+    <circle cx="230" cy="210" r="12" fill="#eab308" stroke="#713f12" stroke-width="2"/>
+    <text x="230" y="214" font-size="9" font-weight="bold" fill="#713f12" text-anchor="middle">수비</text>
+
+    <!-- Target Ball (Red) -->
+    <circle cx="270" cy="160" r="12" fill="#ef4444" stroke="#7f1d1d" stroke-width="2"/>
+    <text x="270" y="164" font-size="9" font-weight="bold" fill="#ffffff" text-anchor="middle">목적구</text>
+
+    <!-- Dotted Aim Trajectory -->
+    <path d="M110,270 L270,160 L425,65" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4"/>
+
+    <!-- Cue Stick -->
+    <line x1="30" y1="320" x2="100" y2="277" stroke="#d97706" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="100" cy="277" r="3" fill="#ffffff"/>
+
+    <!-- Live Status Banner at bottom of screen -->
+    <rect x="25" y="325" width="420" height="40" rx="8" fill="#020617" fill-opacity="0.85"/>
+    <text x="235" y="350" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#4ade80" text-anchor="middle">
+      ✨ 200 OK: 쿠션 반사 및 45° 입사각 연산 완료!
+    </text>
+  </g>
+
+  <!-- ================= RIGHT: BLOCK CODING IDE WORKSPACE ================= -->
+  <g transform="translate(635, 185)">
+    <!-- 1. Available Block Palette Header -->
+    <text x="0" y="16" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#38bdf8">
+      📦 사용 가능한 블록 (클릭하여 스택에 추가)
+    </text>
+
+    <!-- Palette Block Chips (2x3) -->
+    <!-- Block 1: Angle 45 -->
+    <g transform="translate(0, 30)">
+      <rect width="235" height="36" rx="8" fill="#2563eb" stroke="#60a5fa" stroke-width="1"/>
+      <text x="117" y="23" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">
+        📐 조준 각도: 45°
+      </text>
+    </g>
+    <!-- Block 2: Cushion Calculation -->
+    <g transform="translate(245, 30)">
+      <rect width="235" height="36" rx="8" fill="#9333ea" stroke="#c084fc" stroke-width="1"/>
+      <text x="117" y="23" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">
+        🔄 쿠션 반사 연산
+      </text>
+    </g>
+    <!-- Block 3: Power 80% -->
+    <g transform="translate(0, 74)">
+      <rect width="235" height="36" rx="8" fill="#ea580c" stroke="#fb923c" stroke-width="1"/>
+      <text x="117" y="23" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">
+        ⚡ 타구 파워: 80%
+      </text>
+    </g>
+    <!-- Block 4: Shoot -->
+    <g transform="translate(245, 74)">
+      <rect width="235" height="36" rx="8" fill="#16a34a" stroke="#4ade80" stroke-width="1"/>
+      <text x="117" y="23" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">
+        🎱 큐대 샷 발사!
+      </text>
+    </g>
+    <!-- Block 5: Wrong Angle (Distractor) -->
+    <g transform="translate(0, 118)">
+      <rect width="235" height="36" rx="8" fill="#334155" stroke="#475569" stroke-width="1"/>
+      <text x="117" y="23" font-family="'Pretendard', sans-serif" font-size="13" fill="#cbd5e1" text-anchor="middle">
+        ❌ 역방향 180° 조준
+      </text>
+    </g>
+    <!-- Block 6: Wrong Power (Distractor) -->
+    <g transform="translate(245, 118)">
+      <rect width="235" height="36" rx="8" fill="#334155" stroke="#475569" stroke-width="1"/>
+      <text x="117" y="23" font-family="'Pretendard', sans-serif" font-size="13" fill="#cbd5e1" text-anchor="middle">
+        ⚠️ 파워 10% (너무 약함)
+      </text>
+    </g>
+
+    <!-- 2. Workspace Script Stack -->
+    <g transform="translate(0, 180)">
+      <text x="0" y="0" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#facc15">
+        📜 내 알고리즘 스택 (실행 순서)
+      </text>
+
+      <!-- Auto-fill button -->
+      <g transform="translate(300, -15)">
+        <rect width="115" height="26" rx="6" fill="#059669"/>
+        <text x="57" y="17" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">
+          💡 정답 자동배치
+        </text>
+      </g>
+      <!-- Reset button -->
+      <g transform="translate(425, -15)">
+        <rect width="55" height="26" rx="6" fill="#475569"/>
+        <text x="27" y="17" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">
+          ↺ 초기화
+        </text>
+      </g>
+
+      <!-- Workspace Card -->
+      <rect x="0" y="12" width="480" height="110" rx="10" fill="#020617" stroke="#1e293b" stroke-width="1.5"/>
+
+      <!-- Placed Block 1 -->
+      <g transform="translate(10, 24)">
+        <rect width="225" height="36" rx="6" fill="#2563eb"/>
+        <text x="12" y="23" font-family="'Impact', sans-serif" font-size="14" fill="#facc15">1.</text>
+        <text x="32" y="23" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">📐 조준 각도: 45°</text>
+        <text x="210" y="23" font-family="sans-serif" font-size="12" fill="#cbd5e1">✕</text>
+      </g>
+      <!-- Placed Block 2 -->
+      <g transform="translate(245, 24)">
+        <rect width="225" height="36" rx="6" fill="#9333ea"/>
+        <text x="12" y="23" font-family="'Impact', sans-serif" font-size="14" fill="#facc15">2.</text>
+        <text x="32" y="23" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">🔄 쿠션 반사 연산</text>
+        <text x="210" y="23" font-family="sans-serif" font-size="12" fill="#cbd5e1">✕</text>
+      </g>
+      <!-- Placed Block 3 -->
+      <g transform="translate(10, 68)">
+        <rect width="225" height="36" rx="6" fill="#ea580c"/>
+        <text x="12" y="23" font-family="'Impact', sans-serif" font-size="14" fill="#facc15">3.</text>
+        <text x="32" y="23" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">⚡ 타구 파워: 80%</text>
+        <text x="210" y="23" font-family="sans-serif" font-size="12" fill="#cbd5e1">✕</text>
+      </g>
+      <!-- Placed Block 4 -->
+      <g transform="translate(245, 68)">
+        <rect width="225" height="36" rx="6" fill="#16a34a"/>
+        <text x="12" y="23" font-family="'Impact', sans-serif" font-size="14" fill="#facc15">4.</text>
+        <text x="32" y="23" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">🎱 큐대 샷 발사!</text>
+        <text x="210" y="23" font-family="sans-serif" font-size="12" fill="#cbd5e1">✕</text>
+      </g>
+    </g>
+
+    <!-- 3. Status Label -->
+    <text x="240" y="325" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#4ade80" text-anchor="middle">
+      ✨ 완벽한 알고리즘 조합입니다! 아래 실행 버튼을 눌러 시뮬레이션을 시작하세요!
+    </text>
+
+    <!-- 4. Big Run Button -->
+    <g transform="translate(10, 345)">
+      <rect width="460" height="50" rx="12" fill="url(#runBtnGrad)" stroke="#4ade80" stroke-width="2" filter="url(#neonGlow)"/>
+      <text x="230" y="32" font-family="'Impact', 'Arial Black', sans-serif" font-size="20" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="1">
+        ▶ 알고리즘 컴파일 &amp; 실행 (Run Code)
+      </text>
+    </g>
+  </g>
+
+  <!-- Bottom Tip -->
+  <text x="640" y="650" font-family="'Pretendard', sans-serif" font-size="14" fill="#64748b" text-anchor="middle">
+    💡 성공 시: 멘탈(HP) 100% 완전 회복 · 코인 +30개 · 7초 무적 골든 피버 러닝 즉시 발동!
+  </text>
+</svg>

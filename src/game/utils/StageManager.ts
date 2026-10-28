@@ -71,7 +71,7 @@ export class StageManager {
         },
         {
             id: 10, chapter: 1, themeStage: 1, baseSpeed: 460, targetDistance: 200,
-            title: '10단계: 🎱 [보스] 일타싸피 예선', subtitle: '당구 AI 마스터 격파! 디버그 패치를 모아라',
+            title: '10단계: 🎱 [블록코딩] 일타싸피 평가', subtitle: '중간 힐링 타임! 블록코딩으로 당구공을 포켓에 쏙!',
             hasPits: false, hasPlatforms: false, bossType: 'iltassafy'
         },
 
@@ -123,7 +123,7 @@ export class StageManager {
         },
         {
             id: 20, chapter: 2, themeStage: 2, baseSpeed: 510, targetDistance: 300,
-            title: '20단계: ⚔️ [보스] 배틀싸피 전차전', subtitle: '중장갑 AI 전차 보스 출현! 미사일 회피와 반격',
+            title: '20단계: ⚔️ [블록코딩] 배틀싸피 전차전', subtitle: '중간 힐링 타임! 블록코딩으로 사이버 적 전차 격파!',
             hasPits: false, hasPlatforms: false, bossType: 'battlessafy'
         },
 

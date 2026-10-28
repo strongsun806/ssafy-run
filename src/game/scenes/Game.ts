@@ -5,6 +5,7 @@ import { AudioManager } from '../utils/AudioManager';
 import { ScoreManager } from '../utils/ScoreManager';
 import { SkinManager } from '../utils/SkinManager';
 import { StageManager, StageConfig } from '../utils/StageManager';
+import { BlockCodingModal } from '../utils/BlockCodingModal';
 
 interface GroundSegment {
     tile: Phaser.GameObjects.TileSprite;
@@ -664,35 +665,31 @@ export class Game extends Scene {
     private startBossEncounter(type: 'iltassafy' | 'battlessafy') {
         this.isBossActive = true;
         this.currentBossType = type;
-        this.bossHp = 100;
-        this.bossMaxHp = 100;
-        this.bossAttackTimer = 2200;
-        this.bossPatchTimer = 1200;
 
         this.audioManager.playBossWarning();
-        this.cameras.main.flash(400, 239, 68, 68);
+        this.cameras.main.flash(350, 56, 189, 248);
 
         const { width, height } = this.scale;
 
-        // Big Warning Siren Banner
-        const alertContainer = this.add.container(width / 2, height / 2 - 80).setDepth(160);
+        // Break Time Invitation Banner
+        const alertContainer = this.add.container(width / 2, height / 2 - 80).setDepth(200);
         const alertBg = this.add.graphics();
         alertBg.fillStyle(0x0f172a, 0.96);
-        alertBg.lineStyle(3, 0xef4444);
-        alertBg.fillRoundedRect(-320, -45, 640, 90, 16);
-        alertBg.strokeRoundedRect(-320, -45, 640, 90, 16);
+        alertBg.lineStyle(3, 0x38bdf8);
+        alertBg.fillRoundedRect(-330, -50, 660, 100, 16);
+        alertBg.strokeRoundedRect(-330, -50, 660, 100, 16);
 
         const titleText = type === 'iltassafy'
-            ? '🚨 [긴급 평가] 일타싸피 당구 AI 보스 침공! 🚨'
-            : '🚨 [최종 배틀] 배틀싸피 사이버 탱크 보스 출현! 🚨';
+            ? '🎱 [중간 힐링 타임] 일타싸피 알고리즘 세션! 🎱'
+            : '⚔️ [중간 힐링 타임] 배틀싸피 전차전 알고리즘 세션! ⚔️';
 
-        const alertTitle = this.add.text(0, -12, titleText, {
+        const alertTitle = this.add.text(0, -15, titleText, {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '22px',
-            color: '#ef4444'
+            color: '#38bdf8'
         }).setOrigin(0.5);
 
-        const alertSub = this.add.text(0, 20, '🧩 디버그 패치를 모아 알고리즘 보스를 공략하라!', {
+        const alertSub = this.add.text(0, 20, '🧩 지친 손가락을 쉬어가세요! 블록 코딩으로 보스를 격파하라!', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '16px',
             color: '#facc15'
@@ -707,49 +704,55 @@ export class Game extends Scene {
             duration: 350,
             ease: 'Back.easeOut',
             onComplete: () => {
-                this.time.delayedCall(2200, () => {
+                this.time.delayedCall(1100, () => {
                     this.tweens.add({
                         targets: alertContainer,
                         alpha: 0,
                         scale: 0.8,
-                        duration: 300,
-                        onComplete: () => alertContainer.destroy()
+                        duration: 250,
+                        onComplete: () => {
+                            alertContainer.destroy();
+
+                            // Pause runner and launch Block Coding Mini-game
+                            this.isPaused = true;
+                            (this.player.body as Phaser.Physics.Arcade.Body)?.setVelocity(0, 0);
+
+                            new BlockCodingModal(this, type, this.audioManager, (scoreBonus, coinBonus) => {
+                                this.bossDefeatedList.add(type);
+                                this.score += scoreBonus;
+                                this.coinsCollected += coinBonus;
+                                this.scoreText.setText(this.score.toLocaleString());
+                                this.coinText.setText(this.coinsCollected.toString());
+
+                                // Full heal 100%
+                                this.currentHp = this.maxHp;
+                                this.updateHpBar();
+
+                                // Resume runner with Golden Fever Mode
+                                this.isPaused = false;
+                                this.isBossActive = false;
+                                this.startFeverMode();
+
+                                // Floating celebratory notice
+                                const floatText = this.add.text(this.player.x, this.player.y - 70, '✨ 멘탈 100% 완전 회복! 골든 피버 질주! ✨', {
+                                    fontFamily: '"Black Han Sans", sans-serif',
+                                    fontSize: '22px',
+                                    color: '#4ade80'
+                                }).setDepth(50);
+
+                                this.tweens.add({
+                                    targets: floatText,
+                                    y: floatText.y - 50,
+                                    alpha: 0,
+                                    duration: 1600,
+                                    onComplete: () => floatText.destroy()
+                                });
+                            });
+                        }
                     });
                 });
             }
         });
-
-        // Spawn Boss Sprite on Right Screen Edge
-        const bossTex = type === 'iltassafy' ? 'boss_iltassafy' : 'boss_battlessafy';
-        this.bossSprite = this.physics.add.sprite(width + 120, this.groundY - 110, bossTex);
-        this.bossSprite.setDepth(18);
-        const bBody = this.bossSprite.body as Phaser.Physics.Arcade.Body;
-        if (bBody) {
-            bBody.setAllowGravity(false);
-            bBody.setImmovable(true);
-        }
-
-        // Float into arena
-        this.tweens.add({
-            targets: this.bossSprite,
-            x: width - 130,
-            duration: 1000,
-            ease: 'Cubic.easeOut',
-            onComplete: () => {
-                // Hover bobbing motion
-                this.tweens.add({
-                    targets: this.bossSprite,
-                    y: this.groundY - 135,
-                    duration: 1200,
-                    yoyo: true,
-                    repeat: -1,
-                    ease: 'Sine.easeInOut'
-                });
-            }
-        });
-
-        // Create Boss HP Bar HUD (top center)
-        this.createBossHUD(type);
     }
 
     private createBossHUD(type: 'iltassafy' | 'battlessafy') {

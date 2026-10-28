@@ -429,6 +429,77 @@ export class AudioManager {
         });
     }
 
+    public playBlockClick() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const now = this.ctx.currentTime;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(700, now);
+        osc.frequency.exponentialRampToValueAtTime(1100, now + 0.06);
+
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.06);
+    }
+
+    public playCompileSuccess() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        const arpeggio = [523.25, 659.25, 783.99, 1046.5, 1318.5]; // C5, E5, G5, C6, E6
+        arpeggio.forEach((freq, idx) => {
+            const osc = this.ctx!.createOscillator();
+            const gain = this.ctx!.createGain();
+            const now = this.ctx!.currentTime + idx * 0.08;
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now);
+
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+            osc.connect(gain);
+            gain.connect(this.ctx!.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.25);
+        });
+    }
+
+    public playCompileFail() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const now = this.ctx.currentTime;
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.linearRampToValueAtTime(140, now + 0.22);
+
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.22);
+    }
+
     public startBgm() {
         if (this.isMuted || this.isBgmPlaying) return;
         this.initContext();
