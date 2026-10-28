@@ -1,8 +1,9 @@
+import * as Phaser from 'phaser';
 import { Scene } from 'phaser';
 import { AudioManager } from '../utils/AudioManager';
 import { ScoreManager } from '../utils/ScoreManager';
 import { SkinManager } from '../utils/SkinManager';
-import { UpgradeManager, BuildEdition } from '../utils/UpgradeManager';
+import { UpgradeManager } from '../utils/UpgradeManager';
 
 export class MainMenu extends Scene {
     private audioManager: AudioManager;
@@ -11,6 +12,7 @@ export class MainMenu extends Scene {
     private liveRankContainer?: Phaser.GameObjects.Container;
     private runnerSprite?: Phaser.GameObjects.Sprite;
     private coinBadgeText?: Phaser.GameObjects.Text;
+    private popStateHandler?: () => void;
 
     constructor() {
         super('MainMenu');
@@ -19,11 +21,11 @@ export class MainMenu extends Scene {
 
     create() {
         const { width, height } = this.scale;
-        this.cameras.main.fadeIn(400, 10, 14, 26);
+        this.modalContainer = undefined;
 
-        // 1. Cyber City Background (Stage 1 calm theme)
+        // 1. Cyber City Background
         const bg = this.add.graphics();
-        bg.fillGradientStyle(0x0a0e1a, 0x0a0e1a, 0x171e38, 0x241b3e, 1);
+        bg.fillGradientStyle(0x070b14, 0x070b14, 0x131b31, 0x1e1b4b, 1);
         bg.fillRect(0, 0, width, height);
 
         if (this.textures.exists('bg_s1_far')) {
@@ -38,28 +40,28 @@ export class MainMenu extends Scene {
             this.add.image(x, height - 30, 'ground_s1').setOrigin(0, 0.5);
         }
 
-        // Ambient Floating Cyber Motes (Steam Indie Atmosphere)
+        // Subtle Ambient Particles
         if (this.textures.exists('particle_sparkle')) {
             this.add.particles(0, 0, 'particle_sparkle', {
                 x: { min: 0, max: width },
                 y: { min: 60, max: height - 80 },
-                speedY: { min: -25, max: -10 },
-                speedX: { min: -10, max: 10 },
-                scale: { start: 0.45, end: 0 },
-                alpha: { start: 0.35, end: 0 },
-                lifespan: 3200,
-                frequency: 220,
+                speedY: { min: -22, max: -8 },
+                speedX: { min: -8, max: 8 },
+                scale: { start: 0.4, end: 0 },
+                alpha: { start: 0.3, end: 0 },
+                lifespan: 3000,
+                frequency: 250,
                 quantity: 1
             });
         }
 
-        // 2. Trainee Runner Animation with Equipped Skin & Companion Drone
+        // 2. Runner Character & Companion Drone
         this.createOrUpdateRunner();
         if (this.textures.exists('companion_drone')) {
-            const drone = this.add.image(118, height - 122, 'companion_drone').setScale(1.1);
+            const drone = this.add.image(210, height - 125, 'companion_drone').setScale(1.05);
             this.tweens.add({
                 targets: drone,
-                y: height - 134,
+                y: height - 136,
                 duration: 900,
                 yoyo: true,
                 repeat: -1,
@@ -67,11 +69,11 @@ export class MainMenu extends Scene {
             });
         }
 
-        // 3. Left Section: Title & Controls & Start
+        // 3. Left Section: Title & Main Navigation
         const leftX = 360;
 
-        const title = this.add.text(leftX, 120, 'SSAFY RUN', {
-            fontFamily: '"Black Han Sans", "Permanent Marker", sans-serif',
+        const title = this.add.text(leftX, 118, 'SSAFY RUN', {
+            fontFamily: '"Black Han Sans", sans-serif',
             fontSize: '68px',
             color: '#38bdf8',
             stroke: '#0f172a',
@@ -81,38 +83,38 @@ export class MainMenu extends Scene {
 
         this.tweens.add({
             targets: title,
-            y: 114,
+            y: 112,
             duration: 1200,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
 
-        this.add.text(leftX, 185, '⚡ 지각 위기! 9시 입실 전까지 멀캠으로 질주하라! ⚡', {
+        this.add.text(leftX, 180, '9시 입실 마감 전까지 멀캠으로 돌파하라!', {
             fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '19px',
+            fontSize: '20px',
             color: '#facc15'
         }).setOrigin(0.5);
 
-        // My High Score & Coin Balance Badges
+        // High Score & Coin Balance Pill
         const highScore = ScoreManager.getHighScore();
         const coins = SkinManager.getCoins();
 
-        const badgeContainer = this.add.container(leftX, 235);
+        const badgeContainer = this.add.container(leftX, 232);
         const badgeBg = this.add.graphics();
-        badgeBg.fillStyle(0x0f172a, 0.85);
+        badgeBg.fillStyle(0x0f172a, 0.9);
         badgeBg.lineStyle(2, 0xeab308);
         badgeBg.fillRoundedRect(-165, -18, 330, 36, 18);
         badgeBg.strokeRoundedRect(-165, -18, 330, 36, 18);
         badgeContainer.add(badgeBg);
 
-        const scoreText = this.add.text(-35, 0, `👑 최고: ${highScore.toLocaleString()}점`, {
+        const scoreText = this.add.text(-42, 0, `최고 기록: ${highScore.toLocaleString()}점`, {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '14px',
             color: '#facc15'
         }).setOrigin(0.5);
 
-        this.coinBadgeText = this.add.text(90, 0, `🪙 ${coins}`, {
+        this.coinBadgeText = this.add.text(92, 0, `${coins.toLocaleString()} G`, {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
             fontSize: '14px',
             color: '#fde047'
@@ -120,53 +122,49 @@ export class MainMenu extends Scene {
 
         badgeContainer.add([scoreText, this.coinBadgeText]);
 
-        // 1. Stage Mode Button (1~30단계 스테이지 클리어)
-        this.createButton(leftX, 295, '🗺️ 30단계 스테이지 (STAGE)', 0x059669, 0x047857, () => {
+        // Main Mode Buttons
+        this.createButton(leftX, 298, '스테이지 모드 (STAGE 1~30)', 0x059669, 0x047857, () => {
             this.scene.start('StageSelect');
-        }, 310, 50, '19px');
+        }, 312, 52, '19px');
 
-        // 2. Infinite Run Button (무한 랭킹 런)
-        this.createButton(leftX, 355, '⚡ 무한 랭킹 런 (INFINITE)', 0x2563eb, 0x1d4ed8, () => {
+        this.createButton(leftX, 362, '무한 랭킹 런 (INFINITE)', 0x2563eb, 0x1d4ed8, () => {
             this.startGame();
-        }, 310, 50, '19px');
+        }, 312, 52, '19px');
 
-        // 3. Tech Lab (RPG Spec Upgrade), Skin Shop & How to Play Buttons
-        this.createButton(leftX - 106, 416, '🔧 테크 랩', 0x0891b2, 0x0e7490, () => {
+        // Sub Buttons: Spec Upgrade, Skin Shop, Guide
+        this.createButton(leftX - 106, 426, '스펙 강화', 0x0891b2, 0x0e7490, () => {
             this.showTechLabModal();
-        }, 98, 42, '14px');
+        }, 98, 44, '15px');
 
-        this.createButton(leftX, 416, '🛍️ 스킨 상점', 0x7c3aed, 0x6d28d9, () => {
+        this.createButton(leftX, 426, '스킨 상점', 0x7c3aed, 0x6d28d9, () => {
             this.showShopModal();
-        }, 98, 42, '14px');
+        }, 98, 44, '15px');
 
-        this.createButton(leftX + 106, 416, '📖 가이드', 0x334155, 0x475569, () => {
+        this.createButton(leftX + 106, 426, '게임 방법', 0x334155, 0x475569, () => {
             this.showHowToPlayModal();
-        }, 98, 42, '14px');
+        }, 98, 44, '15px');
 
-        // 4. Playtest Version Preset Switcher Button (Allows instant testing of RPG / Arcade / Ultimate editions!)
-        this.createEditionSwitcher(leftX, 466);
-
-        const prompt = this.add.text(leftX, 508, '[Space] 무한 런 시작 · [Shift] 인게임 하이퍼 대시', {
+        const prompt = this.add.text(leftX, 482, '[Space] 무한 런 즉시 시작   ·   [Shift] 인게임 대시', {
             fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '14px',
+            fontSize: '15px',
             color: '#94a3b8'
         }).setOrigin(0.5);
 
         this.tweens.add({
             targets: prompt,
-            alpha: 0.3,
-            duration: 800,
+            alpha: 0.35,
+            duration: 850,
             yoyo: true,
             repeat: -1
         });
 
-        // 4. Right Section: Prominent LIVE Leaderboard Widget (명예의 전당)
+        // 4. Right Section: Live Leaderboard Widget
         this.createLiveLeaderboardWidget(width - 360, 95);
 
         // 5. Sound Toggle (Top Right)
         this.createSoundToggle(width - 90, 45);
 
-        // Keyboard listeners
+        // 6. Keyboard & Browser Back Listeners
         if (this.input.keyboard) {
             this.input.keyboard.on('keydown-SPACE', () => {
                 if (!this.modalContainer) this.startGame();
@@ -174,7 +172,25 @@ export class MainMenu extends Scene {
             this.input.keyboard.on('keydown-ENTER', () => {
                 if (!this.modalContainer) this.startGame();
             });
+            this.input.keyboard.on('keydown-ESC', () => {
+                if (this.modalContainer) this.closeModal();
+            });
+            this.input.keyboard.on('keydown-BACKSPACE', () => {
+                if (this.modalContainer) this.closeModal();
+            });
         }
+
+        this.popStateHandler = () => {
+            if (this.modalContainer) {
+                this.closeModal();
+            }
+        };
+        window.addEventListener('popstate', this.popStateHandler);
+        this.events.once('shutdown', () => {
+            if (this.popStateHandler) {
+                window.removeEventListener('popstate', this.popStateHandler);
+            }
+        });
     }
 
     private createOrUpdateRunner() {
@@ -199,7 +215,7 @@ export class MainMenu extends Scene {
         if (this.runnerSprite) {
             this.runnerSprite.play(animKey);
         } else {
-            this.runnerSprite = this.add.sprite(280, height - 55, `player_${skinId}_run_1`)
+            this.runnerSprite = this.add.sprite(260, height - 55, `player_${skinId}_run_1`)
                 .setOrigin(0.5, 1)
                 .setScale(1.3);
             this.runnerSprite.play(animKey);
@@ -219,28 +235,28 @@ export class MainMenu extends Scene {
         bg.strokeRoundedRect(0, 0, boardW, boardH, 16);
         this.liveRankContainer.add(bg);
 
-        const header = this.add.text(boardW / 2, 30, '🏆 전국 명예의 전당', {
-            fontFamily: 'Arial Black',
-            fontSize: '22px',
+        const header = this.add.text(boardW / 2, 30, '전국 명예의 전당', {
+            fontFamily: '"Black Han Sans", sans-serif',
+            fontSize: '23px',
             color: '#facc15'
         }).setOrigin(0.5);
 
-        const subheader = this.add.text(boardW / 2, 54, '📡 실시간 동기화 중...', {
-            fontFamily: 'Arial',
-            fontSize: '12px',
+        const subheader = this.add.text(boardW / 2, 54, '실시간 랭킹 동기화 중...', {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '13px',
             color: '#38bdf8'
         }).setOrigin(0.5);
 
         this.liveRankContainer.add([header, subheader]);
 
         const result = await ScoreManager.fetchLeaderboard();
-        subheader.setText(result.isOnline ? '🟢 Firebase 실시간 클라우드 연동됨' : '🟡 로컬 랭킹 모드');
+        subheader.setText(result.isOnline ? 'Firebase 실시간 랭킹 연동됨' : '로컬 랭킹 모드');
         subheader.setColor(result.isOnline ? '#4ade80' : '#facc15');
 
         const list = result.list.slice(0, 5);
         list.forEach((item, idx) => {
             const rowY = 78 + idx * 58;
-            const rankEmoji = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `  ${idx + 1}.`;
+            const rankLabel = `${idx + 1}위.`;
 
             const rowBg = this.add.graphics();
             rowBg.fillStyle(idx === 0 ? 0x854d0e : 0x1e293b, idx === 0 ? 0.75 : 0.6);
@@ -250,13 +266,13 @@ export class MainMenu extends Scene {
             this.liveRankContainer!.add(rowBg);
 
             const stageBadge = item.stage ? `[ST.${item.stage}]` : '';
-            const nameText = this.add.text(28, rowY + 16, `${rankEmoji} ${item.name}`, {
+            const nameText = this.add.text(28, rowY + 16, `${rankLabel} ${item.name}`, {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '15px',
                 color: idx === 0 ? '#fef08a' : '#ffffff'
             }).setOrigin(0, 0.5);
 
-            const detailText = this.add.text(28, rowY + 36, `${stageBadge} 📍 ${item.distance}m (${item.date})`, {
+            const detailText = this.add.text(28, rowY + 36, `${stageBadge} ${item.distance}m (${item.date})`, {
                 fontFamily: '"Do Hyeon", sans-serif',
                 fontSize: '12px',
                 color: '#facc15'
@@ -271,124 +287,105 @@ export class MainMenu extends Scene {
             this.liveRankContainer!.add([nameText, detailText, scoreText]);
         });
 
-        const fullBtn = this.createButton(boardW / 2, boardH - 28, '🔍 전체 랭킹 (TOP 10)', 0x1e293b, 0x334155, () => {
+        const fullBtn = this.createButton(boardW / 2, boardH - 28, '전체 랭킹 보기 (TOP 10)', 0x1e293b, 0x334155, () => {
             this.showLeaderboardModal();
         }, 220, 34, '13px');
         this.liveRankContainer.add(fullBtn);
     }
 
-    private createEditionSwitcher(x: number, y: number) {
-        const getLabel = (ed: BuildEdition) => {
-            if (ed === 'rpg') return '🎮 테스트 모드: [방어/성장] RPG 테크랩 & 드론요격 (클릭 전환)';
-            if (ed === 'arcade') return '🎮 테스트 모드: [속도/스킬] 하이퍼 대시 & 알파벳 피버 (클릭 전환)';
-            return '🎮 테스트 모드: [얼티밋 통합] 테크랩+드론+대시+보너스 (클릭 전환)';
-        };
-
-        const btn = this.add.text(x, y, getLabel(UpgradeManager.getEdition()), {
-            fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '13px',
-            color: '#22d3ee',
-            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-            padding: { x: 12, y: 6 }
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-        btn.on('pointerdown', () => {
-            this.audioManager.playClick();
-            const cur = UpgradeManager.getEdition();
-            const next: BuildEdition = cur === 'ultimate' ? 'rpg' : cur === 'rpg' ? 'arcade' : 'ultimate';
-            UpgradeManager.setEdition(next);
-            btn.setText(getLabel(next));
-        });
+    private closeModal() {
+        this.modalContainer?.destroy();
+        this.modalContainer = undefined;
+        this.coinBadgeText?.setText(`${SkinManager.getCoins().toLocaleString()} G`);
     }
 
-    // RPG Tech Lab Modal (사이버 테크 랩 - 스펙 강화 & 무료 보급품)
     private showTechLabModal() {
         if (this.modalContainer) return;
+        window.history.pushState({ modal: 'techlab' }, '');
         const { width, height } = this.scale;
 
-        this.modalContainer = this.add.container(0, 0).setDepth(100);
+        this.modalContainer = this.add.container(0, 0).setDepth(500);
 
-        const dim = this.add.graphics();
-        dim.fillStyle(0x000000, 0.82);
-        dim.fillRect(0, 0, width, height);
-        dim.setInteractive(new Phaser.Geom.Rectangle(0, 0, width, height), Phaser.Geom.Rectangle.Contains);
-        this.modalContainer.add(dim);
+        const dim = this.add.zone(width / 2, height / 2, width, height).setOrigin(0.5).setInteractive();
+        const dimBg = this.add.graphics();
+        dimBg.fillStyle(0x000000, 0.82);
+        dimBg.fillRect(0, 0, width, height);
+        dim.on('pointerdown', () => this.closeModal());
+        this.modalContainer.add([dimBg, dim]);
 
-        const panelW = 840;
-        const panelH = 560;
+        const panelW = 820;
+        const panelH = 540;
         const px = (width - panelW) / 2;
         const py = (height - panelH) / 2;
 
+        // Block clicks inside the panel from closing the modal
+        const panelBlocker = this.add.zone(width / 2, height / 2, panelW, panelH).setOrigin(0.5).setInteractive();
         const panel = this.add.graphics();
         panel.fillStyle(0x090d16, 0.98);
         panel.lineStyle(3, 0x22d3ee);
         panel.fillRoundedRect(px, py, panelW, panelH, 18);
         panel.strokeRoundedRect(px, py, panelW, panelH, 18);
-        this.modalContainer.add(panel);
+        this.modalContainer.add([panelBlocker, panel]);
 
-        const title = this.add.text(width / 2, py + 36, '🔧 CYBER TECH LAB · 스펙 강화 연구소', {
-            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+        const title = this.add.text(width / 2, py + 36, '스펙 강화 연구소 (TECH LAB)', {
+            fontFamily: '"Black Han Sans", sans-serif',
             fontSize: '28px',
             color: '#22d3ee'
         }).setOrigin(0.5);
 
-        const subText = this.add.text(width / 2, py + 68, `보유 코인: 🪙 ${SkinManager.getCoins().toLocaleString()} G  |  강화 수치는 브라우저에 영구 보존됩니다`, {
+        const subText = this.add.text(width / 2, py + 68, `보유 코인: ${SkinManager.getCoins().toLocaleString()} G   |   강화 능력치는 모든 스테이지에 영구 적용됩니다`, {
             fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '16px',
+            fontSize: '15px',
             color: '#facc15'
         }).setOrigin(0.5);
 
         this.modalContainer.add([title, subText]);
 
-        // Daily Free Supply Capsule Button (+600 Coins)
         const canClaim = UpgradeManager.canClaimDailySupply();
         const supplyBtn = this.createButton(
             width / 2,
-            py + 112,
-            canClaim ? '🎁 오늘의 무료 연구 보급품 수령 (+600 🪙 즉시 지급!)' : '✔ 오늘의 무료 연구 보급품 수령 완료',
+            py + 110,
+            canClaim ? '오늘의 무료 지원금 받기 (+600 G 즉시 지급)' : '오늘의 무료 지원금 수령 완료',
             canClaim ? 0xeab308 : 0x334155,
             canClaim ? 0xca8a04 : 0x334155,
             () => {
                 if (UpgradeManager.canClaimDailySupply()) {
                     UpgradeManager.claimDailySupply();
                     this.audioManager.playCoin();
-                    this.coinBadgeText?.setText(`🪙 ${SkinManager.getCoins()}`);
                     this.closeModal();
                     this.showTechLabModal();
                 }
             },
-            440,
-            38,
-            '15px'
+            400,
+            36,
+            '14px'
         );
         this.modalContainer.add(supplyBtn);
 
-        // Render 3 Upgrade Spec Cards
         const infos = UpgradeManager.getAllUpgradeInfos();
         infos.forEach((info, idx) => {
-            const rowY = py + 152 + idx * 105;
+            const rowY = py + 148 + idx * 102;
             const cardBg = this.add.graphics();
-            cardBg.fillStyle(0x1e293b, 0.88);
-            cardBg.lineStyle(2, 0x38bdf8, 0.85);
-            cardBg.fillRoundedRect(px + 34, rowY, panelW - 68, 92, 12);
-            cardBg.strokeRoundedRect(px + 34, rowY, panelW - 68, 92, 12);
+            cardBg.fillStyle(0x1e293b, 0.9);
+            cardBg.lineStyle(1.5, 0x38bdf8, 0.85);
+            cardBg.fillRoundedRect(px + 34, rowY, panelW - 68, 88, 12);
+            cardBg.strokeRoundedRect(px + 34, rowY, panelW - 68, 88, 12);
             this.modalContainer!.add(cardBg);
 
-            const nameTxt = this.add.text(px + 54, rowY + 16, `${info.icon} ${info.name}  [Lv.${info.level} / ${info.maxLevel}]`, {
+            const nameTxt = this.add.text(px + 54, rowY + 14, `${info.name}   [Lv.${info.level} / ${info.maxLevel}]`, {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-                fontSize: '19px',
+                fontSize: '18px',
                 color: info.color
             });
 
-            // Star-force style level gauge dots
             const stars = '★'.repeat(info.level) + '☆'.repeat(info.maxLevel - info.level);
-            const starTxt = this.add.text(px + 54, rowY + 42, `강화 단계: ${stars}`, {
+            const starTxt = this.add.text(px + 54, rowY + 38, `강화 단계: ${stars}`, {
                 fontFamily: 'Arial',
                 fontSize: '14px',
                 color: '#facc15'
             });
 
-            const descTxt = this.add.text(px + 54, rowY + 64, `${info.currentEffectText}  ▶  ${info.nextEffectText}`, {
+            const descTxt = this.add.text(px + 54, rowY + 60, `${info.currentEffectText}  ▶  ${info.nextEffectText}`, {
                 fontFamily: '"Do Hyeon", sans-serif',
                 fontSize: '14px',
                 color: '#cbd5e1'
@@ -397,7 +394,7 @@ export class MainMenu extends Scene {
             this.modalContainer!.add([nameTxt, starTxt, descTxt]);
 
             if (info.level >= info.maxLevel) {
-                const maxBadge = this.add.text(px + panelW - 115, rowY + 46, '👑 MAX 달성', {
+                const maxBadge = this.add.text(px + panelW - 115, rowY + 44, 'MAX 달성', {
                     fontFamily: 'Arial Black',
                     fontSize: '16px',
                     color: '#4ade80'
@@ -407,86 +404,79 @@ export class MainMenu extends Scene {
                 const canAfford = SkinManager.getCoins() >= info.cost;
                 const upBtn = this.createButton(
                     px + panelW - 115,
-                    rowY + 46,
-                    `⚡ 강화 (🪙 ${info.cost})`,
+                    rowY + 44,
+                    `강화 (${info.cost} G)`,
                     canAfford ? 0x0284c7 : 0x475569,
                     canAfford ? 0x0369a1 : 0x334155,
                     () => {
                         const res = UpgradeManager.upgradeStat(info.id);
                         if (res.success) {
                             this.audioManager.playStageClear();
-                            this.coinBadgeText?.setText(`🪙 ${SkinManager.getCoins()}`);
                             this.closeModal();
                             this.showTechLabModal();
                         }
                     },
-                    155,
-                    42,
+                    148,
+                    40,
                     '14px'
                 );
                 this.modalContainer!.add(upBtn);
             }
         });
 
-        const closeBtn = this.createButton(width / 2, py + panelH - 36, '닫기 (CLOSE)', 0x475569, 0x334155, () => {
+        const closeBtn = this.createButton(width / 2, py + panelH - 36, '◀ 메인 화면으로 돌아가기 (ESC)', 0x334155, 0x475569, () => {
             this.closeModal();
-        }, 180, 42, '16px');
+        }, 240, 42, '15px');
         this.modalContainer.add(closeBtn);
     }
 
-    private closeModal() {
-        this.modalContainer?.destroy();
-        this.modalContainer = undefined;
-    }
-
-    // Shop & Dressing Room Modal (스킨 꾸미기 상점)
     private showShopModal() {
         if (this.modalContainer) return;
+        window.history.pushState({ modal: 'shop' }, '');
         const { width, height } = this.scale;
 
-        this.modalContainer = this.add.container(0, 0).setDepth(100);
+        this.modalContainer = this.add.container(0, 0).setDepth(500);
 
-        const dim = this.add.graphics();
-        dim.fillStyle(0x000000, 0.8);
-        dim.fillRect(0, 0, width, height);
-        dim.setInteractive(new Phaser.Geom.Rectangle(0, 0, width, height), Phaser.Geom.Rectangle.Contains);
-        this.modalContainer.add(dim);
+        const dim = this.add.zone(width / 2, height / 2, width, height).setOrigin(0.5).setInteractive();
+        const dimBg = this.add.graphics();
+        dimBg.fillStyle(0x000000, 0.82);
+        dimBg.fillRect(0, 0, width, height);
+        dim.on('pointerdown', () => this.closeModal());
+        this.modalContainer.add([dimBg, dim]);
 
         const panelW = 820;
         const panelH = 560;
         const px = (width - panelW) / 2;
         const py = (height - panelH) / 2;
 
+        const panelBlocker = this.add.zone(width / 2, height / 2, panelW, panelH).setOrigin(0.5).setInteractive();
         const panel = this.add.graphics();
         panel.fillStyle(0x0f172a, 0.98);
         panel.lineStyle(3, 0xa855f7);
         panel.fillRoundedRect(px, py, panelW, panelH, 16);
         panel.strokeRoundedRect(px, py, panelW, panelH, 16);
-        this.modalContainer.add(panel);
+        this.modalContainer.add([panelBlocker, panel]);
 
-        // Header Title & Coins
-        const title = this.add.text(width / 2, py + 38, '🛍️ 교육생 꾸미기 락커룸', {
-            fontFamily: 'Arial Black',
+        const title = this.add.text(width / 2, py + 36, '캐릭터 스킨 상점', {
+            fontFamily: '"Black Han Sans", sans-serif',
             fontSize: '28px',
             color: '#c084fc'
         }).setOrigin(0.5);
 
-        const myCoinsText = this.add.text(width / 2, py + 72, `내 보유 코인: 🪙 ${SkinManager.getCoins().toLocaleString()}`, {
-            fontFamily: 'Arial Black',
-            fontSize: '17px',
+        const myCoinsText = this.add.text(width / 2, py + 68, `보유 코인: ${SkinManager.getCoins().toLocaleString()} G`, {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '16px',
             color: '#facc15'
         }).setOrigin(0.5);
 
         this.modalContainer.add([title, myCoinsText]);
 
-        // Render All 5 Skins
         const skins = SkinManager.SKINS;
         skins.forEach((skin, idx) => {
-            const rowY = py + 105 + idx * 78;
+            const rowY = py + 100 + idx * 78;
             const isOwned = SkinManager.isOwned(skin.id);
             const isEquipped = SkinManager.getEquippedSkin() === skin.id;
 
-            // Card Background
             const cardBg = this.add.graphics();
             cardBg.fillStyle(isEquipped ? 0x3b0764 : 0x1e293b, 0.85);
             cardBg.lineStyle(1.5, isEquipped ? 0xc084fc : 0x475569, 0.8);
@@ -494,30 +484,26 @@ export class MainMenu extends Scene {
             cardBg.strokeRoundedRect(px + 30, rowY, panelW - 60, 68, 10);
             this.modalContainer!.add(cardBg);
 
-            // Sprite preview
-            const previewSprite = this.add.sprite(px + 70, rowY + 34, `player_${skin.id}_run_1`)
-                .setScale(0.85);
+            const previewSprite = this.add.sprite(px + 70, rowY + 34, `player_${skin.id}_run_1`).setScale(0.85);
             this.modalContainer!.add(previewSprite);
 
-            // Skin Name & Description
-            const nameText = this.add.text(px + 120, rowY + 18, skin.name, {
-                fontFamily: 'Arial Black',
+            const nameText = this.add.text(px + 120, rowY + 16, skin.name, {
+                fontFamily: '"Black Han Sans", sans-serif',
                 fontSize: '18px',
                 color: skin.color
             });
 
             const descText = this.add.text(px + 120, rowY + 42, skin.description, {
-                fontFamily: 'Arial',
-                fontSize: '13px',
+                fontFamily: '"Do Hyeon", sans-serif',
+                fontSize: '14px',
                 color: '#94a3b8'
             });
             this.modalContainer!.add([nameText, descText]);
 
-            // Action Button: [장착 중] or [장착하기] or [🪙 가격 구매]
             if (isEquipped) {
-                const eqBadge = this.add.text(px + panelW - 100, rowY + 34, '✔ 장착 중', {
+                const eqBadge = this.add.text(px + panelW - 100, rowY + 34, '장착 중', {
                     fontFamily: 'Arial Black',
-                    fontSize: '16px',
+                    fontSize: '15px',
                     color: '#4ade80'
                 }).setOrigin(0.5);
                 this.modalContainer!.add(eqBadge);
@@ -525,44 +511,35 @@ export class MainMenu extends Scene {
                 const equipBtn = this.createButton(px + panelW - 100, rowY + 34, '장착하기', 0x2563eb, 0x1d4ed8, () => {
                     SkinManager.equipSkin(skin.id);
                     this.audioManager.playJump();
-                    this.modalContainer?.destroy();
-                    this.modalContainer = undefined;
+                    this.closeModal();
                     this.createOrUpdateRunner();
-                    this.showShopModal(); // Refresh modal
+                    this.showShopModal();
                 }, 110, 36, '14px');
                 this.modalContainer!.add(equipBtn);
             } else {
-                const buyBtn = this.createButton(px + panelW - 100, rowY + 34, `🪙 ${skin.price}`, 0x059669, 0x047857, () => {
+                const buyBtn = this.createButton(px + panelW - 100, rowY + 34, `${skin.price} G 구매`, 0x059669, 0x047857, () => {
                     if (SkinManager.buySkin(skin.id)) {
                         this.audioManager.playCoin();
-                        this.coinBadgeText?.setText(`🪙 ${SkinManager.getCoins()}`);
-                        this.modalContainer?.destroy();
-                        this.modalContainer = undefined;
+                        this.closeModal();
                         this.createOrUpdateRunner();
                         this.showShopModal();
                     } else {
-                        alert('코인이 부족합니다! 게임을 플레이하여 코인을 모아보세요.');
+                        alert('코인이 부족합니다! 스테이지를 플레이하거나 스펙 강화소에서 무료 지원금을 수령해보세요.');
                     }
-                }, 110, 36, '14px');
+                }, 115, 36, '14px');
                 this.modalContainer!.add(buyBtn);
             }
         });
 
-        // Close Button
-        const closeBtn = this.createButton(width / 2, py + panelH - 30, '닫기 (CLOSE)', 0x2563eb, 0x1d4ed8, () => {
-            this.modalContainer?.destroy();
-            this.modalContainer = undefined;
-            this.coinBadgeText?.setText(`🪙 ${SkinManager.getCoins()}`);
-        }, 150, 38, '15px');
+        const closeBtn = this.createButton(width / 2, py + panelH - 32, '◀ 메인 화면으로 돌아가기 (ESC)', 0x334155, 0x475569, () => {
+            this.closeModal();
+        }, 240, 40, '15px');
         this.modalContainer.add(closeBtn);
     }
 
     private startGame() {
         this.audioManager.startBgm();
-        this.cameras.main.fade(300, 10, 14, 26);
-        this.time.delayedCall(300, () => {
-            this.scene.start('Game');
-        });
+        this.scene.start('Game', { mode: 'infinite' });
     }
 
     private createButton(
@@ -594,27 +571,25 @@ export class MainMenu extends Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Auto-scale text to strictly fit within button bounds
         const maxTextWidth = w - 18;
         if (label.width > maxTextWidth) {
             label.setScale(maxTextWidth / label.width);
         }
 
-        container.add([bg, label]);
-        container.setSize(w, h);
-        container.setInteractive({ useHandCursor: true });
+        const hitZone = this.add.zone(0, 0, w, h).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        container.add([bg, label, hitZone]);
 
-        container.on('pointerover', () => {
+        hitZone.on('pointerover', () => {
             drawBtn(hoverColor);
             container.setScale(1.03);
         });
 
-        container.on('pointerout', () => {
+        hitZone.on('pointerout', () => {
             drawBtn(normalColor);
             container.setScale(1.0);
         });
 
-        container.on('pointerdown', () => {
+        hitZone.on('pointerdown', () => {
             this.audioManager.playJump();
             onClick();
         });
@@ -632,134 +607,132 @@ export class MainMenu extends Scene {
         bg.fillRoundedRect(-55, -20, 110, 40, 10);
         bg.strokeRoundedRect(-55, -20, 110, 40, 10);
 
-        this.soundBtnText = this.add.text(0, 0, isMuted ? '🔇 MUTE' : '🔊 SOUND', {
+        this.soundBtnText = this.add.text(0, 0, isMuted ? 'SOUND OFF' : 'SOUND ON', {
             fontFamily: 'Arial Black',
-            fontSize: '14px',
+            fontSize: '13px',
             color: isMuted ? '#ef4444' : '#22c55e'
         }).setOrigin(0.5);
 
-        container.add([bg, this.soundBtnText]);
-        container.setSize(110, 40);
-        container.setInteractive({ useHandCursor: true });
+        const hitZone = this.add.zone(0, 0, 110, 40).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        container.add([bg, this.soundBtnText, hitZone]);
 
-        container.on('pointerdown', () => {
+        hitZone.on('pointerdown', () => {
             const nowMuted = this.audioManager.toggleMute();
-            this.soundBtnText.setText(nowMuted ? '🔇 MUTE' : '🔊 SOUND');
+            this.soundBtnText.setText(nowMuted ? 'SOUND OFF' : 'SOUND ON');
             this.soundBtnText.setColor(nowMuted ? '#ef4444' : '#22c55e');
         });
     }
 
     private showHowToPlayModal() {
         if (this.modalContainer) return;
+        window.history.pushState({ modal: 'guide' }, '');
         const { width, height } = this.scale;
 
-        this.modalContainer = this.add.container(0, 0).setDepth(100);
+        this.modalContainer = this.add.container(0, 0).setDepth(500);
 
-        const dim = this.add.graphics();
-        dim.fillStyle(0x000000, 0.8);
-        dim.fillRect(0, 0, width, height);
-        dim.setInteractive(new Phaser.Geom.Rectangle(0, 0, width, height), Phaser.Geom.Rectangle.Contains);
-        this.modalContainer.add(dim);
+        const dim = this.add.zone(width / 2, height / 2, width, height).setOrigin(0.5).setInteractive();
+        const dimBg = this.add.graphics();
+        dimBg.fillStyle(0x000000, 0.82);
+        dimBg.fillRect(0, 0, width, height);
+        dim.on('pointerdown', () => this.closeModal());
+        this.modalContainer.add([dimBg, dim]);
 
         const panelW = 740;
-        const panelH = 520;
+        const panelH = 510;
         const px = (width - panelW) / 2;
         const py = (height - panelH) / 2;
 
+        const panelBlocker = this.add.zone(width / 2, height / 2, panelW, panelH).setOrigin(0.5).setInteractive();
         const panel = this.add.graphics();
         panel.fillStyle(0x0f172a, 0.98);
         panel.lineStyle(3, 0x38bdf8);
         panel.fillRoundedRect(px, py, panelW, panelH, 16);
         panel.strokeRoundedRect(px, py, panelW, panelH, 16);
-        this.modalContainer.add(panel);
+        this.modalContainer.add([panelBlocker, panel]);
 
-        const title = this.add.text(width / 2, py + 42, '📖 SSAFY RUN: CYBER SPRINT 가이드', {
-            fontFamily: 'Arial Black',
+        const title = this.add.text(width / 2, py + 40, '게임 조작 및 시스템 가이드', {
+            fontFamily: '"Black Han Sans", sans-serif',
             fontSize: '26px',
             color: '#38bdf8'
         }).setOrigin(0.5);
         this.modalContainer.add(title);
 
         const guides = [
-            '🎮 [조작법]',
-            '• 점프 / 2단 점프: Space 또는 ↑ / W 키 (모바일: 화면 우측 터치 또는 JUMP)',
-            '• 슬라이드 / 급강하: ↓ 또는 S 키 (모바일: 화면 좌측 터치 또는 SLIDE)',
+            '[기본 조작]',
+            '• 1단 점프 / 2단 점프 : Space, W, ↑ 키 (모바일: 화면 우측 터치)',
+            '• 슬라이드 / 공중 급강하 : S, ↓ 키 길게 누르기 (모바일: 화면 좌측 터치)',
+            '• 초음속 대시 스킬 : Shift 또는 E 키 (쿨타임마다 무적 돌파 & 장애물 파괴)',
+            '• 메인 화면 복귀 / 일시정지 : ESC 키 또는 좌측 상단 [◀ 메인] 버튼',
             '',
-            '⚠️ [구덩이 & 2층 공중 발판]',
-            '• 바닥 구덩이(GAP) 추락 시 30 HP 피해를 입고 드론이 구출합니다!',
-            '• 공중 발판으로 도약하면 지상 장애물을 피하고 대량의 코인을 획득할 수 있습니다.',
-            '',
-            '🗺️ [다양한 단계의 맵]',
-            '• STAGE 1: 테헤란로 출근길 (0~500m)',
-            '• STAGE 2: 비상계단 & 엘리베이터 지옥 (500~1100m)',
-            '• STAGE 3: 11층 미래 코딩 랩실 (1100m+)',
-            '',
-            '🧩 [아이템 & 꾸미기]',
-            '• 🧲 자석 아이템: 6.5초간 화면의 모든 코인과 잔디를 강력하게 자동 흡입!',
-            '• 🪙 골드 코인: 모아서 메인 메뉴의 [🛍️ 스킨 상점]에서 멋진 스킨을 구매하세요!'
+            '[스테이지 캠페인 & 난이도]',
+            '• 1단계부터 30단계까지 갈수록 주행 속도가 빨라지고 복합 장애물이 출현합니다.',
+            '• 점프 직후 급강하 슬라이드, 연속 2단 점프, 구덩이 위 공중 장애물을 주의하세요.',
+            '• 10단계(일타싸피), 20단계(배틀싸피)에서는 보스 레이드와 비주얼 코딩 미션이 진행됩니다.'
         ];
 
-        const content = this.add.text(px + 40, py + 88, guides.join('\n'), {
-            fontFamily: 'Arial',
-            fontSize: '15px',
+        const content = this.add.text(px + 42, py + 88, guides.join('\n'), {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '16px',
             color: '#e2e8f0',
-            lineSpacing: 5
+            lineSpacing: 8
         });
         this.modalContainer.add(content);
 
-        const closeBtn = this.createButton(width / 2, py + panelH - 35, '닫기 (CLOSE)', 0x2563eb, 0x1d4ed8, () => {
-            this.modalContainer?.destroy();
-            this.modalContainer = undefined;
-        }, 160, 38, '15px');
+        const closeBtn = this.createButton(width / 2, py + panelH - 36, '◀ 메인 화면으로 돌아가기 (ESC)', 0x2563eb, 0x1d4ed8, () => {
+            this.closeModal();
+        }, 240, 40, '15px');
         this.modalContainer.add(closeBtn);
     }
 
     private async showLeaderboardModal() {
         if (this.modalContainer) return;
+        window.history.pushState({ modal: 'leaderboard' }, '');
         const { width, height } = this.scale;
 
-        this.modalContainer = this.add.container(0, 0).setDepth(100);
+        this.modalContainer = this.add.container(0, 0).setDepth(500);
 
-        const dim = this.add.graphics();
-        dim.fillStyle(0x000000, 0.8);
-        dim.fillRect(0, 0, width, height);
-        dim.setInteractive(new Phaser.Geom.Rectangle(0, 0, width, height), Phaser.Geom.Rectangle.Contains);
-        this.modalContainer.add(dim);
+        const dim = this.add.zone(width / 2, height / 2, width, height).setOrigin(0.5).setInteractive();
+        const dimBg = this.add.graphics();
+        dimBg.fillStyle(0x000000, 0.82);
+        dimBg.fillRect(0, 0, width, height);
+        dim.on('pointerdown', () => this.closeModal());
+        this.modalContainer.add([dimBg, dim]);
 
         const panelW = 740;
         const panelH = 550;
         const px = (width - panelW) / 2;
         const py = (height - panelH) / 2;
 
+        const panelBlocker = this.add.zone(width / 2, height / 2, panelW, panelH).setOrigin(0.5).setInteractive();
         const panel = this.add.graphics();
         panel.fillStyle(0x0f172a, 0.98);
         panel.lineStyle(3, 0xfacc15);
         panel.fillRoundedRect(px, py, panelW, panelH, 16);
         panel.strokeRoundedRect(px, py, panelW, panelH, 16);
-        this.modalContainer.add(panel);
+        this.modalContainer.add([panelBlocker, panel]);
 
-        const title = this.add.text(width / 2, py + 40, '🏆 전국 명예의 전당 (TOP 10)', {
-            fontFamily: 'Arial Black',
+        const title = this.add.text(width / 2, py + 40, '전국 명예의 전당 (TOP 10)', {
+            fontFamily: '"Black Han Sans", sans-serif',
             fontSize: '28px',
             color: '#facc15'
         }).setOrigin(0.5);
         this.modalContainer.add(title);
 
-        const loadingText = this.add.text(width / 2, py + 240, '📡 실시간 랭킹 동기화 중...', {
-            fontFamily: 'Arial Black',
+        const loadingText = this.add.text(width / 2, py + 240, '실시간 랭킹 동기화 중...', {
+            fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '20px',
             color: '#38bdf8'
         }).setOrigin(0.5);
         this.modalContainer.add(loadingText);
 
         const result = await ScoreManager.fetchLeaderboard();
+        if (!this.modalContainer) return;
         loadingText.destroy();
 
         const list = result.list;
         const maxDisplay = Math.min(8, list.length);
         list.slice(0, maxDisplay).forEach((item, idx) => {
             const rowY = py + 85 + idx * 46;
-            const rankEmoji = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `  ${idx + 1}.`;
 
             const rowBg = this.add.graphics();
             rowBg.fillStyle(idx === 0 ? 0x854d0e : 0x1e293b, idx < 3 ? 0.8 : 0.5);
@@ -768,8 +741,8 @@ export class MainMenu extends Scene {
             rowBg.strokeRoundedRect(px + 30, rowY - 16, panelW - 60, 40, 8);
             this.modalContainer!.add(rowBg);
 
-            const stageBadge = item.stage ? `[STAGE ${item.stage}]` : '';
-            const rowText = this.add.text(px + 45, rowY + 4, `${rankEmoji}  ${item.name}  ${stageBadge}`, {
+            const stageBadge = item.stage ? `[ST.${item.stage}]` : '';
+            const rowText = this.add.text(px + 45, rowY + 4, `${idx + 1}위.  ${item.name}  ${stageBadge}`, {
                 fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
                 fontSize: '16px',
                 color: idx === 0 ? '#fef08a' : '#ffffff'
@@ -784,10 +757,9 @@ export class MainMenu extends Scene {
             this.modalContainer!.add([rowText, statsText]);
         });
 
-        const closeBtn = this.createButton(width / 2, py + panelH - 38, '닫기 (CLOSE)', 0x2563eb, 0x1d4ed8, () => {
-            this.modalContainer?.destroy();
-            this.modalContainer = undefined;
-        }, 160, 40, '16px');
+        const closeBtn = this.createButton(width / 2, py + panelH - 36, '◀ 메인 화면으로 돌아가기 (ESC)', 0x2563eb, 0x1d4ed8, () => {
+            this.closeModal();
+        }, 240, 40, '15px');
         this.modalContainer.add(closeBtn);
     }
 }

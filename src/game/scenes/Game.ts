@@ -173,12 +173,13 @@ export class Game extends Scene {
         this.commitCount = 0;
         this.qrCount = 0;
         this.coffeeCount = 0;
-        this.currentStage = 1;
         this.stageTransitioning = false;
         this.isFeverActive = false;
         this.feverTimeRemaining = 0;
         this.isPaused = false;
-        this.nextWaveTimer = 800;
+        this.maxSpeed = 950;
+        this.hpDrainRate = this.gameMode === 'stage' ? 2.6 + (this.currentStageId * 0.08) : 2.6;
+        this.nextWaveTimer = 150;
         this.highScore = ScoreManager.getHighScore();
 
         // Reset Boss State
@@ -194,11 +195,11 @@ export class Game extends Scene {
             .fillGradientStyle(0x0a0e1a, 0x0a0e1a, 0x171e38, 0x241b3e, 1)
             .fillRect(0, 0, width, height);
 
-        this.bgFarTile = this.add.tileSprite(0, height - 350, width, 400, 'bg_s1_far')
+        this.bgFarTile = this.add.tileSprite(0, height - 350, width, 400, `bg_s${this.currentStage}_far`)
             .setOrigin(0, 0)
             .setAlpha(0.45);
 
-        this.bgNearTile = this.add.tileSprite(0, height - 230, width, 280, 'bg_s1_near')
+        this.bgNearTile = this.add.tileSprite(0, height - 230, width, 280, `bg_s${this.currentStage}_near`)
             .setOrigin(0, 0)
             .setAlpha(0.7);
 
@@ -215,7 +216,7 @@ export class Game extends Scene {
 
         // 3. Player with Equipped Skin
         this.player = new Player(this, 180, this.groundY, this.groundY).setDepth(20);
-        if (UpgradeManager.isRpgTechEnabled()) {
+        if (UpgradeManager.isRpgTechEnabled() && UpgradeManager.getLevels().drone >= 2) {
             this.player.activateShield();
         }
         this.events.off('request-hyper-dash');
@@ -270,11 +271,27 @@ export class Game extends Scene {
         // 6. Split-screen touch controls
         this.setupTouchControls();
 
-        // 7. Keyboard listeners
+        // 7. Keyboard & Browser Back listeners
         if (this.input.keyboard) {
             this.input.keyboard.on('keydown-P', () => this.togglePause());
             this.input.keyboard.on('keydown-ESC', () => this.togglePause());
+            this.input.keyboard.on('keydown-BACKSPACE', () => {
+                this.audioManager.stopBgm();
+                this.scene.start('MainMenu');
+            });
         }
+
+        window.history.pushState({ scene: 'Game' }, '');
+        const onPopState = () => {
+            if (this.scene.isActive('Game')) {
+                this.audioManager.stopBgm();
+                this.scene.start('MainMenu');
+            }
+        };
+        window.addEventListener('popstate', onPopState);
+        this.events.once('shutdown', () => {
+            window.removeEventListener('popstate', onPopState);
+        });
 
         this.audioManager.startBgm();
     }
@@ -282,7 +299,7 @@ export class Game extends Scene {
     private initGroundSegments() {
         this.groundSegments = [];
         // Create continuous starting floor for first 2200px
-        this.spawnGroundSegment(0, 2200, false, false);
+        this.spawnGroundSegment(0, 1200, false, false);
     }
 
     private spawnGroundSegment(startX: number, segWidth: number, hasLeftCap: boolean, hasRightCap: boolean): GroundSegment {
@@ -382,8 +399,8 @@ export class Game extends Scene {
         }
 
         this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-            if (this.isPaused) return;
-            if (pointer.x > width - 80 && pointer.y < 80) return;
+            if (this.isPaused || this.isStageCleared) return;
+            if (pointer.y < 105) return;
 
             if (pointer.x < width / 2) {
                 this.player.setTouchSlide(true);
@@ -412,8 +429,8 @@ export class Game extends Scene {
         // Distance & Progressive Speed Scaling (with Hyper Dash 1.85x speed boost!)
         const dashSpeedMult = this.player.isDashing ? 1.85 : 1.0;
         const effectiveSpeed = this.currentSpeed * dashSpeedMult;
-        this.distance += (effectiveSpeed * deltaSec) / 10;
-        this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + Math.floor(this.distance * 0.22));
+        this.distance += (effectiveSpeed * deltaSec) / 16;
+        this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + Math.floor(this.distance * 0.35));
 
         // AI Companion Bit-Drone Autonomous Assist (RPG Tech Lab)
         if (UpgradeManager.isRpgTechEnabled() && !this.isBossActive) {
@@ -560,14 +577,15 @@ export class Game extends Scene {
         if (lastSeg && lastSeg.x + lastSeg.width < width + 600) {
             const nextX = lastSeg.x + lastSeg.width;
 
-            // Only generate pits after 180m, with at least 130m interval
-            const canCreatePit = this.distance >= 180 && (this.distance - this.lastPitDistance) > 130;
-            const shouldCreatePit = canCreatePit && Phaser.Math.Between(1, 3) === 1;
+            const pitChance = this.currentStageConfig ? this.currentStageConfig.pitChance : 0.35;
+            const canCreatePit = this.distance >= 35 && (this.distance - this.lastPitDistance) > 55;
+            const shouldCreatePit = canCreatePit && Math.random() < pitChance;
 
             if (shouldCreatePit) {
                 this.lastPitDistance = this.distance;
-                const pitWidth = Phaser.Math.Between(135, 160);
-                const segWidth = Phaser.Math.Between(900, 1300);
+                const extraW = this.gameMode === 'stage' ? Math.min(45, this.currentStageId * 1.5) : 20;
+                const pitWidth = Phaser.Math.Between(145, 165 + Math.floor(extraW));
+                const segWidth = Phaser.Math.Between(520, 860);
 
                 // Add right cliff cap to preceding segment
                 if (!lastSeg.rightCap) {
@@ -578,7 +596,7 @@ export class Game extends Scene {
                 const newSeg = this.spawnGroundSegment(nextX + pitWidth, segWidth, true, false);
                 newSeg.pitHazard = pitHazard;
             } else {
-                const segWidth = Phaser.Math.Between(900, 1400);
+                const segWidth = Phaser.Math.Between(600, 950);
                 this.spawnGroundSegment(nextX, segWidth, false, false);
             }
         }
@@ -586,7 +604,7 @@ export class Game extends Scene {
 
     // Falling into Pit: Takes 30 HP damage & SSAFY Emergency Rescue Drone lifts player up!
     private handleFallIntoPit() {
-        this.currentHp -= 30;
+        this.currentHp -= 45;
         this.combo = 0;
         this.comboText.setText('');
         this.cameras.main.shake(140, 0.025);
@@ -988,7 +1006,7 @@ export class Game extends Scene {
         const hitSuccess = this.player.hit();
         if (!hitSuccess) return;
 
-        this.currentHp -= 20;
+        this.currentHp -= 32;
         this.combo = 0;
         this.comboText.setText('');
         this.cameras.main.shake(120, 0.015);
@@ -1115,12 +1133,14 @@ export class Game extends Scene {
     }
 
     private spawnNextWave() {
-        const patterns = [0, 1, 2, 3, 4, 5, 6];
+        // Focus heavily on real obstacle patterns (1, 2, 3, 5, 7, 8, 9) so stages are genuinely challenging!
+        const patterns = [1, 2, 3, 5, 7, 8, 9, 1, 7, 8];
+        if (this.waveCount > 0 && this.waveCount % 6 === 0) patterns.push(4, 6);
         const available = patterns.filter(p => p !== this.lastPatternIndex);
         const selected = Phaser.Math.RND.pick(available);
         this.lastPatternIndex = selected;
 
-        let waveDurationMs = 2000;
+        let waveDurationMs = 1250;
 
         switch (selected) {
             case 0:
@@ -1144,9 +1164,20 @@ export class Game extends Scene {
             case 6:
                 waveDurationMs = this.spawnCoffeeRestWave();
                 break;
+            case 7:
+                waveDurationMs = this.spawnJumpSlideComboWave();
+                break;
+            case 8:
+                waveDurationMs = this.spawnDoubleObstacleWave();
+                break;
+            case 9:
+                waveDurationMs = this.spawnFlyingBugSwarmWave();
+                break;
         }
 
-        this.nextWaveTimer = Math.max(1600, waveDurationMs * (440 / this.currentSpeed));
+        const baseInterval = this.currentStageConfig ? this.currentStageConfig.waveIntervalMs : 1100;
+        const speedRatio = Math.max(0.55, 500 / this.currentSpeed);
+        this.nextWaveTimer = Math.max(580, Math.min(baseInterval, waveDurationMs * speedRatio));
         this.waveCount++;
 
         // Spawn S-S-A-F-Y Alphabet Capsule every 2 waves (if Arcade/Ultimate enabled)
@@ -1401,7 +1432,103 @@ export class Game extends Scene {
             this.setupItemPhysics(j, 100, 'grass');
         });
 
-        return 1800;
+        return 1400;
+    }
+
+    // Pattern 7: Jump -> Immediate Fast-Fall Slide Combo
+    private spawnJumpSlideComboWave(): number {
+        const { width } = this.scale;
+        const firstX = width + 100;
+        const gap = Math.max(230, Math.round(this.currentSpeed * 0.46));
+
+        // 1st: Ground Obstacle (Requires Jump)
+        const obs1 = this.obstacles.create(firstX, this.groundY - 24, 'obstacle_error') as Phaser.Physics.Arcade.Sprite;
+        obs1.setDepth(15);
+        const b1 = obs1.body as Phaser.Physics.Arcade.Body;
+        if (b1) {
+            b1.setAllowGravity(false);
+            b1.setVelocityX(-this.currentSpeed);
+            b1.setSize(38, 38);
+        }
+
+        // 2nd: Immediate Low Aerial Banner (Requires Fast-Fall + Slide!)
+        const obs2 = this.obstacles.create(firstX + gap, this.groundY - 68, 'obstacle_conflict') as Phaser.Physics.Arcade.Sprite;
+        obs2.setDepth(15);
+        const b2 = obs2.body as Phaser.Physics.Arcade.Body;
+        if (b2) {
+            b2.setAllowGravity(false);
+            b2.setVelocityX(-this.currentSpeed);
+            b2.setSize(58, 22);
+        }
+
+        // Guide coins showing the jump -> dive-slide trajectory
+        const c1 = this.jellies.create(firstX, this.groundY - 95, 'item_coin') as Phaser.Physics.Arcade.Sprite;
+        this.setupItemPhysics(c1, 50, 'coin');
+        const c2 = this.jellies.create(firstX + gap, this.groundY - 18, 'item_coin') as Phaser.Physics.Arcade.Sprite;
+        this.setupItemPhysics(c2, 50, 'coin');
+
+        return 1500;
+    }
+
+    // Pattern 8: Double Ground Hurdles + High Speed Aerial Bug
+    private spawnDoubleObstacleWave(): number {
+        const { width } = this.scale;
+        const startX = width + 90;
+        const spacing = Math.max(250, Math.round(this.currentSpeed * 0.5));
+
+        [0, spacing].forEach((offset, idx) => {
+            const tex = idx === 0 ? 'obstacle_bug' : 'obstacle_error';
+            const obs = this.obstacles.create(startX + offset, this.groundY - 24, tex) as Phaser.Physics.Arcade.Sprite;
+            obs.setDepth(15);
+            const body = obs.body as Phaser.Physics.Arcade.Body;
+            if (body) {
+                body.setAllowGravity(false);
+                body.setVelocityX(-this.currentSpeed);
+                body.setSize(38, 38);
+            }
+        });
+
+        // High obstacle between them if stage >= 3 or infinite
+        if (this.currentStageId >= 3 || this.gameMode === 'infinite') {
+            const highBug = this.obstacles.create(startX + spacing / 2, this.groundY - 135, 'obstacle_bug') as Phaser.Physics.Arcade.Sprite;
+            highBug.setDepth(15).setTint(0xf43f5e);
+            const hbody = highBug.body as Phaser.Physics.Arcade.Body;
+            if (hbody) {
+                hbody.setAllowGravity(false);
+                hbody.setVelocityX(-this.currentSpeed * 1.12);
+                hbody.setSize(34, 32);
+            }
+        }
+
+        return 1550;
+    }
+
+    // Pattern 9: High-Speed Flying Bug Missile + Ground Trap
+    private spawnFlyingBugSwarmWave(): number {
+        const { width } = this.scale;
+        const startX = width + 100;
+
+        // Fast-moving head-height bug (Must Slide under or Double-Jump over!)
+        const flyBug = this.obstacles.create(startX, this.groundY - 64, 'obstacle_bug') as Phaser.Physics.Arcade.Sprite;
+        flyBug.setDepth(16).setTint(0xff6b6b);
+        const fbody = flyBug.body as Phaser.Physics.Arcade.Body;
+        if (fbody) {
+            fbody.setAllowGravity(false);
+            fbody.setVelocityX(-this.currentSpeed * 1.22);
+            fbody.setSize(36, 32);
+        }
+
+        // Ground obstacle following behind
+        const groundObs = this.obstacles.create(startX + 270, this.groundY - 24, 'obstacle_error') as Phaser.Physics.Arcade.Sprite;
+        groundObs.setDepth(15);
+        const gbody = groundObs.body as Phaser.Physics.Arcade.Body;
+        if (gbody) {
+            gbody.setAllowGravity(false);
+            gbody.setVelocityX(-this.currentSpeed);
+            gbody.setSize(38, 38);
+        }
+
+        return 1450;
     }
 
     private setupItemPhysics(item: Phaser.Physics.Arcade.Sprite, points: number, type: string) {
@@ -1534,43 +1661,61 @@ export class Game extends Scene {
 
         this.feverBar = this.add.graphics().setDepth(50).setVisible(false);
 
-        // Top Right: Score & Best & Combo & Pause Button
-        this.scoreText = this.add.text(width - 110, 20, '0', {
+        // Top Right: Score, Best, Combo, [◀ 메인] Button & [❚❚] Pause Button
+        this.scoreText = this.add.text(width - 190, 18, '0', {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '32px',
+            fontSize: '30px',
             color: '#ffffff'
         }).setOrigin(1, 0).setDepth(50);
 
-        this.add.text(width - 110, 56, `BEST: ${this.highScore.toLocaleString()}`, {
+        this.add.text(width - 190, 52, `BEST: ${this.highScore.toLocaleString()}`, {
             fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '14px',
+            fontSize: '13px',
             color: '#94a3b8'
         }).setOrigin(1, 0).setDepth(50);
 
-        this.comboText = this.add.text(width - 110, 80, '', {
+        this.comboText = this.add.text(width - 190, 74, '', {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
-            fontSize: '16px',
+            fontSize: '15px',
             color: '#f97316'
         }).setOrigin(1, 0).setDepth(50);
 
+        // Direct Exit to Main Menu Button
+        const exitBtn = this.add.container(width - 122, 40).setDepth(120);
+        const exitBg = this.add.graphics();
+        exitBg.fillStyle(0x0f172a, 0.9);
+        exitBg.lineStyle(2, 0x38bdf8);
+        exitBg.fillRoundedRect(-44, -20, 88, 40, 10);
+        exitBg.strokeRoundedRect(-44, -20, 88, 40, 10);
+        const exitTxt = this.add.text(0, 0, '◀ 메인', {
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+            fontSize: '15px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        const exitZone = this.add.zone(0, 0, 88, 40).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        exitBtn.add([exitBg, exitTxt, exitZone]);
+        exitZone.on('pointerdown', () => {
+            this.audioManager.stopBgm();
+            this.scene.start('MainMenu');
+        });
+
         // Pause Button
-        const pauseBtn = this.add.container(width - 45, 42).setDepth(50);
+        const pauseBtn = this.add.container(width - 44, 40).setDepth(120);
         const pauseBg = this.add.graphics();
-        pauseBg.fillStyle(0x0f172a, 0.85);
+        pauseBg.fillStyle(0x0f172a, 0.9);
         pauseBg.lineStyle(2, 0x38bdf8);
-        pauseBg.fillCircle(0, 0, 22);
-        pauseBg.strokeCircle(0, 0, 22);
+        pauseBg.fillCircle(0, 0, 20);
+        pauseBg.strokeCircle(0, 0, 20);
 
         const pauseIcon = this.add.text(0, 0, '❚❚', {
             fontFamily: 'Arial Black',
-            fontSize: '16px',
+            fontSize: '15px',
             color: '#38bdf8'
         }).setOrigin(0.5);
 
-        pauseBtn.add([pauseBg, pauseIcon]);
-        pauseBtn.setSize(44, 44);
-        pauseBtn.setInteractive({ useHandCursor: true });
-        pauseBtn.on('pointerdown', () => this.togglePause());
+        const pauseZone = this.add.zone(0, 0, 44, 44).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        pauseBtn.add([pauseBg, pauseIcon, pauseZone]);
+        pauseZone.on('pointerdown', () => this.togglePause());
     }
 
     private renderHpBar() {
@@ -1922,13 +2067,13 @@ export class Game extends Scene {
         this.pauseContainer.add([resumeBtn, restartBtn, menuBtn]);
     }
 
-    private createPauseBtn(x: number, y: number, label: string, onClick: () => void): Phaser.GameObjects.Container {
+    private createPauseBtn(x: number, y: number, label: string, onClick: () => void, w: number = 240, h: number = 40): Phaser.GameObjects.Container {
         const container = this.add.container(x, y);
         const bg = this.add.graphics();
-        bg.fillStyle(0x1e293b, 0.9);
-        bg.lineStyle(1, 0x38bdf8);
-        bg.fillRoundedRect(-120, -18, 240, 36, 8);
-        bg.strokeRoundedRect(-120, -18, 240, 36, 8);
+        bg.fillStyle(0x1e293b, 0.95);
+        bg.lineStyle(2, 0x38bdf8);
+        bg.fillRoundedRect(-w / 2, -h / 2, w, h, 10);
+        bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 10);
 
         const txt = this.add.text(0, 0, label, {
             fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
@@ -1936,15 +2081,16 @@ export class Game extends Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Auto-scale text if it exceeds button width
-        if (txt.width > 220) {
-            txt.setScale(220 / txt.width);
+        if (txt.width > w - 18) {
+            txt.setScale((w - 18) / txt.width);
         }
 
-        container.add([bg, txt]);
-        container.setSize(240, 36);
-        container.setInteractive({ useHandCursor: true });
-        container.on('pointerdown', onClick);
+        const hitZone = this.add.zone(0, 0, w, h).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        container.add([bg, txt, hitZone]);
+        hitZone.on('pointerdown', () => {
+            this.audioManager.playJump();
+            onClick();
+        });
 
         return container;
     }
@@ -1954,19 +2100,17 @@ export class Game extends Scene {
         this.audioManager.stopBgm();
         this.audioManager.playGameOver();
 
-        // Save earned coins to player wallet
         SkinManager.addCoins(this.coinsCollected);
 
-        this.cameras.main.fade(400, 10, 14, 26);
-        this.time.delayedCall(400, () => {
-            this.scene.start('GameOver', {
-                score: this.score,
-                distance: Math.floor(this.distance),
-                commits: this.commitCount,
-                qrs: this.qrCount,
-                coffees: this.coffeeCount,
-                coins: this.coinsCollected
-            });
+        this.scene.start('GameOver', {
+            score: this.score,
+            distance: Math.floor(this.distance),
+            commits: this.commitCount,
+            qrs: this.qrCount,
+            coffees: this.coffeeCount,
+            coins: this.coinsCollected,
+            mode: this.gameMode,
+            stageId: this.currentStageId
         });
     }
 
@@ -2122,33 +2266,34 @@ export class Game extends Scene {
         const btnY = cardH / 2 - 50;
 
         if (this.currentStageId < 30) {
-            const nextBtn = this.createPauseBtn(-125, btnY, `▶ 다음 단계 (STAGE ${this.currentStageId + 1})`, () => {
+            const nextBtn = this.createPauseBtn(-155, btnY, `다음 단계 (STAGE ${this.currentStageId + 1})`, () => {
                 this.stageClearContainer?.destroy();
                 this.scene.restart({ mode: 'stage', stageId: this.currentStageId + 1 });
-            });
-            nextBtn.setSize(220, 44);
-            this.stageClearContainer.add(nextBtn);
+            }, 185, 42);
 
-            const mapBtn = this.createPauseBtn(125, btnY, '🗺️ 스테이지 맵', () => {
+            const mapBtn = this.createPauseBtn(15, btnY, '스테이지 선택', () => {
                 this.stageClearContainer?.destroy();
                 this.scene.start('StageSelect');
-            });
-            mapBtn.setSize(180, 44);
-            this.stageClearContainer.add(mapBtn);
+            }, 135, 42);
+
+            const homeBtn = this.createPauseBtn(165, btnY, '메인 화면', () => {
+                this.stageClearContainer?.destroy();
+                this.scene.start('MainMenu');
+            }, 135, 42);
+
+            this.stageClearContainer.add([nextBtn, mapBtn, homeBtn]);
         } else {
-            const congrats = this.add.text(0, 105, '🎉 축하합니다! SSAFY 30개 전 단계를 마스터하셨습니다! 🎓', {
-                fontFamily: '"Do Hyeon", sans-serif',
-                fontSize: '16px',
-                color: '#facc15'
-            }).setOrigin(0.5);
-            this.stageClearContainer.add(congrats);
-
-            const mapBtn = this.createPauseBtn(0, btnY, '🗺️ 스테이지 맵으로 복귀', () => {
+            const mapBtn = this.createPauseBtn(-100, btnY, '스테이지 선택', () => {
                 this.stageClearContainer?.destroy();
                 this.scene.start('StageSelect');
-            });
-            mapBtn.setSize(250, 46);
-            this.stageClearContainer.add(mapBtn);
+            }, 170, 44);
+
+            const homeBtn = this.createPauseBtn(100, btnY, '메인 화면으로', () => {
+                this.stageClearContainer?.destroy();
+                this.scene.start('MainMenu');
+            }, 170, 44);
+
+            this.stageClearContainer.add([mapBtn, homeBtn]);
         }
     }
 }
