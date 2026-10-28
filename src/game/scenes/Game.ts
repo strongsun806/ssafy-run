@@ -6,6 +6,7 @@ import { ScoreManager } from '../utils/ScoreManager';
 import { SkinManager } from '../utils/SkinManager';
 import { StageManager, StageConfig } from '../utils/StageManager';
 import { BlockCodingModal } from '../utils/BlockCodingModal';
+import { UpgradeManager } from '../utils/UpgradeManager';
 
 interface GroundSegment {
     tile: Phaser.GameObjects.TileSprite;
@@ -116,6 +117,14 @@ export class Game extends Scene {
     private currentStageConfig?: StageConfig;
     private stageClearContainer?: Phaser.GameObjects.Container;
 
+    // v1.6 Cyber Tech Lab & Hyper Arcade Systems
+    private droneAssistTimer: number = 0;
+    private scoreBonusMultiplier: number = 1;
+    private collectedLetters: boolean[] = [false, false, false, false, false];
+    private letterHudTexts: Phaser.GameObjects.Text[] = [];
+    private dashHudText?: Phaser.GameObjects.Text;
+    private waveCount: number = 0;
+
     constructor() {
         super('Game');
         this.audioManager = AudioManager.getInstance();
@@ -146,11 +155,19 @@ export class Game extends Scene {
             this.currentStageConfig = undefined;
         }
 
-        // Reset game state
+        // Reset game state (Apply RPG Tech Lab Upgrades if enabled)
+        const rpgEnabled = UpgradeManager.isRpgTechEnabled();
+        this.maxHp = rpgEnabled ? UpgradeManager.getMaxHp() : 100;
+        this.currentHp = this.maxHp;
+        this.scoreBonusMultiplier = rpgEnabled ? UpgradeManager.getScoreMultiplier() : 1;
+        this.droneAssistTimer = rpgEnabled ? UpgradeManager.getDroneCooldownSec() : 9999;
+        this.collectedLetters = [false, false, false, false, false];
+        this.letterHudTexts = [];
+        this.waveCount = 0;
+
         this.currentSpeed = this.baseSpeed;
         this.distance = 0;
         this.score = 0;
-        this.currentHp = 100;
         this.combo = 0;
         this.coinsCollected = 0;
         this.commitCount = 0;
@@ -198,6 +215,17 @@ export class Game extends Scene {
 
         // 3. Player with Equipped Skin
         this.player = new Player(this, 180, this.groundY, this.groundY).setDepth(20);
+        if (UpgradeManager.isRpgTechEnabled()) {
+            this.player.activateShield();
+        }
+        this.events.off('request-hyper-dash');
+        this.events.on('request-hyper-dash', () => {
+            if (UpgradeManager.isArcadeDashEnabled()) {
+                if (this.player.triggerHyperDash(true)) {
+                    this.cameras.main.flash(180, 34, 211, 238);
+                }
+            }
+        });
         this.physics.add.collider(this.player, this.groundColliderGroup, () => {
             if (this.player.body && (this.player.body.blocked.down || this.player.body.touching.down)) {
                 this.player.resetJump();
@@ -381,9 +409,34 @@ export class Game extends Scene {
 
         const deltaSec = delta / 1000;
 
-        // Distance & Progressive Speed Scaling
-        this.distance += (this.currentSpeed * deltaSec) / 10;
+        // Distance & Progressive Speed Scaling (with Hyper Dash 1.85x speed boost!)
+        const dashSpeedMult = this.player.isDashing ? 1.85 : 1.0;
+        const effectiveSpeed = this.currentSpeed * dashSpeedMult;
+        this.distance += (effectiveSpeed * deltaSec) / 10;
         this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + Math.floor(this.distance * 0.22));
+
+        // AI Companion Bit-Drone Autonomous Assist (RPG Tech Lab)
+        if (UpgradeManager.isRpgTechEnabled() && !this.isBossActive) {
+            this.droneAssistTimer -= deltaSec;
+            if (this.droneAssistTimer <= 0) {
+                this.droneAssistTimer = UpgradeManager.getDroneCooldownSec();
+                this.triggerDroneAutonomousAssist();
+            }
+        }
+
+        // Update Hyper Dash HUD status
+        if (this.dashHudText && UpgradeManager.isArcadeDashEnabled()) {
+            if (this.player.isDashing) {
+                this.dashHudText.setText('⚡ HYPER DASH 발동 중!!');
+                this.dashHudText.setColor('#fef08a');
+            } else if (this.player.dashCooldownRemaining > 0) {
+                this.dashHudText.setText(`⚡ DASH 쿨타임: ${this.player.dashCooldownRemaining.toFixed(1)}s`);
+                this.dashHudText.setColor('#94a3b8');
+            } else {
+                this.dashHudText.setText('⚡ [Shift / 클릭] HYPER DASH 준비완료!');
+                this.dashHudText.setColor('#22d3ee');
+            }
+        }
 
         // Check Stage Finish Gate in Stage Mode
         if (this.gameMode === 'stage') {
@@ -1094,6 +1147,97 @@ export class Game extends Scene {
         }
 
         this.nextWaveTimer = Math.max(1600, waveDurationMs * (440 / this.currentSpeed));
+        this.waveCount++;
+
+        // Spawn S-S-A-F-Y Alphabet Capsule every 2 waves (if Arcade/Ultimate enabled)
+        if (UpgradeManager.isArcadeDashEnabled() && this.waveCount % 2 === 0) {
+            const nextIdx = this.collectedLetters.findIndex(v => !v);
+            if (nextIdx !== -1) {
+                const { width } = this.scale;
+                const letterSprite = this.items.create(width + 320, this.groundY - 95, `letter_${nextIdx}`) as Phaser.Physics.Arcade.Sprite;
+                letterSprite.setDepth(18);
+                const lbody = letterSprite.body as Phaser.Physics.Arcade.Body;
+                if (lbody) {
+                    lbody.setAllowGravity(false);
+                    lbody.setVelocityX(-this.currentSpeed);
+                }
+                letterSprite.setData('type', 'letter');
+                letterSprite.setData('letterIndex', nextIdx);
+            }
+        }
+    }
+
+    // AI Companion Bit-Drone Autonomous Assist (Shield Recharge OR Orbital Laser Obstacle Snipe!)
+    private triggerDroneAutonomousAssist() {
+        const dronePos = this.player.getDronePosition();
+
+        // 1. If player's shield is broken, priority is recharging the Hexagonal Plasma Shield!
+        if (!this.player.hasShield) {
+            this.player.activateShield();
+            this.audioManager.playMagnet();
+            const txt = this.add.text(dronePos.x, dronePos.y - 24, '🤖 AI DRONE: 쉴드 재충전!', {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '16px',
+                color: '#22d3ee',
+                stroke: '#0f172a',
+                strokeThickness: 3
+            }).setOrigin(0.5).setDepth(60);
+            this.tweens.add({ targets: txt, y: txt.y - 40, alpha: 0, duration: 900, onComplete: () => txt.destroy() });
+            return;
+        }
+
+        // 2. Otherwise, lock onto the closest incoming obstacle on screen and vaporize it with an Orbital Laser!
+        const { width } = this.scale;
+        let targetObs: Phaser.Physics.Arcade.Sprite | null = null;
+        let minDist = 9999;
+
+        this.obstacles.getChildren().forEach((child) => {
+            const obs = child as Phaser.Physics.Arcade.Sprite;
+            if (obs.active && obs.x > this.player.x + 20 && obs.x < width - 40) {
+                const d = obs.x - this.player.x;
+                if (d < minDist) {
+                    minDist = d;
+                    targetObs = obs;
+                }
+            }
+        });
+
+        if (targetObs) {
+            const obs = targetObs as Phaser.Physics.Arcade.Sprite;
+            const beam = this.add.graphics().setDepth(45);
+            beam.lineStyle(5, 0x22d3ee, 0.95);
+            beam.beginPath();
+            beam.moveTo(dronePos.x + 12, dronePos.y);
+            beam.lineTo(obs.x, obs.y);
+            beam.strokePath();
+            beam.lineStyle(2, 0xffffff, 1);
+            beam.beginPath();
+            beam.moveTo(dronePos.x + 12, dronePos.y);
+            beam.lineTo(obs.x, obs.y);
+            beam.strokePath();
+
+            this.tweens.add({
+                targets: beam,
+                alpha: 0,
+                duration: 240,
+                onComplete: () => beam.destroy()
+            });
+
+            const bonus = Math.round(350 * this.scoreBonusMultiplier);
+            this.score += bonus;
+            this.scoreText.setText(this.score.toLocaleString());
+
+            const pop = this.add.text(obs.x, obs.y - 10, `🤖 드론 요격! +${bonus}`, {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '18px',
+                color: '#22d3ee',
+                stroke: '#0f172a',
+                strokeThickness: 3
+            }).setOrigin(0.5).setDepth(55);
+            this.tweens.add({ targets: pop, y: pop.y - 45, alpha: 0, duration: 650, onComplete: () => pop.destroy() });
+
+            obs.destroy();
+        }
     }
 
     // Pattern 0: Gold Coin Sprint (🪙)
@@ -1316,6 +1460,40 @@ export class Game extends Scene {
             color: '#38bdf8'
         }).setDepth(50).setVisible(false);
 
+        // S-S-A-F-Y Alphabet Bonus Tracker & Hyper Dash Button (Arcade/Ultimate Edition)
+        if (UpgradeManager.isArcadeDashEnabled()) {
+            const letters = ['S', 'S', 'A', 'F', 'Y'];
+            this.letterHudTexts = [];
+            letters.forEach((ch, idx) => {
+                const lx = barX + idx * 32;
+                const ly = barY + 50;
+                const slotBg = this.add.graphics().setDepth(50);
+                slotBg.fillStyle(0x0f172a, 0.85);
+                slotBg.lineStyle(1.5, 0x334155);
+                slotBg.fillRoundedRect(lx, ly, 26, 26, 6);
+                slotBg.strokeRoundedRect(lx, ly, 26, 26, 6);
+
+                const lTxt = this.add.text(lx + 13, ly + 13, ch, {
+                    fontFamily: 'Arial Black',
+                    fontSize: '14px',
+                    color: '#475569'
+                }).setOrigin(0.5).setDepth(51);
+                this.letterHudTexts.push(lTxt);
+            });
+
+            this.dashHudText = this.add.text(barX, barY + 84, '⚡ [Shift / 클릭] HYPER DASH 준비완료!', {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '13px',
+                color: '#22d3ee',
+                backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                padding: { x: 8, y: 4 }
+            }).setDepth(55).setInteractive({ useHandCursor: true });
+
+            this.dashHudText.on('pointerdown', () => {
+                this.events.emit('request-hyper-dash');
+            });
+        }
+
         // Top Center: Distance & Coins & Fever (or Stage Goal Progress in Stage Mode)
         if (this.gameMode === 'stage') {
             this.stageGoalText = this.add.text(width / 2, 20, `🚩 STAGE ${this.currentStageId} : 0m / ${this.targetDistance}m`, {
@@ -1477,7 +1655,7 @@ export class Game extends Scene {
             this.startFeverMode();
         }
 
-        const totalEarned = points * multiplier;
+        const totalEarned = Math.round(points * multiplier * this.scoreBonusMultiplier);
         this.score += totalEarned;
         this.scoreText.setText(this.score.toLocaleString());
 
@@ -1549,17 +1727,95 @@ export class Game extends Scene {
                 color: '#facc15'
             }).setDepth(30);
             this.tweens.add({ targets: floatText, y: floatText.y - 50, alpha: 0, duration: 600, onComplete: () => floatText.destroy() });
+        } else if (type === 'letter') {
+            const idx = item.getData('letterIndex') ?? 0;
+            this.collectedLetters[idx] = true;
+            this.audioManager.playQr();
+            if (this.letterHudTexts[idx]) {
+                this.letterHudTexts[idx].setColor('#facc15');
+                this.letterHudTexts[idx].setScale(1.35);
+                this.tweens.add({ targets: this.letterHudTexts[idx], scale: 1.0, duration: 220 });
+            }
+            const letterBonus = Math.round(300 * this.scoreBonusMultiplier);
+            this.score += letterBonus;
+            this.scoreText.setText(this.score.toLocaleString());
+
+            // Check if all 5 S-S-A-F-Y letters are collected!
+            if (this.collectedLetters.every(v => v)) {
+                this.triggerSsafyBonusTime();
+            } else {
+                const floatText = this.add.text(item.x, item.y, `🔤 알파벳 획득! +${letterBonus}`, {
+                    fontFamily: 'Arial Black',
+                    fontSize: '18px',
+                    color: '#facc15'
+                }).setDepth(30);
+                this.tweens.add({ targets: floatText, y: floatText.y - 45, alpha: 0, duration: 550, onComplete: () => floatText.destroy() });
+            }
         }
 
         item.destroy();
     }
 
+    private triggerSsafyBonusTime() {
+        this.collectedLetters = [false, false, false, false, false];
+        this.letterHudTexts.forEach(t => t.setColor('#475569'));
+
+        const bonusScore = Math.round(3500 * this.scoreBonusMultiplier);
+        this.score += bonusScore;
+        this.coinsCollected += 25;
+        SkinManager.addCoins(25);
+        this.currentHp = Math.min(this.maxHp, this.currentHp + 35);
+        this.player.activateShield();
+        this.renderHpBar();
+        this.scoreText.setText(this.score.toLocaleString());
+        this.startFeverMode();
+
+        const { width, height } = this.scale;
+        const banner = this.add.container(width / 2, height / 2 - 70).setDepth(180);
+        const bg = this.add.graphics();
+        bg.fillStyle(0x090d16, 0.95);
+        bg.lineStyle(3, 0xfacc15);
+        bg.fillRoundedRect(-290, -45, 580, 90, 18);
+        bg.strokeRoundedRect(-290, -45, 580, 90, 18);
+
+        const title = this.add.text(0, -12, '🌈 S·S·A·F·Y HYPER BONUS TIME! 🌈', {
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+            fontSize: '24px',
+            color: '#facc15'
+        }).setOrigin(0.5);
+        const sub = this.add.text(0, 18, `+${bonusScore.toLocaleString()}점 · 🪙 +25 코인 · ❤️ +35 HP · 🛡️ 쉴드 충전!`, {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '16px',
+            color: '#22d3ee'
+        }).setOrigin(0.5);
+
+        banner.add([bg, title, sub]);
+        banner.setScale(0);
+        this.tweens.add({
+            targets: banner,
+            scale: 1,
+            duration: 320,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                this.time.delayedCall(1800, () => {
+                    this.tweens.add({
+                        targets: banner,
+                        alpha: 0,
+                        duration: 280,
+                        onComplete: () => banner.destroy()
+                    });
+                });
+            }
+        });
+    }
+
     private handleHitObstacle(obs: Phaser.Physics.Arcade.Sprite) {
-        if (this.isFeverActive) {
-            this.score += 500;
+        if (this.isFeverActive || this.player.isDashing) {
+            const smashBonus = Math.round(500 * this.scoreBonusMultiplier);
+            this.score += smashBonus;
             this.scoreText.setText(this.score.toLocaleString());
 
-            const floatText = this.add.text(obs.x, obs.y, '+500 파괴!', {
+            const floatText = this.add.text(obs.x, obs.y, `⚡ +${smashBonus} 격파!`, {
                 fontFamily: 'Arial Black',
                 fontSize: '20px',
                 color: '#facc15'
@@ -1567,6 +1823,22 @@ export class Game extends Scene {
             this.tweens.add({ targets: floatText, y: floatText.y - 40, alpha: 0, duration: 500, onComplete: () => floatText.destroy() });
 
             this.cameras.main.shake(80, 0.01);
+            obs.destroy();
+            return;
+        }
+
+        // Hexagonal Plasma Shield Protection (Blocks 1 Hit & Preserves Combo!)
+        if (this.player.hasShield) {
+            this.player.breakShield();
+            this.cameras.main.flash(200, 34, 211, 238);
+            const shieldText = this.add.text(this.player.x, this.player.y - 60, '🛡️ SHIELD GUARD! (방어 성공)', {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '19px',
+                color: '#22d3ee',
+                stroke: '#0f172a',
+                strokeThickness: 4
+            }).setOrigin(0.5).setDepth(60);
+            this.tweens.add({ targets: shieldText, y: shieldText.y - 45, alpha: 0, duration: 750, onComplete: () => shieldText.destroy() });
             obs.destroy();
             return;
         }

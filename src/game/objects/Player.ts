@@ -7,6 +7,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     private keyW?: Phaser.Input.Keyboard.Key;
     private keyS?: Phaser.Input.Keyboard.Key;
     private keySpace?: Phaser.Input.Keyboard.Key;
+    private keyShift?: Phaser.Input.Keyboard.Key;
+    private keyE?: Phaser.Input.Keyboard.Key;
 
     private jumpCount: number = 0;
     private maxJumps: number = 2;
@@ -14,6 +16,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     public isInvincible: boolean = false;
     public isFever: boolean = false;
     public isRescuing: boolean = false;
+
+    // Plasma Shield & Hyper Dash States
+    public hasShield: boolean = false;
+    public isDashing: boolean = false;
+    public dashTimeRemaining: number = 0;
+    public dashCooldownRemaining: number = 0;
 
     // Temporary Magnet Power-Up State (자석 효과는 이제 일시적!)
     public magnetTimeRemaining: number = 0; // seconds
@@ -34,6 +42,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Particle Emitters & Cyber Visuals
     private dustEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
     private magnetRing?: Phaser.GameObjects.Graphics;
+    private shieldRing?: Phaser.GameObjects.Graphics;
     private companionDrone?: Phaser.GameObjects.Image;
     private afterimageTimer: number = 0;
 
@@ -61,13 +70,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.keyW = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
             this.keyS = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
             this.keySpace = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+            this.keyShift = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+            this.keyE = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
         }
 
         this.setupAnimations();
         this.setupParticles();
 
-        // Magnet Aura Graphic
+        // Magnet & Shield Aura Graphics
         this.magnetRing = scene.add.graphics().setDepth(18);
+        this.shieldRing = scene.add.graphics().setDepth(22);
 
         // Autonomous Companion Bit-Drone
         if (scene.textures.exists('companion_drone')) {
@@ -133,6 +145,39 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.audioManager.playMagnet();
     }
 
+    public activateShield() {
+        this.hasShield = true;
+    }
+
+    public breakShield() {
+        this.hasShield = false;
+        this.shieldRing?.clear();
+        this.isInvincible = true;
+        this.spawnJumpShockwave();
+        this.scene.time.delayedCall(1200, () => {
+            this.isInvincible = false;
+        });
+    }
+
+    public triggerHyperDash(allowDash: boolean = true): boolean {
+        if (!allowDash || this.isDashing || this.dashCooldownRemaining > 0 || this.isRescuing) {
+            return false;
+        }
+        this.isDashing = true;
+        this.dashTimeRemaining = 1.25;
+        this.dashCooldownRemaining = 7.5;
+        this.audioManager.playDoubleJump();
+        this.spawnJumpShockwave();
+        return true;
+    }
+
+    public getDronePosition(): { x: number; y: number } {
+        if (this.companionDrone) {
+            return { x: this.companionDrone.x, y: this.companionDrone.y };
+        }
+        return { x: this.x - 38, y: this.y - 55 };
+    }
+
     public setFever(fever: boolean) {
         this.isFever = fever;
         if (fever) {
@@ -167,6 +212,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         } else {
             this.magnetRing?.clear();
         }
+
+        // Hyper Dash & Cooldown timers
+        if (this.dashCooldownRemaining > 0) {
+            this.dashCooldownRemaining = Math.max(0, this.dashCooldownRemaining - deltaSec);
+        }
+        if (this.isDashing) {
+            this.dashTimeRemaining = Math.max(0, this.dashTimeRemaining - deltaSec);
+            if (this.dashTimeRemaining <= 0) {
+                this.isDashing = false;
+            }
+        }
+
+        // Keyboard Dash Trigger (Shift or E)
+        if ((this.keyShift && Phaser.Input.Keyboard.JustDown(this.keyShift)) ||
+            (this.keyE && Phaser.Input.Keyboard.JustDown(this.keyE))) {
+            this.scene.events.emit('request-hyper-dash');
+        }
+
+        // Render Plasma Shield & Dash Shock-Cone
+        this.renderShieldAndDashAura();
 
         const isOnGround = body.blocked.down || body.touching.down;
 
@@ -300,14 +365,50 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             this.companionDrone.setRotation(Math.sin(Date.now() / 350) * 0.12);
         }
 
-        // 7. Cyber Phantom Afterimage Trail (During Double Jump, Slide, or Fever)
+        // 7. Cyber Phantom Afterimage Trail (During Double Jump, Slide, Dash, or Fever)
         this.afterimageTimer += delta;
-        if ((this.isFever || !isOnGround || this.isSliding) && this.afterimageTimer >= 55) {
+        const interval = this.isDashing ? 28 : 55;
+        if ((this.isDashing || this.isFever || !isOnGround || this.isSliding) && this.afterimageTimer >= interval) {
             this.afterimageTimer = 0;
             this.spawnAfterimage();
         }
 
         this.wasOnGround = isOnGround;
+    }
+
+    private renderShieldAndDashAura() {
+        if (!this.shieldRing) return;
+        this.shieldRing.clear();
+
+        const cx = this.x;
+        const cy = this.y - (this.isSliding ? 18 : 34);
+
+        if (this.hasShield) {
+            const rot = Date.now() / 420;
+            const radius = 42 + Math.sin(Date.now() / 160) * 2.5;
+            this.shieldRing.lineStyle(2.5, 0x22d3ee, 0.85);
+            this.shieldRing.fillStyle(0x06b6d4, 0.14);
+            this.shieldRing.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = rot + (i * Math.PI) / 3;
+                const vx = cx + Math.cos(angle) * radius;
+                const vy = cy + Math.sin(angle) * radius;
+                if (i === 0) this.shieldRing.moveTo(vx, vy);
+                else this.shieldRing.lineTo(vx, vy);
+            }
+            this.shieldRing.closePath();
+            this.shieldRing.fillPath();
+            this.shieldRing.strokePath();
+        }
+
+        if (this.isDashing) {
+            this.shieldRing.lineStyle(3.5, 0x38bdf8, 0.95);
+            this.shieldRing.beginPath();
+            this.shieldRing.moveTo(cx - 10, cy - 36);
+            this.shieldRing.lineTo(cx + 46, cy);
+            this.shieldRing.lineTo(cx - 10, cy + 36);
+            this.shieldRing.strokePath();
+        }
     }
 
     private spawnAfterimage() {
@@ -497,6 +598,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     public destroy(fromScene?: boolean) {
         if (this.dustEmitter) this.dustEmitter.destroy();
         if (this.magnetRing) this.magnetRing.destroy();
+        if (this.shieldRing) this.shieldRing.destroy();
         super.destroy(fromScene);
     }
 }

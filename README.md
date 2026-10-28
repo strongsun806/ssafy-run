@@ -213,19 +213,28 @@
 
 ---
 
-## 🚀 로컬 개발 및 실행 (Getting Started)
+## 🚀 로컬 개발 및 멀티 브랜치 플레이테스트 (Playtest Branches)
+
+이 저장소는 게임성 비교 및 단계별 플레이 테스트를 위해 **4개의 전용 브랜치**와 **인게임 실시간 모드 스위처**를 제공합니다:
+
+| 브랜치 명칭 | 버전 컨셉 및 핵심 테스트 포인트 | 전환 명령어 |
+| :--- | :--- | :--- |
+| **`main`** / **`release/v2.0-ultimate`** | 🌟 **얼티밋 통합 에디션 (v1.6.0)**: 테크랩 스펙 강화 + AI 드론 자율 요격 + `[Shift]` 하이퍼 대시 + `S·S·A·F·Y` 보너스 피버 전체 포함 | `git checkout release/v2.0-ultimate` |
+| **`feat/rpg-tech-lab`** | 🛡️ **RPG 성장 & 방어 에디션**: `[🔧 테크 랩]` Lv.1~10 스펙 강화, 육각 플라즈마 쉴드, AI 비트 드론 궤도 레이저 요격 중심 | `git checkout feat/rpg-tech-lab` |
+| **`feat/arcade-hyper-dash`** | ⚡ **하이퍼 아케이드 속도전 에디션**: `[Shift]` 초음속 무적 대시 스킬 및 `S·S·A·F·Y` 5글자 알파벳 수집 보너스 피버 중심 | `git checkout feat/arcade-hyper-dash` |
+
+> 💡 **팁**: 브랜치를 바꾸지 않고도 메인 로비 하단의 **`[🎮 테스트 모드 전환]`** 배지를 클릭하면 `얼티밋 통합` / `RPG 테크랩` / `아케이드 대시` 모드를 즉시 전환하며 플레이 테스트할 수 있습니다!
 
 ```bash
 # 1. 저장소 클론
 git clone https://github.com/strongsun806/ssafy-run.git
 
-# 2. 디렉토리 이동
+# 2. 디렉토리 이동 및 원하는 테스트 브랜치 체크아웃
 cd ssafy-run
+git checkout release/v2.0-ultimate
 
-# 3. 의존성 설치
+# 3. 의존성 설치 및 로컬 플레이테스트 서버 실행
 npm install
-
-# 4. 로컬 개발 서버 구동
 npm run dev
 ```
 

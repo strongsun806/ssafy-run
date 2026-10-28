@@ -1634,6 +1634,72 @@ export class TextureGenerator {
                 canvas.refresh();
             }
         }
+
+        // 6. Item: 🛡️ Plasma Energy Shield Capsule (38x38)
+        if (!scene.textures.exists('item_shield')) {
+            const canvas = scene.textures.createCanvas('item_shield', 38, 38);
+            if (canvas) {
+                const ctx = canvas.getContext();
+                ctx.fillStyle = 'rgba(34, 211, 238, 0.35)';
+                ctx.beginPath();
+                ctx.arc(19, 19, 18, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#0891b2';
+                ctx.strokeStyle = '#67e8f9';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(19, 5);
+                ctx.lineTo(31, 10);
+                ctx.lineTo(29, 24);
+                ctx.lineTo(19, 33);
+                ctx.lineTo(9, 24);
+                ctx.lineTo(7, 10);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 13px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('S', 19, 19);
+                canvas.refresh();
+            }
+        }
+
+        // 7. S-S-A-F-Y Bonus Alphabet Capsules (letter_0 .. letter_4)
+        const letters = ['S', 'S', 'A', 'F', 'Y'];
+        const letterColors = ['#38bdf8', '#22d3ee', '#4ade80', '#facc15', '#f472b6'];
+        letters.forEach((ch, idx) => {
+            const key = `letter_${idx}`;
+            if (!scene.textures.exists(key)) {
+                const canvas = scene.textures.createCanvas(key, 38, 38);
+                if (canvas) {
+                    const ctx = canvas.getContext();
+                    const col = letterColors[idx];
+                    ctx.fillStyle = 'rgba(250, 204, 21, 0.28)';
+                    ctx.beginPath();
+                    ctx.arc(19, 19, 18, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#0f172a';
+                    ctx.strokeStyle = col;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.roundRect(5, 5, 28, 28, 8);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = col;
+                    ctx.font = '900 18px "Arial Black", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(ch, 19, 20);
+                    canvas.refresh();
+                }
+            }
+        });
     }
 
     private static drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outerRadius: number, innerRadius: number) {

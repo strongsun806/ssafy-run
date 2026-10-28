@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { AudioManager } from '../utils/AudioManager';
 import { ScoreManager } from '../utils/ScoreManager';
 import { SkinManager } from '../utils/SkinManager';
+import { UpgradeManager, BuildEdition } from '../utils/UpgradeManager';
 
 export class MainMenu extends Scene {
     private audioManager: AudioManager;
@@ -120,27 +121,34 @@ export class MainMenu extends Scene {
         badgeContainer.add([scoreText, this.coinBadgeText]);
 
         // 1. Stage Mode Button (1~30단계 스테이지 클리어)
-        this.createButton(leftX, 305, '🗺️ 30단계 스테이지 (STAGE)', 0x059669, 0x047857, () => {
+        this.createButton(leftX, 295, '🗺️ 30단계 스테이지 (STAGE)', 0x059669, 0x047857, () => {
             this.scene.start('StageSelect');
-        }, 290, 52, '20px');
+        }, 310, 50, '19px');
 
         // 2. Infinite Run Button (무한 랭킹 런)
-        this.createButton(leftX, 368, '⚡ 무한 랭킹 런 (INFINITE)', 0x2563eb, 0x1d4ed8, () => {
+        this.createButton(leftX, 355, '⚡ 무한 랭킹 런 (INFINITE)', 0x2563eb, 0x1d4ed8, () => {
             this.startGame();
-        }, 290, 52, '20px');
+        }, 310, 50, '19px');
 
-        // 3. Shop & How to Play Buttons
-        this.createButton(leftX - 78, 432, '🛍️ 스킨 상점', 0x7c3aed, 0x6d28d9, () => {
+        // 3. Tech Lab (RPG Spec Upgrade), Skin Shop & How to Play Buttons
+        this.createButton(leftX - 106, 416, '🔧 테크 랩', 0x0891b2, 0x0e7490, () => {
+            this.showTechLabModal();
+        }, 98, 42, '14px');
+
+        this.createButton(leftX, 416, '🛍️ 스킨 상점', 0x7c3aed, 0x6d28d9, () => {
             this.showShopModal();
-        }, 140, 44, '15px');
+        }, 98, 42, '14px');
 
-        this.createButton(leftX + 78, 432, '📖 플레이 방법', 0x334155, 0x475569, () => {
+        this.createButton(leftX + 106, 416, '📖 가이드', 0x334155, 0x475569, () => {
             this.showHowToPlayModal();
-        }, 140, 44, '15px');
+        }, 98, 42, '14px');
 
-        const prompt = this.add.text(leftX, 482, '[Space] 키를 누르면 무한 런 즉시 시작', {
+        // 4. Playtest Version Preset Switcher Button (Allows instant testing of RPG / Arcade / Ultimate editions!)
+        this.createEditionSwitcher(leftX, 466);
+
+        const prompt = this.add.text(leftX, 508, '[Space] 무한 런 시작 · [Shift] 인게임 하이퍼 대시', {
             fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '15px',
+            fontSize: '14px',
             color: '#94a3b8'
         }).setOrigin(0.5);
 
@@ -267,6 +275,168 @@ export class MainMenu extends Scene {
             this.showLeaderboardModal();
         }, 220, 34, '13px');
         this.liveRankContainer.add(fullBtn);
+    }
+
+    private createEditionSwitcher(x: number, y: number) {
+        const getLabel = (ed: BuildEdition) => {
+            if (ed === 'rpg') return '🎮 테스트 모드: [방어/성장] RPG 테크랩 & 드론요격 (클릭 전환)';
+            if (ed === 'arcade') return '🎮 테스트 모드: [속도/스킬] 하이퍼 대시 & 알파벳 피버 (클릭 전환)';
+            return '🎮 테스트 모드: [얼티밋 통합] 테크랩+드론+대시+보너스 (클릭 전환)';
+        };
+
+        const btn = this.add.text(x, y, getLabel(UpgradeManager.getEdition()), {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '13px',
+            color: '#22d3ee',
+            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+            padding: { x: 12, y: 6 }
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        btn.on('pointerdown', () => {
+            this.audioManager.playClick();
+            const cur = UpgradeManager.getEdition();
+            const next: BuildEdition = cur === 'ultimate' ? 'rpg' : cur === 'rpg' ? 'arcade' : 'ultimate';
+            UpgradeManager.setEdition(next);
+            btn.setText(getLabel(next));
+        });
+    }
+
+    // RPG Tech Lab Modal (사이버 테크 랩 - 스펙 강화 & 무료 보급품)
+    private showTechLabModal() {
+        if (this.modalContainer) return;
+        const { width, height } = this.scale;
+
+        this.modalContainer = this.add.container(0, 0).setDepth(100);
+
+        const dim = this.add.graphics();
+        dim.fillStyle(0x000000, 0.82);
+        dim.fillRect(0, 0, width, height);
+        dim.setInteractive(new Phaser.Geom.Rectangle(0, 0, width, height), Phaser.Geom.Rectangle.Contains);
+        this.modalContainer.add(dim);
+
+        const panelW = 840;
+        const panelH = 560;
+        const px = (width - panelW) / 2;
+        const py = (height - panelH) / 2;
+
+        const panel = this.add.graphics();
+        panel.fillStyle(0x090d16, 0.98);
+        panel.lineStyle(3, 0x22d3ee);
+        panel.fillRoundedRect(px, py, panelW, panelH, 18);
+        panel.strokeRoundedRect(px, py, panelW, panelH, 18);
+        this.modalContainer.add(panel);
+
+        const title = this.add.text(width / 2, py + 36, '🔧 CYBER TECH LAB · 스펙 강화 연구소', {
+            fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+            fontSize: '28px',
+            color: '#22d3ee'
+        }).setOrigin(0.5);
+
+        const subText = this.add.text(width / 2, py + 68, `보유 코인: 🪙 ${SkinManager.getCoins().toLocaleString()} G  |  강화 수치는 브라우저에 영구 보존됩니다`, {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '16px',
+            color: '#facc15'
+        }).setOrigin(0.5);
+
+        this.modalContainer.add([title, subText]);
+
+        // Daily Free Supply Capsule Button (+600 Coins)
+        const canClaim = UpgradeManager.canClaimDailySupply();
+        const supplyBtn = this.createButton(
+            width / 2,
+            py + 112,
+            canClaim ? '🎁 오늘의 무료 연구 보급품 수령 (+600 🪙 즉시 지급!)' : '✔ 오늘의 무료 연구 보급품 수령 완료',
+            canClaim ? 0xeab308 : 0x334155,
+            canClaim ? 0xca8a04 : 0x334155,
+            () => {
+                if (UpgradeManager.canClaimDailySupply()) {
+                    UpgradeManager.claimDailySupply();
+                    this.audioManager.playCoin();
+                    this.coinBadgeText?.setText(`🪙 ${SkinManager.getCoins()}`);
+                    this.closeModal();
+                    this.showTechLabModal();
+                }
+            },
+            440,
+            38,
+            '15px'
+        );
+        this.modalContainer.add(supplyBtn);
+
+        // Render 3 Upgrade Spec Cards
+        const infos = UpgradeManager.getAllUpgradeInfos();
+        infos.forEach((info, idx) => {
+            const rowY = py + 152 + idx * 105;
+            const cardBg = this.add.graphics();
+            cardBg.fillStyle(0x1e293b, 0.88);
+            cardBg.lineStyle(2, 0x38bdf8, 0.85);
+            cardBg.fillRoundedRect(px + 34, rowY, panelW - 68, 92, 12);
+            cardBg.strokeRoundedRect(px + 34, rowY, panelW - 68, 92, 12);
+            this.modalContainer!.add(cardBg);
+
+            const nameTxt = this.add.text(px + 54, rowY + 16, `${info.icon} ${info.name}  [Lv.${info.level} / ${info.maxLevel}]`, {
+                fontFamily: '"Black Han Sans", "Do Hyeon", sans-serif',
+                fontSize: '19px',
+                color: info.color
+            });
+
+            // Star-force style level gauge dots
+            const stars = '★'.repeat(info.level) + '☆'.repeat(info.maxLevel - info.level);
+            const starTxt = this.add.text(px + 54, rowY + 42, `강화 단계: ${stars}`, {
+                fontFamily: 'Arial',
+                fontSize: '14px',
+                color: '#facc15'
+            });
+
+            const descTxt = this.add.text(px + 54, rowY + 64, `${info.currentEffectText}  ▶  ${info.nextEffectText}`, {
+                fontFamily: '"Do Hyeon", sans-serif',
+                fontSize: '14px',
+                color: '#cbd5e1'
+            });
+
+            this.modalContainer!.add([nameTxt, starTxt, descTxt]);
+
+            if (info.level >= info.maxLevel) {
+                const maxBadge = this.add.text(px + panelW - 115, rowY + 46, '👑 MAX 달성', {
+                    fontFamily: 'Arial Black',
+                    fontSize: '16px',
+                    color: '#4ade80'
+                }).setOrigin(0.5);
+                this.modalContainer!.add(maxBadge);
+            } else {
+                const canAfford = SkinManager.getCoins() >= info.cost;
+                const upBtn = this.createButton(
+                    px + panelW - 115,
+                    rowY + 46,
+                    `⚡ 강화 (🪙 ${info.cost})`,
+                    canAfford ? 0x0284c7 : 0x475569,
+                    canAfford ? 0x0369a1 : 0x334155,
+                    () => {
+                        const res = UpgradeManager.upgradeStat(info.id);
+                        if (res.success) {
+                            this.audioManager.playStageClear();
+                            this.coinBadgeText?.setText(`🪙 ${SkinManager.getCoins()}`);
+                            this.closeModal();
+                            this.showTechLabModal();
+                        }
+                    },
+                    155,
+                    42,
+                    '14px'
+                );
+                this.modalContainer!.add(upBtn);
+            }
+        });
+
+        const closeBtn = this.createButton(width / 2, py + panelH - 36, '닫기 (CLOSE)', 0x475569, 0x334155, () => {
+            this.closeModal();
+        }, 180, 42, '16px');
+        this.modalContainer.add(closeBtn);
+    }
+
+    private closeModal() {
+        this.modalContainer?.destroy();
+        this.modalContainer = undefined;
     }
 
     // Shop & Dressing Room Modal (스킨 꾸미기 상점)
