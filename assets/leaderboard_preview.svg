@@ -1,16 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
   <defs>
     <linearGradient id="menuBg" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#0a0e1a"/>
-      <stop offset="50%" stop-color="#141c36"/>
-      <stop offset="100%" stop-color="#241b3e"/>
+      <stop offset="0%" stop-color="#050711"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
     </linearGradient>
-    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="stageBtnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+    <linearGradient id="endlessBtnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#2563eb"/>
-      <stop offset="100%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
     </linearGradient>
-    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
       <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
   </defs>
@@ -18,98 +22,136 @@
   <!-- Background -->
   <rect width="1280" height="720" fill="url(#menuBg)"/>
 
-  <!-- Ground -->
-  <g transform="translate(0, 670)">
-    <rect width="1280" height="50" fill="#0f172a"/>
-    <rect width="1280" height="4" fill="#38bdf8"/>
-    <rect y="4" width="1280" height="12" fill="#1e293b"/>
+  <!-- Synthwave Cyber Moon & Ambient Motes -->
+  <circle cx="380" cy="180" r="110" fill="#38bdf8" opacity="0.14" filter="url(#neonGlow)"/>
+  <circle cx="150" cy="90" r="2.5" fill="#22d3ee" opacity="0.8"/>
+  <circle cx="520" cy="110" r="2" fill="#c084fc" opacity="0.8"/>
+  <circle cx="610" cy="240" r="2.5" fill="#38bdf8" opacity="0.7"/>
+
+  <!-- Cyber Circuit Ground -->
+  <g transform="translate(0, 665)">
+    <rect width="1280" height="55" fill="#090d16"/>
+    <rect width="1280" height="4" fill="#22d3ee" filter="url(#neonGlow)"/>
+    <line x1="0" y1="26" x2="1280" y2="26" stroke="#1e293b" stroke-width="2" stroke-dasharray="32, 16"/>
   </g>
 
-  <!-- Left Side: Game Title & Controls -->
-  <g transform="translate(100, 100)">
-    <!-- Main Title -->
-    <text x="0" y="60" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="72" filter="url(#goldGlow)">SSAFY RUN</text>
-    <text x="0" y="105" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="22">OVENBREAK : 지각 위기 탈출기!</text>
-    <text x="0" y="145" fill="#94a3b8" font-family="'Segoe UI', sans-serif" font-weight="500" font-size="16">⏰ 9시 입실 체크 전까지 역삼역에서 멀캠까지 전력 질주하라!</text>
+  <!-- Left Side: CYBER SPRINT Title, Hero Character + AI Drone, Mode Buttons -->
+  <g transform="translate(75, 55)">
+    <text x="240" y="55" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="64" filter="url(#neonGlow)">SSAFY RUN</text>
+    <text x="240" y="92" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19" letter-spacing="1">⚡ CYBER SPRINT : 30단계 캠페인 &amp; 보스 레이드!</text>
 
-    <!-- My High Score Badge -->
-    <g transform="translate(0, 185)">
-      <rect width="320" height="48" rx="24" fill="#0f172a" stroke="#eab308" stroke-width="2"/>
-      <text x="160" y="30" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="18">👑 내 최고 기록: 9,800 점</text>
+    <!-- Lobby Hero Character + AI Companion Bit-Drone Showcase -->
+    <g transform="translate(175, 118)">
+      <rect x="-45" y="0" width="220" height="115" rx="18" fill="#090d16" stroke="#38bdf8" stroke-width="2" opacity="0.9"/>
+      <!-- AI Companion Bit-Drone -->
+      <g transform="translate(15, 22)" filter="url(#neonGlow)">
+        <polygon points="-10,6 4,10 4,18 -10,15" fill="#22d3ee"/>
+        <polygon points="34,6 20,10 20,18 34,15" fill="#22d3ee"/>
+        <circle cx="12" cy="12" r="10" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+        <circle cx="14" cy="12" r="4" fill="#22d3ee"/>
+      </g>
+      <!-- Hero Character with Flowing Cyan Scarf -->
+      <g transform="translate(65, 26)">
+        <path d="M 16,24 C -10,16 -32,32 -52,22 C -34,38 -12,32 16,34 Z" fill="#22d3ee" filter="url(#neonGlow)"/>
+        <rect x="14" y="22" width="28" height="34" rx="7" fill="#2563eb" stroke="#60a5fa" stroke-width="2"/>
+        <circle cx="28" cy="10" r="12" fill="#fed7aa"/>
+        <path d="M 16,8 C 18,-5 40,-5 42,8 Z" fill="#0f172a"/>
+        <text x="0" y="76" text-anchor="middle" fill="#22d3ee" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="12">✨ 장착: 네오 러너 + AI 비트 드론</text>
+      </g>
     </g>
 
-    <!-- Start Button -->
-    <g transform="translate(0, 265)">
-      <rect width="320" height="64" rx="16" fill="url(#btnGrad)" stroke="#38bdf8" stroke-width="2.5" filter="url(#goldGlow)"/>
-      <text x="160" y="40" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="24">▶ 게임 시작 (START)</text>
+    <!-- High Score & Coin Status Bar -->
+    <g transform="translate(45, 252)">
+      <rect width="390" height="44" rx="22" fill="#090d16" stroke="#eab308" stroke-width="2"/>
+      <text x="195" y="28" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="16">👑 최고 기록: 28,450점  |  🪙 보유 코인: 4,850 G</text>
     </g>
 
-    <!-- Controls Button -->
-    <g transform="translate(0, 350)">
-      <rect width="320" height="48" rx="12" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
-      <text x="160" y="30" text-anchor="middle" fill="#cbd5e1" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="16">📖 조작법 &amp; 아이템 자석 가이드</text>
+    <!-- Dual Game Mode Buttons -->
+    <g transform="translate(20, 315)">
+      <rect width="212" height="58" rx="14" fill="url(#stageBtnGrad)" stroke="#fef08a" stroke-width="2.5" filter="url(#neonGlow)"/>
+      <text x="106" y="35" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="16">🗺️ 30단계 스테이지</text>
+    </g>
+    <g transform="translate(248, 315)">
+      <rect width="212" height="58" rx="14" fill="url(#endlessBtnGrad)" stroke="#ffffff" stroke-width="2" filter="url(#neonGlow)"/>
+      <text x="106" y="35" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="16">⚡ 무한 랭킹 런</text>
     </g>
 
-    <!-- Controls Shortcut -->
-    <text x="160" y="435" text-anchor="middle" fill="#64748b" font-family="'Segoe UI', sans-serif" font-weight="600" font-size="14">[Space] 키나 화면 터치로 즉시 시작</text>
+    <!-- Wardrobe & Guide Buttons -->
+    <g transform="translate(45, 392)">
+      <rect width="390" height="48" rx="12" fill="#090d16" stroke="#facc15" stroke-width="2"/>
+      <text x="195" y="30" text-anchor="middle" fill="#fef08a" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="16">🛍️ 사이버 기어 &amp; 스킨 상점 (5종)</text>
+    </g>
+    <g transform="translate(45, 452)">
+      <rect width="390" height="44" rx="12" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="195" y="28" text-anchor="middle" fill="#e2e8f0" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="15">📖 조작법 &amp; 아이템 도감 가이드</text>
+    </g>
   </g>
 
-  <!-- Right Side: Prominent Live Leaderboard Card (명예의 전당) -->
-  <g transform="translate(680, 80)">
-    <!-- Container Card with glowing border -->
-    <rect width="500" height="530" rx="20" fill="#0f172a" stroke="#38bdf8" stroke-width="3" filter="url(#goldGlow)" opacity="0.96"/>
+  <!-- Right Side: Live Leaderboard Card with [ST.30 👑] Stage Badges -->
+  <g transform="translate(650, 55)">
+    <rect width="555" height="565" rx="22" fill="#090d16" stroke="#38bdf8" stroke-width="3" filter="url(#neonGlow)" opacity="0.96"/>
 
     <!-- Header -->
-    <text x="250" y="52" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="26" filter="url(#goldGlow)">🏆 전국 명예의 전당 (실시간 랭킹)</text>
-    <g transform="translate(250, 78)">
-      <circle cx="-90" cy="-4" r="5" fill="#22c55e"/>
-      <text x="-75" y="0" fill="#4ade80" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="13">Firebase 실시간 클라우드 DB 연동됨</text>
+    <text x="277" y="48" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="25" filter="url(#neonGlow)">🏆 전국 명예의 전당 (실시간 랭킹 &amp; 돌파 단계)</text>
+    <g transform="translate(277, 74)">
+      <circle cx="-135" cy="-5" r="5" fill="#22c55e"/>
+      <text x="-120" y="0" fill="#4ade80" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="13">Firebase 실시간 동기화 · 닉네임별 클리어 단계 배지 표시</text>
     </g>
 
-    <!-- Rank 1: Gold Card -->
-    <g transform="translate(25, 105)">
-      <rect width="450" height="68" rx="12" fill="#854d0e" fill-opacity="0.75" stroke="#facc15" stroke-width="2"/>
-      <text x="20" y="42" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="24">🥇 멀캠1타강사</text>
-      <text x="430" y="32" text-anchor="end" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="22">9,800점</text>
-      <text x="430" y="52" text-anchor="end" fill="#fef08a" font-family="'Segoe UI', sans-serif" font-weight="600" font-size="13">1,680m · 10.26</text>
+    <!-- Rank 1: ST.30 All-Clear Crown -->
+    <g transform="translate(25, 100)">
+      <rect width="505" height="72" rx="14" fill="#713f12" fill-opacity="0.65" stroke="#facc15" stroke-width="2.5"/>
+      <text x="20" y="44" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="22">🥇 멀캠1타강사</text>
+      <rect x="205" y="20" width="96" height="30" rx="8" fill="#facc15"/>
+      <text x="253" y="40" text-anchor="middle" fill="#090d16" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="14">ST.30 👑</text>
+      <text x="485" y="32" text-anchor="end" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="22">28,450점</text>
+      <text x="485" y="54" text-anchor="end" fill="#fef08a" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">30단계 올클리어 · 2,480m</text>
     </g>
 
-    <!-- Rank 2: Silver Card -->
-    <g transform="translate(25, 185)">
-      <rect width="450" height="64" rx="12" fill="#1e293b" fill-opacity="0.8" stroke="#cbd5e1" stroke-width="1.5"/>
-      <text x="20" y="39" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="21">🥈 1일1커밋장인</text>
-      <text x="430" y="30" text-anchor="end" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="20">7,500점</text>
-      <text x="430" y="50" text-anchor="end" fill="#94a3b8" font-family="'Segoe UI', sans-serif" font-weight="600" font-size="13">1,320m · 10.26</text>
+    <!-- Rank 2 -->
+    <g transform="translate(25, 184)">
+      <rect width="505" height="66" rx="14" fill="#1e293b" fill-opacity="0.85" stroke="#cbd5e1" stroke-width="2"/>
+      <text x="20" y="41" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="20">🥈 알고리즘마스터</text>
+      <rect x="215" y="19" width="78" height="28" rx="7" fill="#0284c7"/>
+      <text x="254" y="38" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="13">[ST.28]</text>
+      <text x="485" y="30" text-anchor="end" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="20">21,900점</text>
+      <text x="485" y="51" text-anchor="end" fill="#94a3b8" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">챕터 3 돌파 중 · 1,920m</text>
     </g>
 
-    <!-- Rank 3: Bronze Card -->
-    <g transform="translate(25, 260)">
-      <rect width="450" height="64" rx="12" fill="#1e293b" fill-opacity="0.8" stroke="#b45309" stroke-width="1.5"/>
-      <text x="20" y="39" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="21">🥉 아아수혈러버</text>
-      <text x="430" y="30" text-anchor="end" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="20">5,600점</text>
-      <text x="430" y="50" text-anchor="end" fill="#94a3b8" font-family="'Segoe UI', sans-serif" font-weight="600" font-size="13">1,040m · 10.26</text>
+    <!-- Rank 3 -->
+    <g transform="translate(25, 262)">
+      <rect width="505" height="66" rx="14" fill="#1e293b" fill-opacity="0.85" stroke="#d97706" stroke-width="2"/>
+      <text x="20" y="41" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="20">🥉 일타싸피장인</text>
+      <rect x="200" y="19" width="78" height="28" rx="7" fill="#0284c7"/>
+      <text x="239" y="38" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="13">[ST.24]</text>
+      <text x="485" y="30" text-anchor="end" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="20">18,400점</text>
+      <text x="485" y="51" text-anchor="end" fill="#94a3b8" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">챕터 3 돌파 중 · 1,640m</text>
     </g>
 
     <!-- Rank 4 -->
-    <g transform="translate(25, 335)">
-      <rect width="450" height="58" rx="10" fill="#1e293b" fill-opacity="0.6" stroke="#334155" stroke-width="1"/>
-      <text x="25" y="35" fill="#e2e8f0" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="18">4. 비상계단스프린터</text>
-      <text x="430" y="28" text-anchor="end" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="18">4,200점</text>
-      <text x="430" y="46" text-anchor="end" fill="#94a3b8" font-family="'Segoe UI', sans-serif" font-weight="600" font-size="12">820m · 10.26</text>
+    <g transform="translate(25, 340)">
+      <rect width="505" height="60" rx="12" fill="#1e293b" fill-opacity="0.6" stroke="#334155" stroke-width="1.5"/>
+      <text x="22" y="37" fill="#e2e8f0" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="18">4. 배틀싸피전차장</text>
+      <rect x="205" y="16" width="74" height="26" rx="6" fill="#334155"/>
+      <text x="242" y="34" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="13">[ST.20]</text>
+      <text x="485" y="28" text-anchor="end" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="18">14,850점</text>
+      <text x="485" y="47" text-anchor="end" fill="#94a3b8" font-family="'Segoe UI', sans-serif" font-weight="600" font-size="12">챕터 2 보스 클리어 · 1,310m</text>
     </g>
 
     <!-- Rank 5 -->
-    <g transform="translate(25, 405)">
-      <rect width="450" height="58" rx="10" fill="#1e293b" fill-opacity="0.6" stroke="#334155" stroke-width="1"/>
-      <text x="25" y="35" fill="#e2e8f0" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="18">5. 8시59분세이프</text>
-      <text x="430" y="28" text-anchor="end" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="18">2,800점</text>
-      <text x="430" y="46" text-anchor="end" fill="#94a3b8" font-family="'Segoe UI', sans-serif" font-weight="600" font-size="12">560m · 10.26</text>
+    <g transform="translate(25, 412)">
+      <rect width="505" height="60" rx="12" fill="#1e293b" fill-opacity="0.6" stroke="#334155" stroke-width="1.5"/>
+      <text x="22" y="37" fill="#e2e8f0" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="18">5. 8시59분입실성공</text>
+      <rect x="210" y="16" width="74" height="26" rx="6" fill="#334155"/>
+      <text x="247" y="34" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="13">[ST.15]</text>
+      <text x="485" y="28" text-anchor="end" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="18">11,200점</text>
+      <text x="485" y="47" text-anchor="end" fill="#94a3b8" font-family="'Segoe UI', sans-serif" font-weight="600" font-size="12">챕터 2 진행 중 · 980m</text>
     </g>
 
     <!-- Bottom Action Button -->
-    <g transform="translate(130, 475)">
-      <rect width="240" height="38" rx="19" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
-      <text x="120" y="24" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="14">🔍 전체 랭킹 (TOP 10) 모달 보기</text>
+    <g transform="translate(135, 492)">
+      <rect width="285" height="44" rx="22" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+      <text x="142" y="28" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="15">🔍 전국 랭킹 TOP 10 &amp; 내 순위 조회</text>
     </g>
   </g>
 </svg>

@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#050711"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="cardGradUnlocked" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+    <linearGradient id="cardGradBoss" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#450a0a"/>
+      <stop offset="100%" stop-color="#180509"/>
+    </linearGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#bgGrad)"/>
+
+  <!-- Header -->
+  <g transform="translate(60, 38)">
+    <rect width="135" height="44" rx="12" fill="#090d16" stroke="#38bdf8" stroke-width="2"/>
+    <text x="67" y="28" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="14">◀ 메인 로비</text>
+
+    <text x="580" y="32" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="32" filter="url(#neonGlow)">🗺️ CYBER SPRINT · 30단계 택티컬 캠페인</text>
+
+    <g transform="translate(925, 0)">
+      <rect width="235" height="44" rx="22" fill="#090d16" stroke="#facc15" stroke-width="2.5"/>
+      <text x="117" y="28" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="16">⭐ 54 / 90  |  [ST.18 👑]</text>
+    </g>
+  </g>
+
+  <!-- Chapter Tabs -->
+  <g transform="translate(100, 108)">
+    <g transform="translate(0, 0)">
+      <rect width="340" height="46" rx="12" fill="#090d16" stroke="#22c55e" stroke-width="2"/>
+      <text x="170" y="29" text-anchor="middle" fill="#4ade80" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="15">✓ 챕터 1: 테헤란로 출근길 (1~10 완료)</text>
+    </g>
+    <g transform="translate(370, 0)">
+      <rect width="340" height="46" rx="12" fill="#2563eb" stroke="#38bdf8" stroke-width="2.5" filter="url(#neonGlow)"/>
+      <text x="170" y="29" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="16">⚡ 챕터 2: 관통 프로젝트 (11~20 진행중)</text>
+    </g>
+    <g transform="translate(740, 0)">
+      <rect width="340" height="46" rx="12" fill="#1e293b" stroke="#475569" stroke-width="1.5" opacity="0.75"/>
+      <text x="170" y="29" text-anchor="middle" fill="#94a3b8" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="15">🚀 챕터 3: 멀캠 11층 코딩 랩실 (21~30)</text>
+    </g>
+  </g>
+
+  <!-- Stage Grid: 5 columns x 2 rows -->
+  <!-- ROW 1 (Stages 11 ~ 15) -->
+  <g transform="translate(70, 188)">
+    <g transform="translate(0, 0)">
+      <rect width="210" height="220" rx="16" fill="url(#cardGradUnlocked)" stroke="#22d3ee" stroke-width="2"/>
+      <text x="105" y="40" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19">STAGE 11</text>
+      <text x="105" y="85" text-anchor="middle" font-size="34">🏁</text>
+      <text x="105" y="130" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="14">비상계단 스프린트</text>
+      <text x="105" y="160" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">🎯 목표 거리: 200m</text>
+      <text x="105" y="195" text-anchor="middle" font-size="17">⭐⭐⭐</text>
+    </g>
+    <g transform="translate(235, 0)">
+      <rect width="210" height="220" rx="16" fill="url(#cardGradUnlocked)" stroke="#22d3ee" stroke-width="2"/>
+      <text x="105" y="40" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19">STAGE 12</text>
+      <text x="105" y="85" text-anchor="middle" font-size="34">🏁</text>
+      <text x="105" y="130" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="14">스택과 큐의 버퍼</text>
+      <text x="105" y="160" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">🎯 목표 거리: 210m</text>
+      <text x="105" y="195" text-anchor="middle" font-size="17">⭐⭐⭐</text>
+    </g>
+    <g transform="translate(470, 0)">
+      <rect width="210" height="220" rx="16" fill="url(#cardGradUnlocked)" stroke="#22d3ee" stroke-width="2"/>
+      <text x="105" y="40" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19">STAGE 13</text>
+      <text x="105" y="85" text-anchor="middle" font-size="34">🏁</text>
+      <text x="105" y="130" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="14">DFS 깊이우선 점프</text>
+      <text x="105" y="160" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">🎯 목표 거리: 220m</text>
+      <text x="105" y="195" text-anchor="middle" font-size="17">⭐⭐⭐</text>
+    </g>
+    <g transform="translate(705, 0)">
+      <rect width="210" height="220" rx="16" fill="url(#cardGradUnlocked)" stroke="#22d3ee" stroke-width="2"/>
+      <text x="105" y="40" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19">STAGE 14</text>
+      <text x="105" y="85" text-anchor="middle" font-size="34">🏁</text>
+      <text x="105" y="130" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="14">BFS 너비우선 질주</text>
+      <text x="105" y="160" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">🎯 목표 거리: 230m</text>
+      <text x="105" y="195" text-anchor="middle" font-size="17">⭐⭐⭐</text>
+    </g>
+    <g transform="translate(940, 0)">
+      <rect width="210" height="220" rx="16" fill="url(#cardGradUnlocked)" stroke="#22d3ee" stroke-width="2"/>
+      <text x="105" y="40" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19">STAGE 15</text>
+      <text x="105" y="85" text-anchor="middle" font-size="34">🏁</text>
+      <text x="105" y="130" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="14">동적계획법(DP) 코스</text>
+      <text x="105" y="160" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">🎯 목표 거리: 240m</text>
+      <text x="105" y="195" text-anchor="middle" font-size="17">⭐⭐⭐</text>
+    </g>
+  </g>
+
+  <!-- ROW 2 (Stages 16 ~ 20) -->
+  <g transform="translate(70, 442)">
+    <g transform="translate(0, 0)">
+      <rect width="210" height="220" rx="16" fill="url(#cardGradUnlocked)" stroke="#22d3ee" stroke-width="2"/>
+      <text x="105" y="40" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19">STAGE 16</text>
+      <text x="105" y="85" text-anchor="middle" font-size="34">🏁</text>
+      <text x="105" y="130" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="14">Git Conflict 돌파</text>
+      <text x="105" y="160" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">🎯 목표 거리: 250m</text>
+      <text x="105" y="195" text-anchor="middle" font-size="17">⭐⭐⭐</text>
+    </g>
+    <g transform="translate(235, 0)">
+      <rect width="210" height="220" rx="16" fill="url(#cardGradUnlocked)" stroke="#22d3ee" stroke-width="2"/>
+      <text x="105" y="40" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19">STAGE 17</text>
+      <text x="105" y="85" text-anchor="middle" font-size="34">🏁</text>
+      <text x="105" y="130" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="14">REST API 백엔드 레이스</text>
+      <text x="105" y="160" text-anchor="middle" fill="#38bdf8" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">🎯 목표 거리: 260m</text>
+      <text x="105" y="195" text-anchor="middle" font-size="17">⭐⭐⭐</text>
+    </g>
+    <!-- Stage 18 (Current Active Stage with Cyber Character Mini Badge) -->
+    <g transform="translate(470, 0)">
+      <rect width="210" height="220" rx="16" fill="url(#cardGradUnlocked)" stroke="#facc15" stroke-width="3" filter="url(#neonGlow)"/>
+      <text x="105" y="38" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19">STAGE 18</text>
+      <!-- Mini Neo Runner Icon -->
+      <path d="M 95,72 C 75,66 60,78 48,70 C 62,82 78,78 95,80 Z" fill="#22d3ee"/>
+      <circle cx="108" cy="64" r="10" fill="#fed7aa"/>
+      <rect x="98" y="74" width="20" height="22" rx="5" fill="#2563eb" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="105" y="130" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="14">반응형 프론트엔드</text>
+      <text x="105" y="158" text-anchor="middle" fill="#facc15" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="13">🎯 목표 거리: 270m</text>
+      <rect x="35" y="174" width="140" height="30" rx="15" fill="#facc15"/>
+      <text x="105" y="194" text-anchor="middle" fill="#090d16" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="13">⚡ 출격 가능 ▶</text>
+    </g>
+    <!-- Stage 19 -->
+    <g transform="translate(705, 0)">
+      <rect width="210" height="220" rx="16" fill="#090d16" stroke="#334155" stroke-width="1.5" opacity="0.7"/>
+      <text x="105" y="40" text-anchor="middle" fill="#64748b" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19">STAGE 19</text>
+      <text x="105" y="85" text-anchor="middle" font-size="34">🔒</text>
+      <text x="105" y="130" text-anchor="middle" fill="#64748b" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="14">관통 마감 1시간 전</text>
+      <text x="105" y="160" text-anchor="middle" fill="#475569" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">🎯 목표 거리: 280m</text>
+      <text x="105" y="195" text-anchor="middle" fill="#64748b" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="12">🔒 이전 단계 클리어 필요</text>
+    </g>
+    <!-- Stage 20 (Boss + Visual Logic Studio Intermission) -->
+    <g transform="translate(940, 0)">
+      <rect width="210" height="220" rx="16" fill="url(#cardGradBoss)" stroke="#ef4444" stroke-width="2" opacity="0.85"/>
+      <rect x="12" y="10" width="186" height="22" rx="6" fill="#ef4444"/>
+      <text x="105" y="25" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="11">🔥 BOSS &amp; LOGIC STUDIO</text>
+      <text x="105" y="54" text-anchor="middle" fill="#f87171" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="19">STAGE 20</text>
+      <text x="105" y="96" text-anchor="middle" font-size="34">⚔️</text>
+      <text x="105" y="136" text-anchor="middle" fill="#fca5a5" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="14">배틀싸피 전차 보스전</text>
+      <text x="105" y="162" text-anchor="middle" fill="#f87171" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="13">🎯 목표 거리: 290m</text>
+      <text x="105" y="195" text-anchor="middle" fill="#fca5a5" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="12">🧩 비주얼 알고리즘 보너스</text>
+    </g>
+  </g>
+</svg>

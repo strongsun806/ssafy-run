@@ -28,7 +28,7 @@
 ### 🗺️ 1. 택티컬 30단계 캠페인 로드맵 (Stage Campaign Mode)
 > **1단계부터 30단계까지 점진적으로 고도화되는 3개 챕터 캠페인! 단계별 별점(⭐⭐⭐) 수집과 🏁 도착 관문 돌파!**
 
-![SSAFY RUN 30단계 스테이지 로드맵](assets/stage_mode_preview.svg)
+![SSAFY RUN 30단계 스테이지 로드맵](assets/cyber_stage_preview.svg)
 
 <br/>
 
@@ -42,28 +42,28 @@
 ### 🎱 3. 싸피 시그니처 평가 보스전: 일타싸피 & 배틀싸피 (Boss Raid Battle)
 > **당구대 쿠션 반사 궤적의 당구공과 장갑차 포탄 난사! 💊 디버그 패치를 모아 강력한 반격 유도 빔을 발사하세요!**
 
-![SSAFY RUN 일타싸피 & 배틀싸피 보스 배틀](assets/boss_battle_preview.svg)
+![SSAFY RUN 일타싸피 & 배틀싸피 보스 배틀](assets/cyber_boss_preview.svg)
 
 <br/>
 
 ### 🎮 4. 인게임 하이퍼 사이버 러닝 액션 (In-Game Action)
 > **휘날리는 네온 스카프와 AI 컴패니언 드론, 팬텀 잔상 이펙트, 2층 공중 발판, 🧲 자석 파워업과 360° 쇼크웨이브 2단 점프 액션!**
 
-![SSAFY RUN 인게임 시연 화면](assets/gameplay_preview.svg)
+![SSAFY RUN 인게임 시연 화면](assets/cyber_gameplay_preview.svg)
 
 <br/>
 
 ### 🏆 5. 실시간 전국 명예의 전당 & 단계 배지 (Live Leaderboard)
 > **어떤 환경에서 플레이해도 Firebase를 통해 전국 교육생의 최고 돌파 단계 `[ST.30 👑]`와 점수가 실시간 연동됩니다.**
 
-![SSAFY RUN 실시간 전국 명예의 전당](assets/leaderboard_preview.svg)
+![SSAFY RUN 실시간 전국 명예의 전당](assets/cyber_leaderboard_preview.svg)
 
 <br/>
 
 ### 🛍️ 6. 하이엔드 캐릭터 기어 상점 & 코인 경제 (Cyber Gear & Wardrobe)
 > **인게임에서 모은 골드 코인(🪙)으로 전용 네온 스카프와 헤드기어를 갖춘 5종 사이버 스킨을 해금하세요!**
 
-![SSAFY RUN 캐릭터 스킨 상점](assets/shop_preview.svg)
+![SSAFY RUN 캐릭터 스킨 상점](assets/cyber_shop_preview.svg)
 
 </div>
 

@@ -1,20 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
   <defs>
     <linearGradient id="shopBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#090d16"/>
-      <stop offset="50%" stop-color="#111827"/>
-      <stop offset="100%" stop-color="#0d1117"/>
+      <stop offset="0%" stop-color="#050811"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#13112c"/>
     </linearGradient>
     <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#1f2937"/>
-      <stop offset="100%" stop-color="#111827"/>
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#090d16"/>
     </linearGradient>
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#fef08a"/>
       <stop offset="50%" stop-color="#eab308"/>
       <stop offset="100%" stop-color="#ca8a04"/>
     </linearGradient>
-    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur stdDeviation="6" result="blur"/>
       <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
@@ -22,9 +22,9 @@
 
   <!-- Background -->
   <rect width="1280" height="720" fill="url(#shopBg)"/>
-  
-  <!-- Subtle Grid Pattern -->
-  <g stroke="#1e293b" stroke-width="1" opacity="0.4">
+
+  <!-- Cyber Grid Lines -->
+  <g stroke="#1e293b" stroke-width="1" opacity="0.45">
     <line x1="0" y1="120" x2="1280" y2="120"/>
     <line x1="0" y1="240" x2="1280" y2="240"/>
     <line x1="0" y1="360" x2="1280" y2="360"/>
@@ -32,127 +32,126 @@
     <line x1="0" y1="600" x2="1280" y2="600"/>
   </g>
 
-  <!-- Modal Frame -->
-  <rect x="80" y="40" width="1120" height="640" rx="24" fill="#0b1120" stroke="#3b82f6" stroke-width="3" opacity="0.95"/>
+  <!-- Modal Outer Frame -->
+  <rect x="65" y="36" width="1150" height="648" rx="24" fill="#090d16" stroke="#38bdf8" stroke-width="3" filter="url(#neonGlow)" opacity="0.97"/>
 
   <!-- Header -->
-  <text x="640" y="95" font-family="'Impact', 'Arial Black', sans-serif" font-size="34" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="2">
-    🛍️ SSAFY WARDROBE &amp; SKIN SHOP
+  <text x="640" y="92" font-family="'Segoe UI', sans-serif" font-size="34" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="2" filter="url(#neonGlow)">
+    🛍️ CYBER GEAR &amp; SKIN ARMORY
   </text>
-  <text x="640" y="125" font-family="'Pretendard', sans-serif" font-size="15" fill="#94a3b8" text-anchor="middle">
-    인게임에서 획득한 골드 코인(🪙)으로 개성 넘치는 교육생 스킨을 수집해보세요!
+  <text x="640" y="124" font-family="'Segoe UI', sans-serif" font-size="15" fill="#38bdf8" font-weight="700" text-anchor="middle">
+    전용 네온 에너지 스카프(Scarf)와 팬텀 잔상 컬러가 적용되는 5종의 하이엔드 사이버 기어를 해금하세요!
   </text>
 
-  <!-- Coin Balance Pill (Top Right) -->
-  <g transform="translate(930, 68)">
-    <rect width="230" height="48" rx="24" fill="#1e293b" stroke="#eab308" stroke-width="2"/>
-    <circle cx="28" cy="24" r="14" fill="url(#goldGrad)" filter="url(#goldGlow)"/>
-    <text x="28" y="29" font-family="sans-serif" font-size="14" font-weight="bold" fill="#713f12" text-anchor="middle">🪙</text>
-    <text x="54" y="30" font-family="'Pretendard', sans-serif" font-size="14" fill="#cbd5e1" font-weight="bold">보유 코인:</text>
-    <text x="145" y="31" font-family="'Impact', sans-serif" font-size="22" fill="#fbbf24" font-weight="bold">3,450 G</text>
+  <!-- Coin Balance Pill -->
+  <g transform="translate(945, 62)">
+    <rect width="235" height="48" rx="24" fill="#1e293b" stroke="#facc15" stroke-width="2.5"/>
+    <circle cx="28" cy="24" r="14" fill="url(#goldGrad)" filter="url(#neonGlow)"/>
+    <text x="28" y="29" font-family="sans-serif" font-size="13" font-weight="900" fill="#713f12" text-anchor="middle">G</text>
+    <text x="52" y="29" font-family="'Segoe UI', sans-serif" font-size="14" fill="#cbd5e1" font-weight="800">보유 코인:</text>
+    <text x="135" y="31" font-family="'Segoe UI', sans-serif" font-size="22" fill="#facc15" font-weight="900">4,850 G</text>
   </g>
 
-  <!-- 5 Skin Cards -->
-  <!-- Card 1: Default Blue -->
-  <g transform="translate(110, 160)">
-    <rect width="200" height="420" rx="16" fill="url(#cardGrad)" stroke="#3b82f6" stroke-width="2"/>
-    <rect x="15" y="15" width="170" height="180" rx="12" fill="#0f172a"/>
-    <!-- Character Avatar 1: Blue Hoodie -->
-    <circle cx="100" cy="80" r="32" fill="#ffedd5"/>
-    <path d="M72,70 Q100,50 128,70 L124,105 Q100,115 76,105 Z" fill="#2563eb"/>
-    <rect x="75" y="112" width="50" height="55" rx="10" fill="#1d4ed8"/>
-    <rect x="88" y="125" width="24" height="28" rx="4" fill="#60a5fa"/>
-    <text x="100" y="143" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle">SSAFY</text>
+  <!-- 5 Cyber Skin Cards -->
+  <!-- Card 1: 네오 러너 (Neo Runner) -->
+  <g transform="translate(95, 155)">
+    <rect width="202" height="440" rx="16" fill="url(#cardGrad)" stroke="#38bdf8" stroke-width="2.5"/>
+    <rect x="14" y="14" width="174" height="185" rx="12" fill="#050811"/>
+    <!-- Flowing Cyan Scarf Preview -->
+    <path d="M 85,112 C 55,102 35,122 22,110 C 40,130 62,122 85,124 Z" fill="#22d3ee" filter="url(#neonGlow)"/>
+    <circle cx="105" cy="78" r="30" fill="#fed7aa"/>
+    <path d="M 75,68 Q 105,46 135,68 L 130,102 Q 105,112 80,102 Z" fill="#2563eb"/>
+    <rect x="80" y="108" width="50" height="58" rx="10" fill="#1d4ed8" stroke="#38bdf8" stroke-width="2"/>
+    <text x="105" y="142" font-size="10" font-weight="900" fill="#ffffff" text-anchor="middle">NEO</text>
     <!-- Skin Info -->
-    <text x="100" y="230" font-family="'Pretendard', sans-serif" font-size="17" font-weight="900" fill="#ffffff" text-anchor="middle">기본 싸피생</text>
-    <text x="100" y="255" font-family="'Pretendard', sans-serif" font-size="12" fill="#60a5fa" text-anchor="middle">Default Blue</text>
-    <text x="100" y="295" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">클래식 싸피 공식 후드와</text>
-    <text x="100" y="315" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">열정 가득 사원증 착용</text>
-    <!-- Button: Equipped -->
-    <rect x="25" y="355" width="150" height="44" rx="22" fill="#22c55e"/>
-    <text x="100" y="382" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">✓ 착용중</text>
+    <text x="101" y="232" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle">네오 러너</text>
+    <text x="101" y="254" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#38bdf8" text-anchor="middle">NEO RUNNER · CYAN SCARF</text>
+    <text x="101" y="292" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">시안 에너지 머플러와</text>
+    <text x="101" y="312" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">표준 호버 부스터 수트</text>
+    <rect x="26" y="368" width="150" height="46" rx="23" fill="#22c55e"/>
+    <text x="101" y="397" font-family="'Segoe UI', sans-serif" font-size="15" font-weight="900" fill="#ffffff" text-anchor="middle">✓ 장착됨</text>
   </g>
 
-  <!-- Card 2: Red Passion Hoodie -->
-  <g transform="translate(330, 160)">
-    <rect width="200" height="420" rx="16" fill="url(#cardGrad)" stroke="#ef4444" stroke-width="2"/>
-    <rect x="15" y="15" width="170" height="180" rx="12" fill="#0f172a"/>
-    <!-- Character Avatar 2: Red Passion -->
-    <circle cx="100" cy="80" r="32" fill="#ffedd5"/>
-    <path d="M72,70 Q100,50 128,70 L124,105 Q100,115 76,105 Z" fill="#dc2626"/>
-    <rect x="75" y="112" width="50" height="55" rx="10" fill="#b91c1c"/>
-    <text x="100" y="98" font-size="16" text-anchor="middle">🔥</text>
+  <!-- Card 2: 크림슨 블레이즈 (Crimson Blaze) -->
+  <g transform="translate(315, 155)">
+    <rect width="202" height="440" rx="16" fill="url(#cardGrad)" stroke="#ef4444" stroke-width="2.5"/>
+    <rect x="14" y="14" width="174" height="185" rx="12" fill="#050811"/>
+    <!-- Flowing Flame Scarf Preview -->
+    <path d="M 85,112 C 55,102 35,122 22,110 C 40,130 62,122 85,124 Z" fill="#f97316" filter="url(#neonGlow)"/>
+    <circle cx="105" cy="78" r="30" fill="#fed7aa"/>
+    <path d="M 75,68 Q 105,46 135,68 L 130,102 Q 105,112 80,102 Z" fill="#dc2626"/>
+    <rect x="80" y="108" width="50" height="58" rx="10" fill="#991b1b" stroke="#f97316" stroke-width="2"/>
+    <text x="105" y="142" font-size="11" font-weight="900" fill="#fef08a" text-anchor="middle">BLAZE</text>
     <!-- Skin Info -->
-    <text x="100" y="230" font-family="'Pretendard', sans-serif" font-size="17" font-weight="900" fill="#ffffff" text-anchor="middle">열정의 불꽃</text>
-    <text x="100" y="255" font-family="'Pretendard', sans-serif" font-size="12" fill="#f87171" text-anchor="middle">Red Passion</text>
-    <text x="100" y="295" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">1일 1커밋의 불타는</text>
-    <text x="100" y="315" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">투지와 열정의 레드</text>
-    <!-- Button: Equip -->
-    <rect x="25" y="355" width="150" height="44" rx="22" fill="#2563eb"/>
-    <text x="100" y="382" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">장착하기</text>
+    <text x="101" y="232" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle">크림슨 블레이즈</text>
+    <text x="101" y="254" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#f87171" text-anchor="middle">CRIMSON · FLAME SCARF</text>
+    <text x="101" y="292" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">적색 플라즈마 머플러와</text>
+    <text x="101" y="312" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">초고열 오버클럭 코어</text>
+    <rect x="26" y="368" width="150" height="46" rx="23" fill="#2563eb"/>
+    <text x="101" y="397" font-family="'Segoe UI', sans-serif" font-size="15" font-weight="900" fill="#ffffff" text-anchor="middle">장착하기</text>
   </g>
 
-  <!-- Card 3: Cyber Agent -->
-  <g transform="translate(550, 160)">
-    <rect width="200" height="420" rx="16" fill="url(#cardGrad)" stroke="#06b6d4" stroke-width="2"/>
-    <rect x="15" y="15" width="170" height="180" rx="12" fill="#0f172a"/>
-    <!-- Character Avatar 3: Cyber -->
-    <circle cx="100" cy="80" r="32" fill="#0f172a"/>
-    <rect x="76" y="74" width="48" height="12" rx="6" fill="#06b6d4"/>
-    <rect x="75" y="112" width="50" height="55" rx="10" fill="#1e293b" stroke="#06b6d4" stroke-width="2"/>
-    <line x1="85" y1="125" x2="115" y2="125" stroke="#22d3ee" stroke-width="2"/>
+  <!-- Card 3: 고스트 넷러너 (Ghost Netrunner) -->
+  <g transform="translate(535, 155)">
+    <rect width="202" height="440" rx="16" fill="url(#cardGrad)" stroke="#a855f7" stroke-width="2.5" filter="url(#neonGlow)"/>
+    <rect x="14" y="14" width="174" height="185" rx="12" fill="#050811"/>
+    <!-- Flowing Violet Scarf Preview -->
+    <path d="M 85,112 C 55,102 35,122 22,110 C 40,130 62,122 85,124 Z" fill="#c084fc" filter="url(#neonGlow)"/>
+    <circle cx="105" cy="78" r="30" fill="#1e293b"/>
+    <!-- Cyber Visor -->
+    <rect x="80" y="70" width="50" height="14" rx="7" fill="#06b6d4" filter="url(#neonGlow)"/>
+    <rect x="80" y="108" width="50" height="58" rx="10" fill="#0f172a" stroke="#a855f7" stroke-width="2"/>
     <!-- Skin Info -->
-    <text x="100" y="230" font-family="'Pretendard', sans-serif" font-size="17" font-weight="900" fill="#ffffff" text-anchor="middle">사이버 요원</text>
-    <text x="100" y="255" font-family="'Pretendard', sans-serif" font-size="12" fill="#22d3ee" text-anchor="middle">Cyber Agent</text>
-    <text x="100" y="295" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">디지털 네온 바이저와</text>
-    <text x="100" y="315" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">스텔스 방탄 코딩 수트</text>
-    <!-- Button: Buy 1500 -->
-    <rect x="25" y="355" width="150" height="44" rx="22" fill="#0284c7"/>
-    <text x="100" y="382" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">🪙 1,500 구매</text>
+    <text x="101" y="232" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle">고스트 넷러너</text>
+    <text x="101" y="254" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#c084fc" text-anchor="middle">NETRUNNER · NEON VISOR</text>
+    <text x="101" y="292" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">홀로그램 광학 바이저와</text>
+    <text x="101" y="312" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">스텔스 팬텀 슈트</text>
+    <rect x="26" y="368" width="150" height="46" rx="23" fill="#7e22ce"/>
+    <text x="101" y="397" font-family="'Segoe UI', sans-serif" font-size="15" font-weight="900" fill="#ffffff" text-anchor="middle">🪙 1,500 해금</text>
   </g>
 
-  <!-- Card 4: Gold Master -->
-  <g transform="translate(770, 160)">
-    <rect width="200" height="420" rx="16" fill="url(#cardGrad)" stroke="#eab308" stroke-width="2"/>
-    <rect x="15" y="15" width="170" height="180" rx="12" fill="#0f172a"/>
-    <!-- Character Avatar 4: Gold Crown -->
-    <circle cx="100" cy="80" r="32" fill="#fef08a"/>
-    <polygon points="76,55 86,40 100,50 114,40 124,55" fill="url(#goldGrad)"/>
-    <rect x="75" y="112" width="50" height="55" rx="10" fill="url(#goldGrad)"/>
+  <!-- Card 4: 아크 마스터 (Arc Master) -->
+  <g transform="translate(755, 155)">
+    <rect width="202" height="440" rx="16" fill="url(#cardGrad)" stroke="#facc15" stroke-width="2.5" filter="url(#neonGlow)"/>
+    <rect x="14" y="14" width="174" height="185" rx="12" fill="#050811"/>
+    <!-- Flowing Gold Scarf Preview -->
+    <path d="M 85,112 C 55,102 35,122 22,110 C 40,130 62,122 85,124 Z" fill="#facc15" filter="url(#neonGlow)"/>
+    <!-- Floating Golden Halo -->
+    <ellipse cx="105" cy="36" rx="26" ry="7" fill="none" stroke="#fef08a" stroke-width="3.5" filter="url(#neonGlow)"/>
+    <circle cx="105" cy="78" r="30" fill="#fef08a"/>
+    <rect x="80" y="108" width="50" height="58" rx="10" fill="url(#goldGrad)" stroke="#ffffff" stroke-width="1.5"/>
     <!-- Skin Info -->
-    <text x="100" y="230" font-family="'Pretendard', sans-serif" font-size="17" font-weight="900" fill="#fef08a" text-anchor="middle">👑 골든 마스터</text>
-    <text x="100" y="255" font-family="'Pretendard', sans-serif" font-size="12" fill="#eab308" text-anchor="middle">Gold Master</text>
-    <text x="100" y="295" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">수석 수료생의 영예를</text>
-    <text x="100" y="315" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">상징하는 황금 왕관</text>
-    <!-- Button: Buy 3000 -->
-    <rect x="25" y="355" width="150" height="44" rx="22" fill="#d97706"/>
-    <text x="100" y="382" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">🪙 3,000 구매</text>
+    <text x="101" y="232" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#fef08a" text-anchor="middle">👑 아크 마스터</text>
+    <text x="101" y="254" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#facc15" text-anchor="middle">ARC MASTER · GOLD HALO</text>
+    <text x="101" y="292" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">공중 부양 아크 헤일로와</text>
+    <text x="101" y="312" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">발키리 골든 아머</text>
+    <rect x="26" y="368" width="150" height="46" rx="23" fill="#d97706"/>
+    <text x="101" y="397" font-family="'Segoe UI', sans-serif" font-size="15" font-weight="900" fill="#ffffff" text-anchor="middle">🪙 3,000 해금</text>
   </g>
 
-  <!-- Card 5: Panda Pajama -->
-  <g transform="translate(990, 160)">
-    <rect width="180" height="420" rx="16" fill="url(#cardGrad)" stroke="#a855f7" stroke-width="2"/>
-    <rect x="10" y="15" width="160" height="180" rx="12" fill="#0f172a"/>
-    <!-- Character Avatar 5: Panda -->
-    <circle cx="90" cy="80" r="32" fill="#ffffff"/>
-    <circle cx="70" cy="58" r="10" fill="#1e293b"/>
-    <circle cx="110" cy="58" r="10" fill="#1e293b"/>
-    <ellipse cx="78" cy="78" rx="7" ry="9" fill="#1e293b"/>
-    <ellipse cx="102" cy="78" rx="7" ry="9" fill="#1e293b"/>
-    <circle cx="90" cy="90" r="4" fill="#1e293b"/>
-    <rect x="68" y="112" width="44" height="55" rx="10" fill="#f8fafc"/>
+  <!-- Card 5: 네온 판다 크루 (Neon Panda Crew) -->
+  <g transform="translate(975, 155)">
+    <rect width="202" height="440" rx="16" fill="url(#cardGrad)" stroke="#ec4899" stroke-width="2.5"/>
+    <rect x="14" y="14" width="174" height="185" rx="12" fill="#050811"/>
+    <!-- Flowing Pink Scarf Preview -->
+    <path d="M 85,112 C 55,102 35,122 22,110 C 40,130 62,122 85,124 Z" fill="#f472b6" filter="url(#neonGlow)"/>
+    <circle cx="105" cy="78" r="30" fill="#ffffff"/>
+    <circle cx="84" cy="54" r="10" fill="#0f172a" stroke="#ec4899" stroke-width="2"/>
+    <circle cx="126" cy="54" r="10" fill="#0f172a" stroke="#ec4899" stroke-width="2"/>
+    <ellipse cx="93" cy="76" rx="7" ry="9" fill="#0f172a"/>
+    <ellipse cx="117" cy="76" rx="7" ry="9" fill="#0f172a"/>
+    <rect x="80" y="108" width="50" height="58" rx="10" fill="#f8fafc" stroke="#ec4899" stroke-width="2"/>
     <!-- Skin Info -->
-    <text x="90" y="230" font-family="'Pretendard', sans-serif" font-size="16" font-weight="900" fill="#e9d5ff" text-anchor="middle">🐼 판다 잠옷생</text>
-    <text x="90" y="255" font-family="'Pretendard', sans-serif" font-size="12" fill="#c084fc" text-anchor="middle">Panda Pajama</text>
-    <text x="90" y="295" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">밤샘 프로젝트의 징표,</text>
-    <text x="90" y="315" font-family="'Pretendard', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">극강의 포근한 동물 잠옷</text>
-    <!-- Button: Buy 4500 -->
-    <rect x="15" y="355" width="150" height="44" rx="22" fill="#7e22ce"/>
-    <text x="90" y="382" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">🪙 4,500 구매</text>
+    <text x="101" y="232" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#fbcfe8" text-anchor="middle">🐼 네온 판다 크루</text>
+    <text x="101" y="254" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#f472b6" text-anchor="middle">NEON PANDA · PINK SCARF</text>
+    <text x="101" y="292" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">사이버 네온 이어링과</text>
+    <text x="101" y="312" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">해커톤 특제 판다 수트</text>
+    <rect x="26" y="368" width="150" height="46" rx="23" fill="#db2777"/>
+    <text x="101" y="397" font-family="'Segoe UI', sans-serif" font-size="15" font-weight="900" fill="#ffffff" text-anchor="middle">🪙 4,500 해금</text>
   </g>
 
-  <!-- Footer Tip -->
-  <text x="640" y="625" font-family="'Pretendard', sans-serif" font-size="14" fill="#64748b" text-anchor="middle">
-    💡 구매한 스킨과 코인은 로컬 브라우저에 안전하게 영구 저장됩니다. 언제든지 자유롭게 갈아입고 달려보세요!
+  <!-- Footer -->
+  <text x="640" y="640" font-family="'Segoe UI', sans-serif" font-size="14" fill="#94a3b8" font-weight="700" text-anchor="middle">
+    ⚡ 모든 사이버 기어는 장착 즉시 인게임 스카프 파동 물리, 2단 점프 쇼크웨이브, 팬텀 잔상 색상에 실시간 반영됩니다.
   </text>
 </svg>

@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="shopBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050811"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#13112c"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#shopBg)"/>
+
+  <!-- Cyber Grid Lines -->
+  <g stroke="#1e293b" stroke-width="1" opacity="0.45">
+    <line x1="0" y1="120" x2="1280" y2="120"/>
+    <line x1="0" y1="240" x2="1280" y2="240"/>
+    <line x1="0" y1="360" x2="1280" y2="360"/>
+    <line x1="0" y1="480" x2="1280" y2="480"/>
+    <line x1="0" y1="600" x2="1280" y2="600"/>
+  </g>
+
+  <!-- Modal Outer Frame -->
+  <rect x="65" y="36" width="1150" height="648" rx="24" fill="#090d16" stroke="#38bdf8" stroke-width="3" filter="url(#neonGlow)" opacity="0.97"/>
+
+  <!-- Header -->
+  <text x="640" y="92" font-family="'Segoe UI', sans-serif" font-size="34" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="2" filter="url(#neonGlow)">
+    🛍️ CYBER GEAR &amp; SKIN ARMORY
+  </text>
+  <text x="640" y="124" font-family="'Segoe UI', sans-serif" font-size="15" fill="#38bdf8" font-weight="700" text-anchor="middle">
+    전용 네온 에너지 스카프(Scarf)와 팬텀 잔상 컬러가 적용되는 5종의 하이엔드 사이버 기어를 해금하세요!
+  </text>
+
+  <!-- Coin Balance Pill -->
+  <g transform="translate(945, 62)">
+    <rect width="235" height="48" rx="24" fill="#1e293b" stroke="#facc15" stroke-width="2.5"/>
+    <circle cx="28" cy="24" r="14" fill="url(#goldGrad)" filter="url(#neonGlow)"/>
+    <text x="28" y="29" font-family="sans-serif" font-size="13" font-weight="900" fill="#713f12" text-anchor="middle">G</text>
+    <text x="52" y="29" font-family="'Segoe UI', sans-serif" font-size="14" fill="#cbd5e1" font-weight="800">보유 코인:</text>
+    <text x="135" y="31" font-family="'Segoe UI', sans-serif" font-size="22" fill="#facc15" font-weight="900">4,850 G</text>
+  </g>
+
+  <!-- 5 Cyber Skin Cards -->
+  <!-- Card 1: 네오 러너 (Neo Runner) -->
+  <g transform="translate(95, 155)">
+    <rect width="202" height="440" rx="16" fill="url(#cardGrad)" stroke="#38bdf8" stroke-width="2.5"/>
+    <rect x="14" y="14" width="174" height="185" rx="12" fill="#050811"/>
+    <!-- Flowing Cyan Scarf Preview -->
+    <path d="M 85,112 C 55,102 35,122 22,110 C 40,130 62,122 85,124 Z" fill="#22d3ee" filter="url(#neonGlow)"/>
+    <circle cx="105" cy="78" r="30" fill="#fed7aa"/>
+    <path d="M 75,68 Q 105,46 135,68 L 130,102 Q 105,112 80,102 Z" fill="#2563eb"/>
+    <rect x="80" y="108" width="50" height="58" rx="10" fill="#1d4ed8" stroke="#38bdf8" stroke-width="2"/>
+    <text x="105" y="142" font-size="10" font-weight="900" fill="#ffffff" text-anchor="middle">NEO</text>
+    <!-- Skin Info -->
+    <text x="101" y="232" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle">네오 러너</text>
+    <text x="101" y="254" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#38bdf8" text-anchor="middle">NEO RUNNER · CYAN SCARF</text>
+    <text x="101" y="292" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">시안 에너지 머플러와</text>
+    <text x="101" y="312" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">표준 호버 부스터 수트</text>
+    <rect x="26" y="368" width="150" height="46" rx="23" fill="#22c55e"/>
+    <text x="101" y="397" font-family="'Segoe UI', sans-serif" font-size="15" font-weight="900" fill="#ffffff" text-anchor="middle">✓ 장착됨</text>
+  </g>
+
+  <!-- Card 2: 크림슨 블레이즈 (Crimson Blaze) -->
+  <g transform="translate(315, 155)">
+    <rect width="202" height="440" rx="16" fill="url(#cardGrad)" stroke="#ef4444" stroke-width="2.5"/>
+    <rect x="14" y="14" width="174" height="185" rx="12" fill="#050811"/>
+    <!-- Flowing Flame Scarf Preview -->
+    <path d="M 85,112 C 55,102 35,122 22,110 C 40,130 62,122 85,124 Z" fill="#f97316" filter="url(#neonGlow)"/>
+    <circle cx="105" cy="78" r="30" fill="#fed7aa"/>
+    <path d="M 75,68 Q 105,46 135,68 L 130,102 Q 105,112 80,102 Z" fill="#dc2626"/>
+    <rect x="80" y="108" width="50" height="58" rx="10" fill="#991b1b" stroke="#f97316" stroke-width="2"/>
+    <text x="105" y="142" font-size="11" font-weight="900" fill="#fef08a" text-anchor="middle">BLAZE</text>
+    <!-- Skin Info -->
+    <text x="101" y="232" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle">크림슨 블레이즈</text>
+    <text x="101" y="254" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#f87171" text-anchor="middle">CRIMSON · FLAME SCARF</text>
+    <text x="101" y="292" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">적색 플라즈마 머플러와</text>
+    <text x="101" y="312" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">초고열 오버클럭 코어</text>
+    <rect x="26" y="368" width="150" height="46" rx="23" fill="#2563eb"/>
+    <text x="101" y="397" font-family="'Segoe UI', sans-serif" font-size="15" font-weight="900" fill="#ffffff" text-anchor="middle">장착하기</text>
+  </g>
+
+  <!-- Card 3: 고스트 넷러너 (Ghost Netrunner) -->
+  <g transform="translate(535, 155)">
+    <rect width="202" height="440" rx="16" fill="url(#cardGrad)" stroke="#a855f7" stroke-width="2.5" filter="url(#neonGlow)"/>
+    <rect x="14" y="14" width="174" height="185" rx="12" fill="#050811"/>
+    <!-- Flowing Violet Scarf Preview -->
+    <path d="M 85,112 C 55,102 35,122 22,110 C 40,130 62,122 85,124 Z" fill="#c084fc" filter="url(#neonGlow)"/>
+    <circle cx="105" cy="78" r="30" fill="#1e293b"/>
+    <!-- Cyber Visor -->
+    <rect x="80" y="70" width="50" height="14" rx="7" fill="#06b6d4" filter="url(#neonGlow)"/>
+    <rect x="80" y="108" width="50" height="58" rx="10" fill="#0f172a" stroke="#a855f7" stroke-width="2"/>
+    <!-- Skin Info -->
+    <text x="101" y="232" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle">고스트 넷러너</text>
+    <text x="101" y="254" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#c084fc" text-anchor="middle">NETRUNNER · NEON VISOR</text>
+    <text x="101" y="292" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">홀로그램 광학 바이저와</text>
+    <text x="101" y="312" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">스텔스 팬텀 슈트</text>
+    <rect x="26" y="368" width="150" height="46" rx="23" fill="#7e22ce"/>
+    <text x="101" y="397" font-family="'Segoe UI', sans-serif" font-size="15" font-weight="900" fill="#ffffff" text-anchor="middle">🪙 1,500 해금</text>
+  </g>
+
+  <!-- Card 4: 아크 마스터 (Arc Master) -->
+  <g transform="translate(755, 155)">
+    <rect width="202" height="440" rx="16" fill="url(#cardGrad)" stroke="#facc15" stroke-width="2.5" filter="url(#neonGlow)"/>
+    <rect x="14" y="14" width="174" height="185" rx="12" fill="#050811"/>
+    <!-- Flowing Gold Scarf Preview -->
+    <path d="M 85,112 C 55,102 35,122 22,110 C 40,130 62,122 85,124 Z" fill="#facc15" filter="url(#neonGlow)"/>
+    <!-- Floating Golden Halo -->
+    <ellipse cx="105" cy="36" rx="26" ry="7" fill="none" stroke="#fef08a" stroke-width="3.5" filter="url(#neonGlow)"/>
+    <circle cx="105" cy="78" r="30" fill="#fef08a"/>
+    <rect x="80" y="108" width="50" height="58" rx="10" fill="url(#goldGrad)" stroke="#ffffff" stroke-width="1.5"/>
+    <!-- Skin Info -->
+    <text x="101" y="232" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#fef08a" text-anchor="middle">👑 아크 마스터</text>
+    <text x="101" y="254" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#facc15" text-anchor="middle">ARC MASTER · GOLD HALO</text>
+    <text x="101" y="292" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">공중 부양 아크 헤일로와</text>
+    <text x="101" y="312" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">발키리 골든 아머</text>
+    <rect x="26" y="368" width="150" height="46" rx="23" fill="#d97706"/>
+    <text x="101" y="397" font-family="'Segoe UI', sans-serif" font-size="15" font-weight="900" fill="#ffffff" text-anchor="middle">🪙 3,000 해금</text>
+  </g>
+
+  <!-- Card 5: 네온 판다 크루 (Neon Panda Crew) -->
+  <g transform="translate(975, 155)">
+    <rect width="202" height="440" rx="16" fill="url(#cardGrad)" stroke="#ec4899" stroke-width="2.5"/>
+    <rect x="14" y="14" width="174" height="185" rx="12" fill="#050811"/>
+    <!-- Flowing Pink Scarf Preview -->
+    <path d="M 85,112 C 55,102 35,122 22,110 C 40,130 62,122 85,124 Z" fill="#f472b6" filter="url(#neonGlow)"/>
+    <circle cx="105" cy="78" r="30" fill="#ffffff"/>
+    <circle cx="84" cy="54" r="10" fill="#0f172a" stroke="#ec4899" stroke-width="2"/>
+    <circle cx="126" cy="54" r="10" fill="#0f172a" stroke="#ec4899" stroke-width="2"/>
+    <ellipse cx="93" cy="76" rx="7" ry="9" fill="#0f172a"/>
+    <ellipse cx="117" cy="76" rx="7" ry="9" fill="#0f172a"/>
+    <rect x="80" y="108" width="50" height="58" rx="10" fill="#f8fafc" stroke="#ec4899" stroke-width="2"/>
+    <!-- Skin Info -->
+    <text x="101" y="232" font-family="'Segoe UI', sans-serif" font-size="18" font-weight="900" fill="#fbcfe8" text-anchor="middle">🐼 네온 판다 크루</text>
+    <text x="101" y="254" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="800" fill="#f472b6" text-anchor="middle">NEON PANDA · PINK SCARF</text>
+    <text x="101" y="292" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">사이버 네온 이어링과</text>
+    <text x="101" y="312" font-family="'Segoe UI', sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">해커톤 특제 판다 수트</text>
+    <rect x="26" y="368" width="150" height="46" rx="23" fill="#db2777"/>
+    <text x="101" y="397" font-family="'Segoe UI', sans-serif" font-size="15" font-weight="900" fill="#ffffff" text-anchor="middle">🪙 4,500 해금</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="640" y="640" font-family="'Segoe UI', sans-serif" font-size="14" fill="#94a3b8" font-weight="700" text-anchor="middle">
+    ⚡ 모든 사이버 기어는 장착 즉시 인게임 스카프 파동 물리, 2단 점프 쇼크웨이브, 팬텀 잔상 색상에 실시간 반영됩니다.
+  </text>
+</svg>
