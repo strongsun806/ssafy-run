@@ -15,7 +15,7 @@
 **싸피인을 위한 쿠키런 × 바운스볼 스타일 웹 횡스크롤 러닝 액션 게임**  
 *30단계 순차 클리어 모드 · 일타싸피 & 배틀싸피 보스 배틀 · 실시간 전국 랭킹 단계 배지 · 스킨 상점*
 
-[🎮 지금 즉시 웹에서 플레이하기 (GitHub Pages)](https://strongsun806.github.io/ssafy-run/) · [🐛 버그 제보](https://github.com/strongsun806/ssafy-run/issues) · [💡 기능 제안](https://github.com/strongsun806/ssafy-run/issues)
+[🎮 지금 즉시 웹에서 플레이하기 (GitHub Pages)](https://strongsun806.github.io/ssafy-run/) · [📅 업데이트 히스토리 (Changelog)](CHANGELOG.md) · [🐛 버그 제보](https://github.com/strongsun806/ssafy-run/issues) · [💡 기능 제안](https://github.com/strongsun806/ssafy-run/issues)
 
 </div>
 
@@ -226,6 +226,20 @@ npm run dev
 # 프로덕션 빌드 테스트
 npm run build-nolog
 ```
+
+---
+
+## 📅 주요 버전별 업데이트 내역 (Release History)
+
+날짜별 상세 변경 사항 및 패치 로그는 [CHANGELOG.md](CHANGELOG.md)에서 전체 확인하실 수 있습니다.
+
+| 버전 | 일자 | 주요 업데이트 내용 |
+| :---: | :---: | :--- |
+| **v1.4.0** | 2026-10-28 | 🐱 스크래치(Scratch) 5대 카테고리 탭, 13종 블록, 깃발 햇 블록, 대사 말풍선 미니게임 고도화 |
+| **v1.3.0** | 2026-10-28 | 🗺️ 바운스볼 스타일 30단계 순차 클리어 모드, 별점(⭐⭐⭐) 시스템, 실시간 랭킹 `[ST.30 👑]` 단계 배지 연동 |
+| **v1.2.0** | 2026-10-28 | 🎨 바닥 어지러움 개선, 싸피 보스전(일타싸피/배틀싸피) 및 디버그 패치 반격, 피격 화면 이탈 버그 픽스 |
+| **v1.1.0** | 2026-10-26 | 🏃‍♂️ 쿠키런 스타일 고도화 (바닥 구덩이 & 드론 구출, 2층 발판, 자석 파워업, 5종 캐릭터 스킨 상점, 전국 랭킹) |
+| **v1.0.0** | 2026-10-26 | 🚀 완성형 횡스크롤 러너 배포, 절차적 8비트 사운드 FX, GitHub Pages 자동 배포 CI/CD 파이프라인 |
 
 ---
 
