@@ -1,12 +1,18 @@
 import * as Phaser from 'phaser';
 import { AudioManager } from './AudioManager';
 
-export interface BlockItem {
+export type BlockCategory = 'all' | 'event' | 'motion' | 'control' | 'looks' | 'sensing';
+
+export interface ScratchBlockDef {
     id: string;
+    category: BlockCategory;
     text: string;
+    icon: string;
+    param?: string;
     color: number;
     isCorrect: boolean;
     order: number;
+    speechText?: string;
 }
 
 export class BlockCodingModal {
@@ -16,10 +22,12 @@ export class BlockCodingModal {
     private onComplete: (scoreBonus: number, coinBonus: number) => void;
 
     private container!: Phaser.GameObjects.Container;
-    private placedBlocks: BlockItem[] = [];
+    private placedBlocks: ScratchBlockDef[] = [];
     private blockWorkspaceContainer!: Phaser.GameObjects.Container;
+    private paletteContainer!: Phaser.GameObjects.Container;
     private statusText!: Phaser.GameObjects.Text;
     private isSimulating: boolean = false;
+    private currentCategory: BlockCategory = 'all';
 
     // Simulation visual elements
     private simContainer!: Phaser.GameObjects.Container;
@@ -27,6 +35,7 @@ export class BlockCodingModal {
     private targetBall?: Phaser.GameObjects.Arc;
     private obstacleBall?: Phaser.GameObjects.Arc;
     private cueStick?: Phaser.GameObjects.Graphics;
+    private speechBubble?: Phaser.GameObjects.Container;
 
     private playerTank?: Phaser.GameObjects.Container;
     private enemyTank?: Phaser.GameObjects.Container;
@@ -45,24 +54,48 @@ export class BlockCodingModal {
         this.createModal();
     }
 
-    private getAvailableBlocks(): BlockItem[] {
+    private getAllBlocks(): ScratchBlockDef[] {
         if (this.type === 'iltassafy') {
             return [
-                { id: 'angle', text: '📐 조준 각도: 45°', color: 0x2563eb, isCorrect: true, order: 1 },
-                { id: 'cushion', text: '🔄 쿠션 반사 연산', color: 0x9333ea, isCorrect: true, order: 2 },
-                { id: 'power', text: '⚡ 타구 파워: 80%', color: 0xea580c, isCorrect: true, order: 3 },
-                { id: 'shoot', text: '🎱 큐대 샷 발사!', color: 0x16a34a, isCorrect: true, order: 4 },
-                { id: 'wrong_angle', text: '❌ 역방향 180° 조준', color: 0x475569, isCorrect: false, order: 99 },
-                { id: 'wrong_power', text: '⚠️ 파워 10% (너무 약함)', color: 0x475569, isCorrect: false, order: 99 }
+                // Event (Yellow)
+                { id: 'event_flag', category: 'event', icon: '🚩', text: '깃발을 클릭했을 때', color: 0xeab308, isCorrect: true, order: 1 },
+                // Motion (Blue)
+                { id: 'motion_angle', category: 'motion', icon: '📐', text: '조준 각도를', param: '45°', color: 0x2563eb, isCorrect: true, order: 2, speechText: '조준 각도 45° 설정!' },
+                { id: 'motion_cushion', category: 'motion', icon: '🔄', text: '벽에 닿으면 튕기기 (원쿠션)', color: 0x2563eb, isCorrect: true, order: 3, speechText: '쿠션 반사 궤적 연산!' },
+                { id: 'motion_spin', category: 'motion', icon: '↪️', text: '상단 스핀 회전 주기', color: 0x2563eb, isCorrect: false, order: 99 },
+                { id: 'motion_wrong_angle', category: 'motion', icon: '❌', text: '조준 각도를', param: '180°', color: 0x475569, isCorrect: false, order: 99 },
+                // Control (Orange)
+                { id: 'ctrl_power', category: 'control', icon: '⚡', text: '타구 파워를', param: '80%', color: 0xea580c, isCorrect: true, order: 4, speechText: '타구 파워 80% 장전!' },
+                { id: 'ctrl_wait', category: 'control', icon: '⏱️', text: '0.3초 조준 대기하기', color: 0xea580c, isCorrect: false, order: 99 },
+                { id: 'ctrl_wrong_power', category: 'control', icon: '⚠️', text: '타구 파워를', param: '10%', color: 0x475569, isCorrect: false, order: 99 },
+                // Looks & Sound (Purple)
+                { id: 'looks_shoot', category: 'looks', icon: '🎱', text: '큐대로 수구(하얀공) 치기!', color: 0x9333ea, isCorrect: true, order: 5, speechText: '원쿠션 포켓인 샷!' },
+                { id: 'sound_hit', category: 'looks', icon: '🔊', text: "'딱!' 타구 효과음 재생", color: 0x9333ea, isCorrect: false, order: 99 },
+                { id: 'looks_say', category: 'looks', icon: '💬', text: '"포켓인 성공!" 말하기', color: 0x9333ea, isCorrect: false, order: 99 },
+                // Sensing (Cyan)
+                { id: 'sense_goal', category: 'sensing', icon: '🎯', text: '목적구가 홀컵에 닿았는가?', color: 0x06b6d4, isCorrect: false, order: 99 },
+                { id: 'sense_dist', category: 'sensing', icon: '🔍', text: '목적구까지의 거리 계산', color: 0x06b6d4, isCorrect: false, order: 99 }
             ];
         } else {
             return [
-                { id: 'move', text: '🚀 전진 2칸 이동', color: 0x2563eb, isCorrect: true, order: 1 },
-                { id: 'turn', text: '🔄 포탑 우회전 90°', color: 0xea580c, isCorrect: true, order: 2 },
-                { id: 'radar', text: '📡 적 레이더 락온', color: 0x9333ea, isCorrect: true, order: 3 },
-                { id: 'fire', text: '💥 주포 철갑탄 발사!', color: 0x16a34a, isCorrect: true, order: 4 },
-                { id: 'wrong_back', text: '⚡ 후진 3칸 (추락 위험)', color: 0x475569, isCorrect: false, order: 99 },
-                { id: 'wrong_stop', text: '🛑 엔진 정지 (무방비)', color: 0x475569, isCorrect: false, order: 99 }
+                // Event (Yellow)
+                { id: 'event_flag', category: 'event', icon: '🚩', text: '깃발을 클릭했을 때', color: 0xeab308, isCorrect: true, order: 1 },
+                // Motion (Blue)
+                { id: 'motion_forward', category: 'motion', icon: '🚀', text: '앞으로', param: '2칸', color: 0x2563eb, isCorrect: true, order: 2, speechText: '전방 2칸 기동!' },
+                { id: 'motion_turn', category: 'motion', icon: '🔄', text: '우측으로', param: '90° 회전', color: 0x2563eb, isCorrect: true, order: 3, speechText: '포탑 우측 90도 선회!' },
+                { id: 'motion_wrong_back', category: 'motion', icon: '⚡', text: '뒤로 3칸 후진하기', color: 0x475569, isCorrect: false, order: 99 },
+                { id: 'motion_wrong_stop', category: 'motion', icon: '🛑', text: '엔진 정지 (무방비)', color: 0x475569, isCorrect: false, order: 99 },
+                // Sensing (Cyan)
+                { id: 'sense_radar', category: 'sensing', icon: '📡', text: '적 보스 탱크 레이더 락온', color: 0x06b6d4, isCorrect: true, order: 4, speechText: '적 보스 전차 타겟 락온!' },
+                { id: 'sense_distance', category: 'sensing', icon: '🔍', text: '적과의 거리 <= 3칸 감지', color: 0x06b6d4, isCorrect: false, order: 99 },
+                // Control (Orange)
+                { id: 'ctrl_aim_wait', category: 'control', icon: '⏱️', text: '포탑 안정화 0.3초 대기', color: 0xea580c, isCorrect: false, order: 99 },
+                { id: 'ctrl_repeat', category: 'control', icon: '🔁', text: '목표 파괴까지 반복', color: 0xea580c, isCorrect: false, order: 99 },
+                // Looks & Sound (Purple)
+                { id: 'looks_fire', category: 'looks', icon: '💥', text: '주포 철갑탄 1발 발사!', color: 0x9333ea, isCorrect: true, order: 5, speechText: '주포 철갑탄 발사!' },
+                { id: 'sound_boom', category: 'looks', icon: '🔊', text: "'쾅!' 폭발음 재생하기", color: 0x9333ea, isCorrect: false, order: 99 },
+                { id: 'looks_shield', category: 'looks', icon: '🛡️', text: '방어막 에너지 실드 전개', color: 0x9333ea, isCorrect: false, order: 99 },
+                { id: 'looks_say', category: 'looks', icon: '💬', text: '"목표 격파 완료!" 말하기', color: 0x9333ea, isCorrect: false, order: 99 }
             ];
         }
     }
@@ -73,66 +106,73 @@ export class BlockCodingModal {
 
         // Dim background overlay
         const dim = this.scene.add.graphics();
-        dim.fillStyle(0x000000, 0.85);
+        dim.fillStyle(0x000000, 0.88);
         dim.fillRect(-width / 2, -height / 2, width, height);
         dim.setInteractive(new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height), Phaser.Geom.Rectangle.Contains);
         this.container.add(dim);
 
-        // Modal Frame
-        const cardW = 1040;
-        const cardH = 580;
+        // Main Dialog Card
+        const cardW = 1080;
+        const cardH = 610;
         const frame = this.scene.add.graphics();
-        frame.fillStyle(0x090f1d, 0.98);
-        frame.lineStyle(2, 0x38bdf8);
+        frame.fillStyle(0x0b1329, 0.98);
+        frame.lineStyle(2, 0x4f46e5);
         frame.fillRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 20);
         frame.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 20);
         this.container.add(frame);
 
-        // Top Header
+        // Header Section
         const badgeBg = this.scene.add.graphics();
-        badgeBg.fillStyle(0x0284c7, 0.4);
-        badgeBg.lineStyle(1, 0x38bdf8);
-        badgeBg.fillRoundedRect(-160, -cardH / 2 + 16, 320, 24, 12);
-        badgeBg.strokeRoundedRect(-160, -cardH / 2 + 16, 320, 24, 12);
+        badgeBg.fillStyle(0x4338ca, 0.5);
+        badgeBg.lineStyle(1, 0x818cf8);
+        badgeBg.fillRoundedRect(-180, -cardH / 2 + 14, 360, 24, 12);
+        badgeBg.strokeRoundedRect(-180, -cardH / 2 + 14, 360, 24, 12);
 
-        const badgeText = this.scene.add.text(0, -cardH / 2 + 28, '🧩 SSAFY BREAK TIME · 쉬어가는 블록코딩', {
+        const badgeText = this.scene.add.text(0, -cardH / 2 + 26, '🐱 SCRATCH CODING BREAK · 스크래치 알고리즘', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '13px',
-            color: '#38bdf8'
+            color: '#a5b4fc'
         }).setOrigin(0.5);
 
         const titleText = this.type === 'iltassafy'
-            ? '🎱 일타싸피 평가: 목적구 포켓인 알고리즘'
-            : '⚔️ 배틀싸피 평가: 적 전차 격파 알고리즘';
+            ? '🎱 일타싸피 스크래치: 목적구 포켓인 코딩'
+            : '⚔️ 배틀싸피 스크래치: 사이버 탱크 사격 코딩';
 
-        const title = this.scene.add.text(0, -cardH / 2 + 62, titleText, {
+        const title = this.scene.add.text(0, -cardH / 2 + 58, titleText, {
             fontFamily: '"Black Han Sans", "Permanent Marker", sans-serif',
-            fontSize: '25px',
+            fontSize: '24px',
             color: '#facc15'
         }).setOrigin(0.5);
 
         const subText = this.type === 'iltassafy'
-            ? '손가락을 잠시 쉬어가세요! 🧠 블록을 조립하여 당구공을 포켓에 넣고 멘탈을 100% 회복하세요!'
-            : '손가락을 잠시 쉬어가세요! 🧠 블록을 조립하여 사이버 적 전차를 격파하고 멘탈을 100% 회복하세요!';
+            ? '스크래치 블록을 조립하여 공을 포켓에 넣고 멘탈(HP) 100% 회복 & 골든 피버를 획득하세요!'
+            : '스크래치 블록을 조립하여 적 탱크를 격파하고 멘탈(HP) 100% 회복 & 골든 피버를 획득하세요!';
 
-        const subtitle = this.scene.add.text(0, -cardH / 2 + 94, subText, {
+        const subtitle = this.scene.add.text(0, -cardH / 2 + 88, subText, {
             fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '15px',
+            fontSize: '14px',
             color: '#94a3b8'
         }).setOrigin(0.5);
 
-        // Fast Skip Button (Top Right)
-        const skipBtn = this.createButton(cardW / 2 - 80, -cardH / 2 + 35, 110, 34, '⚡ 즉시 패스', 0x334155, () => {
+        // Fast Skip Button
+        const skipBtn = this.createButton(cardW / 2 - 80, -cardH / 2 + 35, 110, 32, '⚡ 즉시 패스', 0x334155, () => {
             this.finishMiniGame(3000, 15);
         });
 
         this.container.add([badgeBg, badgeText, title, subtitle, skipBtn]);
 
-        // Left Panel: Simulation Area
-        this.createSimulationPanel(-cardW / 2 + 25, -cardH / 2 + 120, 460, 340);
+        // Left Panel: Simulation Viewport
+        this.createSimulationPanel(-cardW / 2 + 25, -cardH / 2 + 115, 450, 460);
 
-        // Right Panel: Block Coding IDE
-        this.createCodingIdePanel(20, -cardH / 2 + 120, 475, 420);
+        // Right Panel: Scratch IDE (Palette + Stack)
+        this.createScratchIdePanel(15, -cardH / 2 + 115, 500, 465);
+
+        // Auto-place initial Flag block
+        const flagBlock = this.getAllBlocks().find(b => b.id === 'event_flag');
+        if (flagBlock) {
+            this.placedBlocks.push(flagBlock);
+            this.renderWorkspaceBlocks();
+        }
 
         // Entrance animation
         this.container.setScale(0.8);
@@ -141,7 +181,7 @@ export class BlockCodingModal {
             targets: this.container,
             scale: 1,
             alpha: 1,
-            duration: 320,
+            duration: 300,
             ease: 'Back.easeOut'
         });
     }
@@ -152,13 +192,13 @@ export class BlockCodingModal {
         this.container.add(this.simContainer);
 
         const panelBg = this.scene.add.graphics();
-        panelBg.fillStyle(0x0f172a, 0.9);
-        panelBg.lineStyle(1, 0x334155);
+        panelBg.fillStyle(0x0f172a, 0.95);
+        panelBg.lineStyle(1.5, 0x334155);
         panelBg.fillRoundedRect(0, 0, w, h, 14);
         panelBg.strokeRoundedRect(0, 0, w, h, 14);
         this.simContainer.add(panelBg);
 
-        const label = this.scene.add.text(15, 12, '📺 ALGORITHM SIMULATION VIEW', {
+        const label = this.scene.add.text(15, 12, '🎬 LIVE SIMULATION STAGE (스크래치 실행 무대)', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '12px',
             color: '#38bdf8'
@@ -172,32 +212,31 @@ export class BlockCodingModal {
         }
     }
 
-    // Billiards Simulation Scene
     private setupBilliardsSim(w: number, h: number) {
-        // Table Felt
+        // Green Felt Pool Table
         const felt = this.scene.add.graphics();
         felt.fillStyle(0x065f46, 1);
-        felt.lineStyle(8, 0x78350f);
-        felt.fillRoundedRect(20, 36, w - 40, h - 56, 16);
-        felt.strokeRoundedRect(20, 36, w - 40, h - 56, 16);
+        felt.lineStyle(10, 0x78350f);
+        felt.fillRoundedRect(20, 40, w - 40, h - 60, 16);
+        felt.strokeRoundedRect(20, 40, w - 40, h - 60, 16);
         this.simContainer.add(felt);
 
-        // Pockets (6 holes)
+        // 6 Pockets
         const pocketCoords = [
-            { x: 34, y: 50 }, { x: w / 2, y: 44 }, { x: w - 34, y: 50 },
-            { x: 34, y: h - 34 }, { x: w / 2, y: h - 28 }, { x: w - 34, y: h - 34 }
+            { x: 38, y: 58 }, { x: w / 2, y: 50 }, { x: w - 38, y: 58 },
+            { x: 38, y: h - 38 }, { x: w / 2, y: h - 30 }, { x: w - 38, y: h - 38 }
         ];
 
         pocketCoords.forEach(p => {
-            const hole = this.scene.add.circle(p.x, p.y, 14, 0x020617);
-            const holeBorder = this.scene.add.circle(p.x, p.y, 14).setStrokeStyle(2, 0x334155);
+            const hole = this.scene.add.circle(p.x, p.y, 15, 0x020617);
+            const holeBorder = this.scene.add.circle(p.x, p.y, 15).setStrokeStyle(2, 0x334155);
             this.simContainer.add([hole, holeBorder]);
         });
 
-        // Target Pocket Indicator (Top-Right Hole)
+        // Glowing Target Pocket (Top-Right)
         const targetHole = pocketCoords[2];
-        const targetRing = this.scene.add.circle(targetHole.x, targetHole.y, 22).setStrokeStyle(2, 0xfacc15);
-        const goalBadge = this.scene.add.text(targetHole.x - 30, targetHole.y + 18, '🎯 GOAL', {
+        const targetRing = this.scene.add.circle(targetHole.x, targetHole.y, 24).setStrokeStyle(2.5, 0xfacc15);
+        const goalBadge = this.scene.add.text(targetHole.x - 32, targetHole.y + 20, '🎯 GOAL', {
             fontFamily: '"Black Han Sans", sans-serif',
             fontSize: '12px',
             color: '#facc15'
@@ -206,28 +245,28 @@ export class BlockCodingModal {
 
         this.scene.tweens.add({
             targets: targetRing,
-            scale: 1.25,
-            alpha: 0.5,
+            scale: 1.3,
+            alpha: 0.4,
             yoyo: true,
             repeat: -1,
-            duration: 600
+            duration: 650
         });
 
-        // Obstacle Ball (Yellow)
-        this.obstacleBall = this.scene.add.circle(220, 160, 11, 0xeab308);
-        this.obstacleBall.setStrokeStyle(1.5, 0x713f12);
+        // Obstacle Ball
+        this.obstacleBall = this.scene.add.circle(220, 210, 12, 0xeab308);
+        this.obstacleBall.setStrokeStyle(2, 0x713f12);
 
         // Target Ball (Red)
-        this.targetBall = this.scene.add.circle(260, 120, 11, 0xef4444);
-        this.targetBall.setStrokeStyle(1.5, 0x7f1d1d);
+        this.targetBall = this.scene.add.circle(260, 150, 12, 0xef4444);
+        this.targetBall.setStrokeStyle(2, 0x7f1d1d);
 
         // Cue Ball (White)
-        this.cueBall = this.scene.add.circle(90, 230, 11, 0xf8fafc);
-        this.cueBall.setStrokeStyle(1.5, 0x94a3b8);
+        this.cueBall = this.scene.add.circle(95, 310, 12, 0xf8fafc);
+        this.cueBall.setStrokeStyle(2, 0x94a3b8);
 
         // Cue Stick
         this.cueStick = this.scene.add.graphics();
-        this.drawCueStick(90, 230, 45);
+        this.drawCueStick(95, 310, 45);
 
         this.simContainer.add([this.obstacleBall, this.targetBall, this.cueBall, this.cueStick]);
     }
@@ -237,58 +276,56 @@ export class BlockCodingModal {
         this.cueStick.clear();
 
         const rad = Phaser.Math.DegToRad(angleDeg + 180);
-        const startX = ballX + Math.cos(rad) * 20;
-        const startY = ballY + Math.sin(rad) * 20;
-        const endX = ballX + Math.cos(rad) * 110;
-        const endY = ballY + Math.sin(rad) * 110;
+        const startX = ballX + Math.cos(rad) * 22;
+        const startY = ballY + Math.sin(rad) * 22;
+        const endX = ballX + Math.cos(rad) * 125;
+        const endY = ballY + Math.sin(rad) * 125;
 
-        this.cueStick.lineStyle(5, 0xd97706);
+        this.cueStick.lineStyle(6, 0xd97706);
         this.cueStick.lineBetween(startX, startY, endX, endY);
         this.cueStick.fillStyle(0xf8fafc);
-        this.cueStick.fillCircle(startX, startY, 3);
+        this.cueStick.fillCircle(startX, startY, 3.5);
     }
 
-    // Tank Simulation Scene
     private setupTankSim(w: number, h: number) {
-        // Arena Grid
+        // Tactical Grid
         const gridG = this.scene.add.graphics();
         gridG.fillStyle(0x0a101f, 1);
         gridG.lineStyle(1, 0x1e293b);
-        gridG.fillRoundedRect(20, 36, w - 40, h - 56, 12);
-        gridG.strokeRoundedRect(20, 36, w - 40, h - 56, 12);
+        gridG.fillRoundedRect(20, 40, w - 40, h - 60, 12);
+        gridG.strokeRoundedRect(20, 40, w - 40, h - 60, 12);
 
-        // Draw tactical grid lines
         for (let gx = 80; gx < w - 40; gx += 60) {
-            gridG.lineBetween(gx, 36, gx, h - 20);
+            gridG.lineBetween(gx, 40, gx, h - 20);
         }
         for (let gy = 80; gy < h - 20; gy += 60) {
             gridG.lineBetween(20, gy, w - 20, gy);
         }
         this.simContainer.add(gridG);
 
-        // Barricade Obstacles
-        const barrier1 = this.scene.add.rectangle(200, 160, 40, 50, 0x475569);
+        // Concrete Barricades
+        const barrier1 = this.scene.add.rectangle(195, 200, 36, 65, 0x475569);
         barrier1.setStrokeStyle(2, 0x64748b);
-        const barrier2 = this.scene.add.rectangle(200, 220, 40, 50, 0x475569);
+        const barrier2 = this.scene.add.rectangle(195, 280, 36, 65, 0x475569);
         barrier2.setStrokeStyle(2, 0x64748b);
         this.simContainer.add([barrier1, barrier2]);
 
-        // Player Cyber Tank (Bottom Left)
-        this.playerTank = this.scene.add.container(70, 240);
-        const tankBody = this.scene.add.rectangle(0, 0, 36, 26, 0x0284c7);
+        // Player Tank
+        this.playerTank = this.scene.add.container(70, 310);
+        const tankBody = this.scene.add.rectangle(0, 0, 38, 28, 0x0284c7);
         tankBody.setStrokeStyle(2, 0x38bdf8);
-        const turret = this.scene.add.circle(0, 0, 9, 0x0369a1);
-        const barrel = this.scene.add.rectangle(14, 0, 16, 5, 0x38bdf8);
+        const turret = this.scene.add.circle(0, 0, 10, 0x0369a1);
+        const barrel = this.scene.add.rectangle(16, 0, 18, 5, 0x38bdf8);
         this.playerTank.add([tankBody, turret, barrel]);
         this.simContainer.add(this.playerTank);
 
-        // Enemy Boss Tank (Top Right)
-        this.enemyTank = this.scene.add.container(360, 90);
-        const enemyBody = this.scene.add.rectangle(0, 0, 42, 32, 0xb91c1c);
+        // Enemy Tank
+        this.enemyTank = this.scene.add.container(360, 105);
+        const enemyBody = this.scene.add.rectangle(0, 0, 44, 34, 0xb91c1c);
         enemyBody.setStrokeStyle(2, 0xef4444);
-        const enemyTurret = this.scene.add.circle(0, 0, 11, 0x991b1b);
-        const enemyBarrel = this.scene.add.rectangle(-18, 0, 18, 6, 0xef4444);
-        const bossTag = this.scene.add.text(0, -28, '적 보스 AI', {
+        const enemyTurret = this.scene.add.circle(0, 0, 12, 0x991b1b);
+        const enemyBarrel = this.scene.add.rectangle(-20, 0, 20, 6, 0xef4444);
+        const bossTag = this.scene.add.text(0, -30, '적 보스 탱크 AI', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '11px',
             color: '#ef4444'
@@ -297,87 +334,233 @@ export class BlockCodingModal {
         this.simContainer.add(this.enemyTank);
     }
 
-    // --- Block Coding Workspace Panel ---
-    private createCodingIdePanel(x: number, y: number, w: number, h: number) {
+    // Scratch Character Speech Bubble
+    private showSpeechBubble(x: number, y: number, text: string) {
+        if (this.speechBubble) {
+            this.speechBubble.destroy();
+        }
+
+        this.speechBubble = this.scene.add.container(x, y - 45);
+        const txt = this.scene.add.text(0, 0, text, {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '13px',
+            color: '#0f172a'
+        }).setOrigin(0.5);
+
+        const bw = Math.max(txt.width + 20, 100);
+        const bh = 28;
+
+        const bg = this.scene.add.graphics();
+        bg.fillStyle(0xffffff, 0.95);
+        bg.lineStyle(1.5, 0x94a3b8);
+        bg.fillRoundedRect(-bw / 2, -bh / 2, bw, bh, 8);
+        bg.strokeRoundedRect(-bw / 2, -bh / 2, bw, bh, 8);
+
+        // Pointer triangle
+        bg.fillTriangle(-5, bh / 2, 5, bh / 2, 0, bh / 2 + 7);
+
+        this.speechBubble.add([bg, txt]);
+        this.simContainer.add(this.speechBubble);
+
+        this.scene.tweens.add({
+            targets: this.speechBubble,
+            scale: { from: 0.5, to: 1 },
+            duration: 180,
+            ease: 'Back.easeOut'
+        });
+    }
+
+    // --- Right Panel: Scratch IDE ---
+    private createScratchIdePanel(x: number, y: number, w: number, h: number) {
         const ideContainer = this.scene.add.container(x, y);
         this.container.add(ideContainer);
 
-        // Block Palette Header
-        const paletteTitle = this.scene.add.text(0, 0, '📦 사용 가능한 블록 (클릭하여 추가)', {
-            fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '15px',
-            color: '#38bdf8'
-        });
-        ideContainer.add(paletteTitle);
+        // 1. Scratch Category Tabs
+        const categories: { id: BlockCategory; label: string; color: number }[] = [
+            { id: 'all', label: '🌈 전체', color: 0x64748b },
+            { id: 'event', label: '🟡 이벤트', color: 0xeab308 },
+            { id: 'motion', label: '🔵 동작', color: 0x2563eb },
+            { id: 'control', label: '🟠 제어', color: 0xea580c },
+            { id: 'looks', label: '🟣 형태/소리', color: 0x9333ea },
+            { id: 'sensing', label: '🔴 감지', color: 0x06b6d4 }
+        ];
 
-        // Blocks Palette (2 columns x 3 rows)
-        const blocks = this.getAvailableBlocks();
-        blocks.forEach((blk, idx) => {
-            const col = idx % 2;
-            const row = Math.floor(idx / 2);
-            const bx = col * 235;
-            const by = 28 + row * 40;
-
-            const btn = this.createBlockChip(bx, by, 225, 34, blk.text, blk.color, () => {
-                this.addBlockToWorkspace(blk);
-            });
-            ideContainer.add(btn);
+        const tabW = 78;
+        categories.forEach((cat, idx) => {
+            const tx = idx * (tabW + 5);
+            const tabBtn = this.createCategoryTab(tx, 0, tabW, 26, cat.label, cat.id);
+            ideContainer.add(tabBtn);
         });
 
-        // Workspace Script Stack Section
-        const wsY = 160;
-        const wsTitle = this.scene.add.text(0, wsY, '📜 내 알고리즘 스택 (클릭 시 블록 제거)', {
+        // 2. Scratch Block Palette Box
+        const palBox = this.scene.add.graphics();
+        palBox.fillStyle(0x0f172a, 0.9);
+        palBox.lineStyle(1, 0x1e293b);
+        palBox.fillRoundedRect(0, 32, w, 160, 10);
+        palBox.strokeRoundedRect(0, 32, w, 160, 10);
+        ideContainer.add(palBox);
+
+        this.paletteContainer = this.scene.add.container(8, 40);
+        ideContainer.add(this.paletteContainer);
+        this.renderPaletteBlocks();
+
+        // 3. Workspace Section Header
+        const wsY = 205;
+        const wsTitle = this.scene.add.text(0, wsY, '🧩 스크래치 스택 (조립된 코드 블록)', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '15px',
             color: '#facc15'
         });
 
-        // Quick Auto-fill button (Comfort / Accessibility)
-        const autoFillBtn = this.createButton(335, wsY + 8, 130, 26, '💡 정답 자동배치', 0x059669, () => {
+        const autoBtn = this.createButton(w - 180, wsY + 10, 115, 26, '💡 정답 자동조립', 0x059669, () => {
             this.autoFillCorrectBlocks();
         });
 
-        // Reset button
-        const resetBtn = this.createButton(435, wsY + 8, 65, 26, '↺ 초기화', 0x475569, () => {
+        const resetBtn = this.createButton(w - 55, wsY + 10, 50, 26, '↺ 비우기', 0x475569, () => {
             this.placedBlocks = [];
+            const flagBlock = this.getAllBlocks().find(b => b.id === 'event_flag');
+            if (flagBlock) this.placedBlocks.push(flagBlock);
             this.renderWorkspaceBlocks();
             this.audioManager.playBlockClick();
         });
 
-        ideContainer.add([wsTitle, autoFillBtn, resetBtn]);
+        ideContainer.add([wsTitle, autoBtn, resetBtn]);
 
-        // Workspace Box Background
+        // 4. Scratch Workspace Canvas
         const wsBox = this.scene.add.graphics();
         wsBox.fillStyle(0x020617, 0.95);
-        wsBox.lineStyle(1.5, 0x1e293b);
-        wsBox.fillRoundedRect(0, wsY + 28, w, 140, 10);
-        wsBox.strokeRoundedRect(0, wsY + 28, w, 140, 10);
+        wsBox.lineStyle(1.5, 0x334155);
+        wsBox.fillRoundedRect(0, wsY + 28, w, 165, 12);
+        wsBox.strokeRoundedRect(0, wsY + 28, w, 165, 12);
         ideContainer.add(wsBox);
 
-        // Workspace Inner Container for dynamically rendered blocks
-        this.blockWorkspaceContainer = this.scene.add.container(10, wsY + 38);
+        this.blockWorkspaceContainer = this.scene.add.container(10, wsY + 36);
         ideContainer.add(this.blockWorkspaceContainer);
         this.renderWorkspaceBlocks();
 
-        // Status Feedback Text
-        this.statusText = this.scene.add.text(w / 2, wsY + 185, '💡 올바른 블록을 순서대로 조립한 후 실행 버튼을 누르세요!', {
+        // 5. Status Text
+        this.statusText = this.scene.add.text(w / 2, wsY + 208, '💡 위 팔레트의 블록을 클릭해 아래 스택에 조립하세요!', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '13px',
             color: '#94a3b8'
         }).setOrigin(0.5);
         ideContainer.add(this.statusText);
 
-        // Big Run Button
-        const runBtn = this.createRunButton(w / 2, wsY + 225, w - 20, 48, '▶ 알고리즘 컴파일 & 실행 (Run Code)', () => {
+        // 6. Scratch Run Button (Green Flag Button)
+        const runBtn = this.createScratchRunButton(w / 2, wsY + 242, w - 20, 46, '🚩 스크래치 알고리즘 실행 (Run Code)', () => {
             this.executeAlgorithm();
         });
         ideContainer.add(runBtn);
     }
 
-    private addBlockToWorkspace(blk: BlockItem) {
+    private createCategoryTab(x: number, y: number, w: number, h: number, text: string, category: BlockCategory) {
+        const c = this.scene.add.container(x, y);
+        const isActive = this.currentCategory === category;
+
+        const bg = this.scene.add.graphics();
+        bg.fillStyle(isActive ? 0x4f46e5 : 0x1e293b, 0.9);
+        bg.fillRoundedRect(0, 0, w, h, 6);
+
+        const label = this.scene.add.text(w / 2, h / 2, text, {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '12px',
+            color: isActive ? '#ffffff' : '#cbd5e1'
+        }).setOrigin(0.5);
+
+        c.add([bg, label]);
+        c.setSize(w, h);
+        c.setInteractive({ useHandCursor: true });
+
+        c.on('pointerdown', () => {
+            this.currentCategory = category;
+            this.renderPaletteBlocks();
+            this.audioManager.playBlockClick();
+        });
+
+        return c;
+    }
+
+    private renderPaletteBlocks() {
+        this.paletteContainer.removeAll(true);
+
+        const all = this.getAllBlocks();
+        const filtered = this.currentCategory === 'all'
+            ? all
+            : all.filter(b => b.category === this.currentCategory);
+
+        // 2 columns grid
+        filtered.forEach((blk, idx) => {
+            const col = idx % 2;
+            const row = Math.floor(idx / 2);
+            if (row >= 4) return; // Display up to 8 blocks per page
+
+            const bx = col * 242;
+            const by = row * 36;
+
+            const chip = this.createScratchPaletteBlock(bx, by, 236, 32, blk);
+            this.paletteContainer.add(chip);
+        });
+    }
+
+    // Scratch Puzzle Block Shape
+    private createScratchPaletteBlock(x: number, y: number, w: number, h: number, blk: ScratchBlockDef) {
+        const c = this.scene.add.container(x, y);
+
+        const bg = this.scene.add.graphics();
+        bg.fillStyle(blk.color, 0.95);
+        bg.lineStyle(1, 0xffffff, 0.35);
+
+        // Scratch block notch
+        if (blk.category === 'event') {
+            // Hat curved top
+            bg.fillRoundedRect(0, 4, w, h - 4, 6);
+            bg.fillCircle(24, 6, 12);
+        } else {
+            bg.fillRoundedRect(0, 0, w, h, 6);
+        }
+        bg.strokeRoundedRect(0, 0, w, h, 6);
+
+        const iconTxt = this.scene.add.text(8, h / 2, blk.icon, { fontSize: '13px' }).setOrigin(0, 0.5);
+        const nameTxt = this.scene.add.text(28, h / 2, blk.text, {
+            fontFamily: '"Do Hyeon", sans-serif',
+            fontSize: '12px',
+            color: '#ffffff'
+        }).setOrigin(0, 0.5);
+
+        c.add([bg, iconTxt, nameTxt]);
+
+        // Input Param Pill
+        if (blk.param) {
+            const pillX = nameTxt.x + nameTxt.width + 6;
+            const pill = this.scene.add.graphics();
+            pill.fillStyle(0xffffff, 0.9);
+            pill.fillRoundedRect(pillX, 6, 44, 20, 10);
+
+            const paramTxt = this.scene.add.text(pillX + 22, 16, blk.param, {
+                fontFamily: '"Impact", sans-serif',
+                fontSize: '11px',
+                color: '#0f172a'
+            }).setOrigin(0.5);
+
+            c.add([pill, paramTxt]);
+        }
+
+        c.setSize(w, h);
+        c.setInteractive({ useHandCursor: true });
+
+        c.on('pointerover', () => c.setScale(1.02));
+        c.on('pointerout', () => c.setScale(1));
+        c.on('pointerdown', () => {
+            this.addBlockToWorkspace(blk);
+        });
+
+        return c;
+    }
+
+    private addBlockToWorkspace(blk: ScratchBlockDef) {
         if (this.isSimulating) return;
-        if (this.placedBlocks.length >= 6) {
-            this.statusText.setText('⚠️ 알고리즘 스택이 가득 찼습니다! (최대 6개)');
+        if (this.placedBlocks.length >= 7) {
+            this.statusText.setText('⚠️ 스크래치 스택이 가득 찼습니다! (최대 7개)');
             this.statusText.setColor('#f87171');
             return;
         }
@@ -385,20 +568,20 @@ export class BlockCodingModal {
         this.placedBlocks.push(blk);
         this.audioManager.playBlockClick();
         this.renderWorkspaceBlocks();
-        this.statusText.setText(`블록 추가됨: ${blk.text}`);
+        this.statusText.setText(`블록 추가됨: ${blk.icon} ${blk.text}`);
         this.statusText.setColor('#38bdf8');
     }
 
     private autoFillCorrectBlocks() {
         if (this.isSimulating) return;
-        const corrects = this.getAvailableBlocks()
+        const corrects = this.getAllBlocks()
             .filter(b => b.isCorrect)
             .sort((a, b) => a.order - b.order);
 
         this.placedBlocks = [...corrects];
         this.audioManager.playBlockClick();
         this.renderWorkspaceBlocks();
-        this.statusText.setText('✨ 정답 블록들이 알맞게 배치되었습니다! [실행 버튼]을 누르세요!');
+        this.statusText.setText('✨ 정답 스크래치 블록들이 알맞게 조립되었습니다! [실행 버튼]을 누르세요!');
         this.statusText.setColor('#4ade80');
     }
 
@@ -406,7 +589,7 @@ export class BlockCodingModal {
         this.blockWorkspaceContainer.removeAll(true);
 
         if (this.placedBlocks.length === 0) {
-            const emptyLabel = this.scene.add.text(210, 55, '(위 블록을 클릭하여 알고리즘을 조립하세요)', {
+            const emptyLabel = this.scene.add.text(230, 60, '(위 팔레트에서 블록을 클릭하여 스택에 조립하세요)', {
                 fontFamily: '"Do Hyeon", sans-serif',
                 fontSize: '14px',
                 color: '#475569'
@@ -415,38 +598,65 @@ export class BlockCodingModal {
             return;
         }
 
-        // Render placed blocks sequentially
+        // Render stacked scratch blocks vertically
         this.placedBlocks.forEach((blk, idx) => {
-            const bx = (idx % 2) * 230;
-            const by = Math.floor(idx / 2) * 38;
+            const col = idx < 4 ? 0 : 1;
+            const row = idx < 4 ? idx : idx - 4;
+            const bx = col * 242;
+            const by = row * 38;
 
             const chip = this.scene.add.container(bx, by);
-            const chipBg = this.scene.add.graphics();
-            chipBg.fillStyle(blk.color, 0.9);
-            chipBg.lineStyle(1, 0xffffff, 0.4);
-            chipBg.fillRoundedRect(0, 0, 220, 32, 8);
-            chipBg.strokeRoundedRect(0, 0, 220, 32, 8);
 
-            const num = this.scene.add.text(10, 16, `${idx + 1}.`, {
+            const bg = this.scene.add.graphics();
+            bg.fillStyle(blk.color, 0.95);
+            bg.lineStyle(1.5, 0xffffff, 0.5);
+
+            if (blk.category === 'event') {
+                bg.fillRoundedRect(0, 4, 236, 30, 6);
+                bg.fillCircle(24, 6, 11);
+            } else {
+                bg.fillRoundedRect(0, 0, 236, 34, 6);
+            }
+            bg.strokeRoundedRect(0, 0, 236, 34, 6);
+
+            const numTxt = this.scene.add.text(8, 17, `${idx + 1}.`, {
                 fontFamily: '"Impact", sans-serif',
-                fontSize: '13px',
+                fontSize: '12px',
                 color: '#facc15'
             }).setOrigin(0, 0.5);
 
-            const title = this.scene.add.text(28, 16, blk.text, {
+            const iconTxt = this.scene.add.text(24, 17, blk.icon, { fontSize: '12px' }).setOrigin(0, 0.5);
+
+            const nameTxt = this.scene.add.text(42, 17, blk.text, {
                 fontFamily: '"Do Hyeon", sans-serif',
                 fontSize: '12px',
                 color: '#ffffff'
             }).setOrigin(0, 0.5);
 
-            const removeIcon = this.scene.add.text(205, 16, '✕', {
+            const delIcon = this.scene.add.text(224, 17, '✕', {
                 fontFamily: 'sans-serif',
                 fontSize: '12px',
                 color: '#cbd5e1'
             }).setOrigin(0.5);
 
-            chip.add([chipBg, num, title, removeIcon]);
-            chip.setSize(220, 32);
+            chip.add([bg, numTxt, iconTxt, nameTxt, delIcon]);
+
+            if (blk.param) {
+                const paramX = nameTxt.x + nameTxt.width + 4;
+                const pill = this.scene.add.graphics();
+                pill.fillStyle(0xffffff, 0.95);
+                pill.fillRoundedRect(paramX, 7, 38, 20, 10);
+
+                const paramLabel = this.scene.add.text(paramX + 19, 17, blk.param, {
+                    fontFamily: '"Impact", sans-serif',
+                    fontSize: '11px',
+                    color: '#0f172a'
+                }).setOrigin(0.5);
+
+                chip.add([pill, paramLabel]);
+            }
+
+            chip.setSize(236, 34);
             chip.setInteractive({ useHandCursor: true });
 
             chip.on('pointerdown', () => {
@@ -460,92 +670,129 @@ export class BlockCodingModal {
         });
     }
 
-    // --- Algorithm Execution & Validation ---
+    // --- Execution & Simulation ---
     private executeAlgorithm() {
         if (this.isSimulating) return;
 
-        if (this.placedBlocks.length === 0) {
-            this.statusText.setText('⚠️ 실행할 블록이 없습니다. 블록을 먼저 추가하세요!');
+        if (this.placedBlocks.length < 2) {
+            this.statusText.setText('⚠️ 스크래치 블록을 최소 2개 이상 조립해주세요!');
             this.statusText.setColor('#f87171');
             this.audioManager.playCompileFail();
             return;
         }
 
         this.isSimulating = true;
-        this.statusText.setText('⚙️ 알고리즘 컴파일 및 시뮬레이션 연산 중...');
+        this.statusText.setText('⚙️ 스크래치 알고리즘 순차 실행 및 연산 중...');
         this.statusText.setColor('#38bdf8');
 
-        // Check if all correct blocks are present and no incorrect ones exist
-        const hasWrongBlock = this.placedBlocks.some(b => !b.isCorrect);
-        const correctIds = this.getAvailableBlocks().filter(b => b.isCorrect).map(b => b.id);
+        // Check if all correct blocks are included and no fail blocks
+        const hasWrong = this.placedBlocks.some(b => !b.isCorrect);
+        const correctIds = this.getAllBlocks().filter(b => b.isCorrect).map(b => b.id);
         const placedIds = this.placedBlocks.map(b => b.id);
-        const hasAllCorrects = correctIds.every(id => placedIds.includes(id));
+        const hasAll = correctIds.every(id => placedIds.includes(id));
 
-        const isSuccess = !hasWrongBlock && hasAllCorrects;
+        const isSuccess = !hasWrong && hasAll;
 
-        if (this.type === 'iltassafy') {
-            this.runBilliardsSimulation(isSuccess);
-        } else {
-            this.runTankSimulation(isSuccess);
-        }
+        // Step by step Scratch execution simulation
+        this.runStepByStep(0, isSuccess);
     }
 
-    private runBilliardsSimulation(isSuccess: boolean) {
+    private runStepByStep(stepIndex: number, isSuccess: boolean) {
+        if (stepIndex >= this.placedBlocks.length) {
+            // Execution sequence finished
+            if (isSuccess) {
+                this.handleMiniGameSuccess();
+            } else {
+                this.handleMiniGameFail('❌ 런타임 에러: 목적구에 도달하지 못했습니다! [💡 정답 자동조립]을 눌러보세요.');
+            }
+            return;
+        }
+
+        const blk = this.placedBlocks[stepIndex];
+        this.audioManager.playBlockClick();
+
+        // Highlight active block in workspace
+        const chip = this.blockWorkspaceContainer.list[stepIndex] as Phaser.GameObjects.Container;
+        if (chip) {
+            this.scene.tweens.add({
+                targets: chip,
+                scale: 1.08,
+                duration: 120,
+                yoyo: true
+            });
+        }
+
+        // Show Scratch Speech Bubble if specified
+        if (blk.speechText) {
+            if (this.type === 'iltassafy' && this.cueBall) {
+                this.showSpeechBubble(this.cueBall.x, this.cueBall.y, blk.speechText);
+            } else if (this.type === 'battlessafy' && this.playerTank) {
+                this.showSpeechBubble(this.playerTank.x, this.playerTank.y, blk.speechText);
+            }
+        }
+
+        // Action trigger based on block
+        if (blk.id === 'looks_shoot') {
+            this.triggerBilliardsStrike(isSuccess);
+        } else if (blk.id === 'motion_forward' && this.playerTank) {
+            this.scene.tweens.add({
+                targets: this.playerTank,
+                x: 180,
+                duration: 350,
+                ease: 'Cubic.easeOut'
+            });
+        } else if (blk.id === 'motion_turn' && this.playerTank) {
+            this.scene.tweens.add({
+                targets: this.playerTank,
+                angle: -90,
+                duration: 250
+            });
+        } else if (blk.id === 'looks_fire' && this.playerTank) {
+            this.triggerTankFire(isSuccess);
+        }
+
+        this.scene.time.delayedCall(450, () => {
+            this.runStepByStep(stepIndex + 1, isSuccess);
+        });
+    }
+
+    private triggerBilliardsStrike(isSuccess: boolean) {
         if (!this.cueBall || !this.targetBall || !this.cueStick) return;
 
-        // 1. Cue Stick Strike
         this.scene.tweens.add({
             targets: this.cueStick,
-            x: -15,
-            y: -15,
-            duration: 200,
+            x: -16,
+            y: -16,
+            duration: 180,
             yoyo: true,
             onComplete: () => {
                 this.audioManager.playHit();
                 this.cueStick?.setVisible(false);
 
                 if (isSuccess) {
-                    // Success Path: Cue Ball banks off cushion and pots the red ball
                     this.scene.tweens.add({
                         targets: this.cueBall,
-                        x: 230,
-                        y: 150,
+                        x: 235,
+                        y: 175,
                         duration: 350,
                         ease: 'Cubic.easeOut',
                         onComplete: () => {
                             this.audioManager.playHit();
-                            // Red ball rolls into the target top-right pocket
                             this.scene.tweens.add({
                                 targets: this.targetBall,
-                                x: 426,
-                                y: 50,
-                                duration: 450,
+                                x: 412,
+                                y: 58,
+                                duration: 420,
                                 ease: 'Cubic.easeOut',
                                 onComplete: () => {
-                                    // Pocket drop animation
                                     this.scene.tweens.add({
                                         targets: this.targetBall,
                                         scale: 0,
                                         alpha: 0,
-                                        duration: 200,
-                                        onComplete: () => {
-                                            this.handleMiniGameSuccess();
-                                        }
+                                        duration: 200
                                     });
                                 }
                             });
-                        }
-                    });
-                } else {
-                    // Fail Path: Ball rolls weakly or misses
-                    this.scene.tweens.add({
-                        targets: this.cueBall,
-                        x: 140,
-                        y: 200,
-                        duration: 350,
-                        ease: 'Cubic.easeOut',
-                        onComplete: () => {
-                            this.handleMiniGameFail('❌ 런타임 에러: 목적구에 도달하지 못했습니다! [💡 정답 자동배치]를 활용해보세요.');
                         }
                     });
                 }
@@ -553,101 +800,68 @@ export class BlockCodingModal {
         });
     }
 
-    private runTankSimulation(isSuccess: boolean) {
+    private triggerTankFire(isSuccess: boolean) {
         if (!this.playerTank || !this.enemyTank) return;
+        this.audioManager.playBossHit();
 
-        if (isSuccess) {
-            // Step 1: Tank moves forward 2 tiles
-            this.scene.tweens.add({
-                targets: this.playerTank,
-                x: 180,
-                duration: 400,
-                ease: 'Cubic.easeOut',
-                onComplete: () => {
-                    // Step 2: Tank rotates 90 degrees up
+        const shell = this.scene.add.circle(this.playerTank.x, this.playerTank.y - 20, 6, 0xfacc15);
+        this.simContainer.add(shell);
+
+        this.scene.tweens.add({
+            targets: shell,
+            x: this.enemyTank.x,
+            y: this.enemyTank.y,
+            duration: 280,
+            onComplete: () => {
+                shell.destroy();
+                if (isSuccess) {
+                    this.audioManager.playBossDefeat();
+                    const blast = this.scene.add.circle(this.enemyTank!.x, this.enemyTank!.y, 36, 0xef4444, 0.85);
+                    this.simContainer.add(blast);
+
                     this.scene.tweens.add({
-                        targets: this.playerTank,
-                        angle: -90,
-                        duration: 250,
-                        onComplete: () => {
-                            // Step 3: Fire Cannon
-                            this.audioManager.playBossHit();
-                            const shell = this.scene.add.circle(this.playerTank!.x, this.playerTank!.y - 20, 6, 0xfacc15);
-                            this.simContainer.add(shell);
-
-                            this.scene.tweens.add({
-                                targets: shell,
-                                x: this.enemyTank!.x,
-                                y: this.enemyTank!.y,
-                                duration: 300,
-                                onComplete: () => {
-                                    shell.destroy();
-                                    this.audioManager.playBossDefeat();
-
-                                    // Explosion rings on enemy tank
-                                    const blast = this.scene.add.circle(this.enemyTank!.x, this.enemyTank!.y, 35, 0xef4444, 0.8);
-                                    this.simContainer.add(blast);
-
-                                    this.scene.tweens.add({
-                                        targets: [blast, this.enemyTank],
-                                        scale: 1.5,
-                                        alpha: 0,
-                                        duration: 350,
-                                        onComplete: () => {
-                                            blast.destroy();
-                                            this.handleMiniGameSuccess();
-                                        }
-                                    });
-                                }
-                            });
-                        }
+                        targets: [blast, this.enemyTank],
+                        scale: 1.5,
+                        alpha: 0,
+                        duration: 350,
+                        onComplete: () => blast.destroy()
                     });
                 }
-            });
-        } else {
-            // Fail Path: Tank moves 1 tile and halts
-            this.scene.tweens.add({
-                targets: this.playerTank,
-                x: 120,
-                duration: 300,
-                onComplete: () => {
-                    this.handleMiniGameFail('❌ 사거리 부족: 장애물에 막혀 적 전차를 타격하지 못했습니다! [💡 정답 자동배치]를 활용해보세요.');
-                }
-            });
-        }
+            }
+        });
     }
 
     private handleMiniGameSuccess() {
         this.audioManager.playCompileSuccess();
-        this.statusText.setText('🎉 COMPILER PASS (200 OK)! 알고리즘 100점 만점!');
+        this.statusText.setText('🎉 SCRATCH PASS (200 OK)! 스크래치 알고리즘 100점 만점!');
         this.statusText.setColor('#4ade80');
 
-        // Victory Banner popup
-        const winBanner = this.scene.add.container(0, 0);
-        const winBg = this.scene.add.graphics();
-        winBg.fillStyle(0x0f172a, 0.95);
-        winBg.lineStyle(3, 0x22c55e);
-        winBg.fillRoundedRect(-240, -50, 480, 100, 16);
-        winBg.strokeRoundedRect(-240, -50, 480, 100, 16);
+        // Scratch Celebration Banner
+        const banner = this.scene.add.container(0, 0);
+        const bg = this.scene.add.graphics();
+        bg.fillStyle(0x0f172a, 0.96);
+        bg.lineStyle(3, 0x22c55e);
+        bg.fillRoundedRect(-250, -52, 500, 104, 16);
+        bg.strokeRoundedRect(-250, -52, 500, 104, 16);
 
-        const winTitle = this.scene.add.text(0, -18, '✨ 알고리즘 PASS! 멘탈 100% 완전 회복! ✨', {
+        const title = this.scene.add.text(0, -18, '✨ 스크래치 알고리즘 PASS! 멘탈 완전 회복! ✨', {
             fontFamily: '"Black Han Sans", sans-serif',
             fontSize: '20px',
             color: '#4ade80'
         }).setOrigin(0.5);
 
-        const winSub = this.scene.add.text(0, 18, '🪙 코인 +30개 · 점수 +5,000점 · 7초 골든 피버 발동!', {
+        const sub = this.scene.add.text(0, 18, '🪙 코인 +30개 · 점수 +5,000점 · 7초 무적 골든 피버 발동!', {
             fontFamily: '"Do Hyeon", sans-serif',
             fontSize: '15px',
             color: '#facc15'
         }).setOrigin(0.5);
 
-        winBanner.add([winBg, winTitle, winSub]);
-        winBanner.setScale(0);
-        this.container.add(winBanner);
+        banner.add([bg, title, sub]);
+        banner.setScale(0);
+        this.container.add(banner);
 
         this.scene.tweens.add({
-            targets: winBanner,
+            targets: banner,
             scale: 1,
             duration: 300,
             ease: 'Back.easeOut',
@@ -664,8 +878,6 @@ export class BlockCodingModal {
         this.statusText.setText(msg);
         this.statusText.setColor('#f87171');
         this.isSimulating = false;
-
-        // Reset cue stick visibility
         if (this.cueStick) this.cueStick.setVisible(true);
     }
 
@@ -680,32 +892,6 @@ export class BlockCodingModal {
                 this.onComplete(scoreBonus, coinBonus);
             }
         });
-    }
-
-    // Helper: Block Chip Button
-    private createBlockChip(x: number, y: number, w: number, h: number, text: string, color: number, onClick: () => void) {
-        const c = this.scene.add.container(x, y);
-        const bg = this.scene.add.graphics();
-        bg.fillStyle(color, 0.85);
-        bg.lineStyle(1, 0xffffff, 0.3);
-        bg.fillRoundedRect(0, 0, w, h, 8);
-        bg.strokeRoundedRect(0, 0, w, h, 8);
-
-        const label = this.scene.add.text(w / 2, h / 2, text, {
-            fontFamily: '"Do Hyeon", sans-serif',
-            fontSize: '13px',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-
-        c.add([bg, label]);
-        c.setSize(w, h);
-        c.setInteractive({ useHandCursor: true });
-
-        c.on('pointerover', () => bg.setAlpha(1));
-        c.on('pointerout', () => bg.setAlpha(0.85));
-        c.on('pointerdown', onClick);
-
-        return c;
     }
 
     // Helper: Standard Button
@@ -729,8 +915,8 @@ export class BlockCodingModal {
         return c;
     }
 
-    // Helper: Big Run Button
-    private createRunButton(x: number, y: number, w: number, h: number, text: string, onClick: () => void) {
+    // Helper: Scratch Big Run Button (Green Flag)
+    private createScratchRunButton(x: number, y: number, w: number, h: number, text: string, onClick: () => void) {
         const c = this.scene.add.container(x, y);
         const bg = this.scene.add.graphics();
         bg.fillStyle(0x16a34a, 1);
