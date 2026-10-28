@@ -35,7 +35,7 @@
 ### 🧩 2. 중간 쉬어가는 힐링 타임! 일타싸피 & 배틀싸피 블록코딩 평가 (Block Coding Break Time)
 > **지친 손가락을 잠시 쉬어가는 힐링 인터미션! 🧠 블록을 조립하여 알고리즘을 컴파일하고, 멘탈(HP) 100% 완전 회복 & 골든 피버로 질주하세요!**
 
-![SSAFY RUN 블록코딩 시연 화면](assets/block_coding_preview.svg)
+![SSAFY RUN 스크래치 블록코딩 시연 화면](assets/scratch_coding_preview.svg)
 
 <br/>
 

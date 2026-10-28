@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#050811"/>
-      <stop offset="50%" stop-color="#0b1329"/>
+      <stop offset="0%" stop-color="#050813"/>
+      <stop offset="50%" stop-color="#0b132b"/>
       <stop offset="100%" stop-color="#030712"/>
     </linearGradient>
     <linearGradient id="feltGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -22,8 +22,8 @@
   <!-- Background -->
   <rect width="1280" height="720" fill="url(#bgGrad)"/>
 
-  <!-- Dim overlay lines -->
-  <g stroke="#1e293b" stroke-width="1" opacity="0.3">
+  <!-- Subtle Cyber Tech Grid Lines -->
+  <g stroke="#1e293b" stroke-width="1" opacity="0.35">
     <line x1="0" y1="120" x2="1280" y2="120"/>
     <line x1="0" y1="240" x2="1280" y2="240"/>
     <line x1="0" y1="360" x2="1280" y2="360"/>
@@ -32,225 +32,225 @@
   </g>
 
   <!-- Main Modal Card Frame -->
-  <rect x="100" y="45" width="1080" height="630" rx="20" fill="#0b1329" stroke="#4f46e5" stroke-width="2.5" opacity="0.98"/>
+  <rect x="90" y="40" width="1100" height="640" rx="20" fill="#0b1329" stroke="#4f46e5" stroke-width="2.5" opacity="0.98"/>
 
   <!-- Top Badge -->
-  <g transform="translate(640, 70)">
-    <rect x="-190" y="0" width="380" height="26" rx="13" fill="#4338ca" fill-opacity="0.5" stroke="#818cf8" stroke-width="1"/>
-    <text x="0" y="18" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#a5b4fc" text-anchor="middle">
-      🐱 SCRATCH CODING BREAK · 스크래치 블록코딩
+  <g transform="translate(640, 68)">
+    <rect x="-200" y="0" width="400" height="28" rx="14" fill="#4338ca" fill-opacity="0.45" stroke="#818cf8" stroke-width="1"/>
+    <text x="0" y="19" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="bold" fill="#a5b4fc" text-anchor="middle">
+      🐱 SCRATCH CODING BREAK · 스크래치 알고리즘
     </text>
   </g>
 
   <!-- Title & Subtitle -->
-  <text x="640" y="125" font-family="'Impact', 'Arial Black', sans-serif" font-size="28" font-weight="900" fill="#facc15" text-anchor="middle">
+  <text x="640" y="125" font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="900" fill="#facc15" text-anchor="middle">
     🎱 일타싸피 스크래치: 목적구 포켓인 코딩
   </text>
-  <text x="640" y="152" font-family="'Pretendard', sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">
+  <text x="640" y="152" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">
     지친 손가락을 쉬어가세요! 🧠 스크래치 카테고리 블록을 조립해 공을 넣고 멘탈(HP) 100% 회복 &amp; 골든 피버를 획득하세요!
   </text>
 
   <!-- Skip Button (Top Right) -->
-  <g transform="translate(1030, 75)">
-    <rect width="115" height="34" rx="8" fill="#334155"/>
-    <text x="57" y="22" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">
+  <g transform="translate(1040, 75)">
+    <rect width="120" height="34" rx="8" fill="#334155"/>
+    <text x="60" y="22" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">
       ⚡ 즉시 패스
     </text>
   </g>
 
   <!-- ================= LEFT: SIMULATION STAGE ================= -->
-  <g transform="translate(125, 175)">
-    <rect width="450" height="460" rx="14" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
-    <text x="18" y="26" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#38bdf8">
+  <g transform="translate(115, 175)">
+    <rect width="455" height="470" rx="14" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <text x="18" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="bold" fill="#38bdf8">
       🎬 LIVE SIMULATION STAGE (스크래치 실행 무대)
     </text>
 
     <!-- Table Felt -->
-    <rect x="20" y="42" width="410" height="395" rx="16" fill="url(#feltGrad)" stroke="#78350f" stroke-width="10"/>
+    <rect x="20" y="42" width="415" height="405" rx="16" fill="url(#feltGrad)" stroke="#78350f" stroke-width="10"/>
 
     <!-- Pockets -->
-    <circle cx="38" cy="60" r="15" fill="#020617"/>
-    <circle cx="225" cy="52" r="15" fill="#020617"/>
-    <circle cx="412" cy="60" r="15" fill="#020617"/>
-    <circle cx="38" cy="417" r="15" fill="#020617"/>
-    <circle cx="225" cy="425" r="15" fill="#020617"/>
-    <circle cx="412" cy="417" r="15" fill="#020617"/>
+    <circle cx="40" cy="62" r="15" fill="#020617"/>
+    <circle cx="227" cy="54" r="15" fill="#020617"/>
+    <circle cx="415" cy="62" r="15" fill="#020617"/>
+    <circle cx="40" cy="427" r="15" fill="#020617"/>
+    <circle cx="227" cy="435" r="15" fill="#020617"/>
+    <circle cx="415" cy="427" r="15" fill="#020617"/>
 
     <!-- Target Goal Pocket -->
-    <circle cx="412" cy="60" r="25" fill="none" stroke="#facc15" stroke-width="3" filter="url(#neonGlow)"/>
-    <g transform="translate(370, 92)">
+    <circle cx="415" cy="62" r="26" fill="none" stroke="#facc15" stroke-width="3" filter="url(#neonGlow)"/>
+    <g transform="translate(370, 94)">
       <rect width="70" height="22" rx="4" fill="#0f172a" stroke="#facc15" stroke-width="1"/>
-      <text x="35" y="16" font-family="'Impact', sans-serif" font-size="12" fill="#facc15" text-anchor="middle">🎯 GOAL</text>
+      <text x="35" y="16" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="900" fill="#facc15" text-anchor="middle">🎯 GOAL</text>
     </g>
 
     <!-- Balls -->
-    <circle cx="100" cy="330" r="13" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
-    <circle cx="220" cy="225" r="13" fill="#eab308" stroke="#713f12" stroke-width="2"/>
-    <circle cx="260" cy="160" r="13" fill="#ef4444" stroke="#7f1d1d" stroke-width="2"/>
+    <circle cx="105" cy="340" r="13" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+    <circle cx="225" cy="235" r="13" fill="#eab308" stroke="#713f12" stroke-width="2"/>
+    <circle cx="265" cy="170" r="13" fill="#ef4444" stroke="#7f1d1d" stroke-width="2"/>
 
     <!-- Scratch Speech Bubble above Cue Ball -->
-    <g transform="translate(100, 265)">
-      <rect x="-85" y="-15" width="170" height="30" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
-      <polygon points="-5,15 5,15 0,22" fill="#ffffff"/>
-      <text x="0" y="5" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">
+    <g transform="translate(105, 275)">
+      <rect x="-85" y="-16" width="170" height="32" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+      <polygon points="-5,16 5,16 0,23" fill="#ffffff"/>
+      <text x="0" y="5" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">
         💬 "조준 각도 45° 설정!"
       </text>
     </g>
 
     <!-- Aim Trajectory -->
-    <path d="M100,330 L260,160 L412,60" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="6,4"/>
+    <path d="M105,340 L265,170 L415,62" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="6,4"/>
 
     <!-- Cue Stick -->
-    <line x1="25" y1="385" x2="88" y2="338" stroke="#d97706" stroke-width="7" stroke-linecap="round"/>
+    <line x1="30" y1="395" x2="93" y2="348" stroke="#d97706" stroke-width="7" stroke-linecap="round"/>
 
     <!-- Stage Status Bar -->
-    <rect x="20" y="385" width="410" height="42" rx="8" fill="#020617" fill-opacity="0.9"/>
-    <text x="225" y="411" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#4ade80" text-anchor="middle">
+    <rect x="20" y="395" width="415" height="42" rx="8" fill="#020617" fill-opacity="0.9"/>
+    <text x="227" y="421" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="bold" fill="#4ade80" text-anchor="middle">
       ✨ 200 OK: 100점 만점! 멘탈 완전 회복 &amp; 골든 피버 질주!
     </text>
   </g>
 
   <!-- ================= RIGHT: SCRATCH IDE PANEL ================= -->
-  <g transform="translate(605, 175)">
+  <g transform="translate(600, 175)">
     <!-- 1. Category Tabs -->
     <g transform="translate(0, 0)">
-      <rect x="0" y="0" width="75" height="26" rx="6" fill="#4f46e5"/>
-      <text x="37" y="18" font-family="'Pretendard', sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">🌈 전체</text>
+      <rect x="0" y="0" width="76" height="26" rx="6" fill="#4f46e5"/>
+      <text x="38" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">🌈 전체</text>
 
-      <rect x="80" y="0" width="75" height="26" rx="6" fill="#1e293b"/>
-      <text x="117" y="18" font-family="'Pretendard', sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">🟡 이벤트</text>
+      <rect x="82" y="0" width="76" height="26" rx="6" fill="#1e293b"/>
+      <text x="120" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">🟡 이벤트</text>
 
-      <rect x="160" y="0" width="75" height="26" rx="6" fill="#1e293b"/>
-      <text x="197" y="18" font-family="'Pretendard', sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">🔵 동작</text>
+      <rect x="164" y="0" width="76" height="26" rx="6" fill="#1e293b"/>
+      <text x="202" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">🔵 동작</text>
 
-      <rect x="240" y="0" width="75" height="26" rx="6" fill="#1e293b"/>
-      <text x="277" y="18" font-family="'Pretendard', sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">🟠 제어</text>
+      <rect x="246" y="0" width="76" height="26" rx="6" fill="#1e293b"/>
+      <text x="284" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">🟠 제어</text>
 
-      <rect x="320" y="0" width="75" height="26" rx="6" fill="#1e293b"/>
-      <text x="357" y="18" font-family="'Pretendard', sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">🟣 소리</text>
+      <rect x="328" y="0" width="76" height="26" rx="6" fill="#1e293b"/>
+      <text x="366" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">🟣 소리</text>
 
-      <rect x="400" y="0" width="75" height="26" rx="6" fill="#1e293b"/>
-      <text x="437" y="18" font-family="'Pretendard', sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">🔴 감지</text>
+      <rect x="410" y="0" width="76" height="26" rx="6" fill="#1e293b"/>
+      <text x="448" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">🔴 감지</text>
     </g>
 
     <!-- 2. Block Palette Container -->
-    <rect x="0" y="32" width="480" height="155" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+    <rect x="0" y="32" width="490" height="160" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
 
     <!-- Palette Scratch Blocks -->
     <!-- Block 1: Event Flag Hat -->
     <g transform="translate(10, 42)">
-      <rect width="225" height="32" rx="6" fill="#eab308"/>
+      <rect width="230" height="32" rx="6" fill="#eab308"/>
       <circle cx="20" cy="4" r="10" fill="#eab308"/>
       <text x="10" y="21" font-size="12">🚩</text>
-      <text x="28" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">깃발을 클릭했을 때</text>
+      <text x="28" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">깃발을 클릭했을 때</text>
     </g>
     <!-- Block 2: Motion Angle -->
-    <g transform="translate(245, 42)">
-      <rect width="225" height="32" rx="6" fill="#2563eb"/>
+    <g transform="translate(250, 42)">
+      <rect width="230" height="32" rx="6" fill="#2563eb"/>
       <text x="10" y="21" font-size="12">📐</text>
-      <text x="28" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">조준 각도를</text>
-      <rect x="96" y="6" width="38" height="20" rx="10" fill="#ffffff"/>
-      <text x="115" y="20" font-family="'Impact', sans-serif" font-size="11" fill="#0f172a" text-anchor="middle">45°</text>
+      <text x="28" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">조준 각도를</text>
+      <rect x="100" y="6" width="38" height="20" rx="10" fill="#ffffff"/>
+      <text x="119" y="20" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="900" fill="#0f172a" text-anchor="middle">45°</text>
     </g>
     <!-- Block 3: Motion Cushion -->
     <g transform="translate(10, 80)">
-      <rect width="225" height="32" rx="6" fill="#2563eb"/>
+      <rect width="230" height="32" rx="6" fill="#2563eb"/>
       <text x="10" y="21" font-size="12">🔄</text>
-      <text x="28" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">벽에 닿으면 튕기기</text>
+      <text x="28" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">벽에 닿으면 튕기기</text>
     </g>
     <!-- Block 4: Control Power -->
-    <g transform="translate(245, 80)">
-      <rect width="225" height="32" rx="6" fill="#ea580c"/>
+    <g transform="translate(250, 80)">
+      <rect width="230" height="32" rx="6" fill="#ea580c"/>
       <text x="10" y="21" font-size="12">⚡</text>
-      <text x="28" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">타구 파워를</text>
-      <rect x="96" y="6" width="38" height="20" rx="10" fill="#ffffff"/>
-      <text x="115" y="20" font-family="'Impact', sans-serif" font-size="11" fill="#0f172a" text-anchor="middle">80%</text>
+      <text x="28" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">타구 파워를</text>
+      <rect x="100" y="6" width="38" height="20" rx="10" fill="#ffffff"/>
+      <text x="119" y="20" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="900" fill="#0f172a" text-anchor="middle">80%</text>
     </g>
     <!-- Block 5: Shoot -->
     <g transform="translate(10, 118)">
-      <rect width="225" height="32" rx="6" fill="#9333ea"/>
+      <rect width="230" height="32" rx="6" fill="#9333ea"/>
       <text x="10" y="21" font-size="12">🎱</text>
-      <text x="28" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">큐대로 수구 치기!</text>
+      <text x="28" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">큐대로 수구 치기!</text>
     </g>
     <!-- Block 6: Sensing -->
-    <g transform="translate(245, 118)">
-      <rect width="225" height="32" rx="6" fill="#06b6d4"/>
+    <g transform="translate(250, 118)">
+      <rect width="230" height="32" rx="6" fill="#06b6d4"/>
       <text x="10" y="21" font-size="12">🎯</text>
-      <text x="28" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">홀컵 닿았는가? 감지</text>
+      <text x="28" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">홀컵 닿았는가? 감지</text>
     </g>
 
     <!-- 3. Scratch Workspace Stack Header -->
-    <g transform="translate(0, 200)">
-      <text x="0" y="0" font-family="'Pretendard', sans-serif" font-size="15" font-weight="bold" fill="#facc15">
+    <g transform="translate(0, 205)">
+      <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="bold" fill="#facc15">
         🧩 스크래치 스택 (조립된 코드 블록)
       </text>
 
-      <g transform="translate(300, -15)">
+      <g transform="translate(310, -15)">
         <rect width="115" height="26" rx="6" fill="#059669"/>
-        <text x="57" y="17" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">
+        <text x="57" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">
           💡 정답 자동조립
         </text>
       </g>
-      <g transform="translate(425, -15)">
+      <g transform="translate(435, -15)">
         <rect width="55" height="26" rx="6" fill="#475569"/>
-        <text x="27" y="17" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">
+        <text x="27" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">
           ↺ 비우기
         </text>
       </g>
 
       <!-- Workspace Card -->
-      <rect x="0" y="12" width="480" height="165" rx="10" fill="#020617" stroke="#334155" stroke-width="1.5"/>
+      <rect x="0" y="12" width="490" height="170" rx="10" fill="#020617" stroke="#334155" stroke-width="1.5"/>
 
       <!-- Assembled Blocks Snapped Together -->
       <!-- 1. Flag Hat -->
       <g transform="translate(10, 22)">
-        <rect width="225" height="32" rx="6" fill="#eab308" stroke="#ffffff" stroke-width="1"/>
+        <rect width="230" height="32" rx="6" fill="#eab308" stroke="#ffffff" stroke-width="1"/>
         <circle cx="20" cy="4" r="10" fill="#eab308"/>
         <text x="8" y="21" font-size="11">🚩</text>
-        <text x="24" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">1. 깃발을 클릭했을 때</text>
+        <text x="24" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">1. 깃발을 클릭했을 때</text>
       </g>
       <!-- 2. Motion Angle -->
-      <g transform="translate(10, 58)">
-        <rect width="225" height="32" rx="6" fill="#2563eb" stroke="#ffffff" stroke-width="1"/>
+      <g transform="translate(10, 60)">
+        <rect width="230" height="32" rx="6" fill="#2563eb" stroke="#ffffff" stroke-width="1"/>
         <text x="8" y="21" font-size="11">📐</text>
-        <text x="24" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">2. 조준 각도 45° 설정</text>
+        <text x="24" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">2. 조준 각도 45° 설정</text>
       </g>
       <!-- 3. Motion Cushion -->
-      <g transform="translate(10, 94)">
-        <rect width="225" height="32" rx="6" fill="#2563eb" stroke="#ffffff" stroke-width="1"/>
+      <g transform="translate(10, 98)">
+        <rect width="230" height="32" rx="6" fill="#2563eb" stroke="#ffffff" stroke-width="1"/>
         <text x="8" y="21" font-size="11">🔄</text>
-        <text x="24" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">3. 쿠션 반사 연산</text>
+        <text x="24" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">3. 쿠션 반사 연산</text>
       </g>
       <!-- 4. Control Power -->
-      <g transform="translate(10, 130)">
-        <rect width="225" height="32" rx="6" fill="#ea580c" stroke="#ffffff" stroke-width="1"/>
+      <g transform="translate(10, 136)">
+        <rect width="230" height="32" rx="6" fill="#ea580c" stroke="#ffffff" stroke-width="1"/>
         <text x="8" y="21" font-size="11">⚡</text>
-        <text x="24" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">4. 타구 파워 80% 설정</text>
+        <text x="24" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">4. 타구 파워 80% 설정</text>
       </g>
       <!-- 5. Shoot Block (Right column) -->
-      <g transform="translate(245, 22)">
-        <rect width="225" height="32" rx="6" fill="#9333ea" stroke="#ffffff" stroke-width="1"/>
+      <g transform="translate(250, 22)">
+        <rect width="230" height="32" rx="6" fill="#9333ea" stroke="#ffffff" stroke-width="1"/>
         <text x="8" y="21" font-size="11">🎱</text>
-        <text x="24" y="21" font-family="'Pretendard', sans-serif" font-size="12" font-weight="bold" fill="#ffffff">5. 큐대로 수구 치기!</text>
+        <text x="24" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">5. 큐대로 수구 치기!</text>
       </g>
     </g>
 
     <!-- 4. Status Text -->
-    <text x="240" y="405" font-family="'Pretendard', sans-serif" font-size="13" font-weight="bold" fill="#4ade80" text-anchor="middle">
+    <text x="245" y="415" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="bold" fill="#4ade80" text-anchor="middle">
       ✨ 완벽한 스크래치 알고리즘입니다! 아래 실행 버튼을 눌러보세요!
     </text>
 
     <!-- 5. Big Scratch Run Button -->
-    <g transform="translate(10, 420)">
-      <rect width="460" height="46" rx="12" fill="url(#runBtnGrad)" stroke="#4ade80" stroke-width="2" filter="url(#neonGlow)"/>
-      <text x="230" y="29" font-family="'Impact', 'Arial Black', sans-serif" font-size="19" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="1">
+    <g transform="translate(10, 430)">
+      <rect width="470" height="46" rx="12" fill="url(#runBtnGrad)" stroke="#4ade80" stroke-width="2" filter="url(#neonGlow)"/>
+      <text x="235" y="29" font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" font-size="19" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="1">
         🚩 스크래치 알고리즘 실행 (Run Code)
       </text>
     </g>
   </g>
 
   <!-- Bottom Tip -->
-  <text x="640" y="660" font-family="'Pretendard', sans-serif" font-size="13" fill="#64748b" text-anchor="middle">
+  <text x="640" y="665" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#64748b" text-anchor="middle">
     💡 스크래치(Scratch) 카테고리별 다채로운 블록을 자유롭게 조립하며 지친 손가락을 쉬어가세요!
   </text>
 </svg>
